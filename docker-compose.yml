@@ -9,7 +9,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nxchat
       - NODE_ENV=production
       - RUN_MIGRATIONS=true
     depends_on:
