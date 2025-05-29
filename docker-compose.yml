@@ -11,14 +11,8 @@ services:
     environment:
       - NODE_ENV=production
       - RUN_MIGRATIONS=true
-    depends_on:
-      postgres:
-        condition: service_healthy
     volumes:
       - .:/app
       - /app/node_modules
       - /app/.next
     command: ["./start.sh"]
-
-volumes:
-  postgres-data:
