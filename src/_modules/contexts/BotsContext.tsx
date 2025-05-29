@@ -2,13 +2,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Database } from "@/types/database.type";
+import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
+import { getAllDatasets } from "@/app/actions/datasets";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
 type Document = Database["public"]["Tables"]["documents"]["Row"];
 type Message = Database["public"]["Tables"]["messages"]["Row"];
+type Dataset = DatasetInfo;
 
 interface BotSummary {
   id: string;
@@ -20,13 +22,15 @@ interface BotSummary {
 
 interface BotsContextType {
   bots: Bot[];
+  datasets: Dataset[];
   selectedBot: Bot | null;
   documentsByBot: Record<string, Document[]>;
   messagesByBot: Record<string, Message[]>;
   createBot: (
     name: string,
     description: string,
-    settings: Record<string, any>
+    settings: Record<string, any>,
+    dataSetId: string
   ) => Promise<void>;
   // updateBot: (id: string, data: Partial<Bot>) => Promise<void>;
   // deleteBot: (id: string) => Promise<void>;
@@ -46,6 +50,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [bots, setBots] = useState<Bot[]>([]);
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
   const [documentsByBot, setDocumentsByBot] = useState<
     Record<string, Document[]>
@@ -64,6 +69,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         // Load bots
         const res = await getAllBots();
+
         if (res.success) {
           const botsData = res.data as Bot[];
           setBots(botsData || []);
@@ -93,6 +99,13 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
           setMessagesByBot(msgsMap);
         } else {
           toast.error(res.error);
+        }
+        const resDataset = await getAllDatasets();
+
+        if (resDataset.success) {
+          setDatasets(resDataset.data as Dataset[]);
+        } else {
+          toast.error(resDataset.message || "Failed to fetch datasets");
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -137,7 +150,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   const createBot = async (
     name: string,
     description: string,
-    settings: Record<string, any>
+    settings: Record<string, any>,
+    dataSetId: string
   ) => {
     if (!user) throw new Error("User not authenticated");
 
@@ -147,6 +161,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       user_id: user.id,
       avatar_url: "",
       settings: settings,
+      data_set_id: dataSetId,
     };
     const res = await createNewBot(data);
 
@@ -371,6 +386,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     <BotsContext.Provider
       value={{
         bots,
+        datasets,
         selectedBot,
         documentsByBot,
         messagesByBot,

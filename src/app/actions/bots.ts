@@ -1,14 +1,9 @@
 "use server";
 
-import { apiRequest } from "@/lib/apiRequest";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-type ApiResponse = {
-  code: number;
-  data: any;
-};
 const BotSchema = z.object({
   name: z.string(),
   description: z.string(),
@@ -16,21 +11,10 @@ const BotSchema = z.object({
   userId: z.string(), // camel-case
   settings: z.record(z.any()).optional(),
   dataSetId: z.string(),
-  chatId: z.string(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
 export async function createNewBot(data: any) {
-  // const resDataset = await apiRequest<ApiResponse>("POST", "api/v1/datasets", {
-  //   name: data.name,
-  // });
-  // if (resDataset.code === 0) {
-  //   const dataSetId = resDataset.data.id;
-  //   const resChat = await apiRequest<ApiResponse>("POST", "api/v1/chats", {
-  //     name: data.name,
-  //     dataSetId: dataSetId,
-  //   });
-  // }
   const validated = BotSchema.parse({
     name: data.name,
     description: data.description,
@@ -39,11 +23,13 @@ export async function createNewBot(data: any) {
     settings: data.settings ?? {},
     createdAt: data.created_at,
     updatedAt: data.updated_at,
+    dataSetId: data.data_set_id,
   });
   try {
     const data = await prisma.bot.create({
       data: {
         ...validated,
+        chatId: "",
         createdAt: new Date(),
       },
     });

@@ -8,6 +8,7 @@ import {
   LogOut,
   HelpCircle,
   BrainCircuit,
+  BookUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signOut } from "next-auth/react";
@@ -29,7 +30,12 @@ const Sidebar: React.FC = () => {
       label: "Dashboard",
     },
     { to: "/bots", icon: <Bot className="h-5 w-5" />, label: "Bots" },
-    { to: "/files", icon: <FileText className="h-5 w-5" />, label: "Files" },
+    {
+      to: "/knowledge",
+      icon: <BookUp className="h-5 w-5" />,
+      label: "KnowLedge",
+    },
+
     {
       to: "/workspace",
       icon: <MessageSquare className="h-5 w-5" />,

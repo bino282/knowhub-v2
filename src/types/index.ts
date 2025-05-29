@@ -75,3 +75,7 @@ export const tagStyles: Record<string, TagStyle> = {
     text: "#175CD3",
   },
 };
+export type ApiResponse = {
+  code: number;
+  data: any;
+};

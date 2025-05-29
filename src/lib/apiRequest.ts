@@ -16,7 +16,13 @@ export async function apiRequest<T>(
   const isFormData =
     typeof FormData !== "undefined" && data instanceof FormData;
   const hasBody = method !== "GET" && data !== undefined;
-
+  let fullUrl = `${API_URL}/${url}`;
+  if (method === "GET" && data && typeof data === "object") {
+    const queryParams = new URLSearchParams(
+      data as Record<string, string>
+    ).toString();
+    fullUrl += `?${queryParams}`;
+  }
   // Use a plain object to build headers
   const headers: Record<string, string> = {
     Authorization: `Bearer ${API_KEY}`,
@@ -40,7 +46,7 @@ export async function apiRequest<T>(
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(`${API_URL}/${url}`, {
+  const response = await fetch(fullUrl, {
     method,
     headers,
     ...(hasBody && {

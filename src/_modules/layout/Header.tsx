@@ -12,13 +12,19 @@ const Header: React.FC = () => {
   const user = session.data?.user || null;
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
-
   // Get the current page title based on the route
   const getPageTitle = () => {
     if (pathname.includes("/dashboard")) return "Dashboard";
-    if (pathname.includes("/bots") && pathname.split("/").length > 2)
-      return "Bot Details";
+    if (pathname.includes("/bots") && pathname.split("/").length > 2) {
+      return "Bot Detail";
+    }
+
     if (pathname.includes("/bots")) return "Manage Bots";
+    if (pathname.includes("/knowledge") && pathname.split("/").length > 2) {
+      return "Dataset Detail";
+    }
+    if (pathname.includes("/knowledge")) return "KnowLedge";
+
     if (pathname.includes("/files")) return "Manage Files";
     if (pathname.includes("/workspace")) return "Workspace";
     if (pathname.includes("/settings")) return "Settings";

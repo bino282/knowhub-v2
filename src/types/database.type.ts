@@ -140,3 +140,65 @@ export interface Database {
     };
   };
 }
+export interface DatasetInfo {
+  avatar: string | null;
+  chunk_count: number;
+  chunk_method: string;
+  create_date: string;
+  create_time: number;
+  created_by: string;
+  description: string | null;
+  document_count: number;
+  embedding_model: string;
+  id: string;
+  language: string;
+  name: string;
+  pagerank: number;
+  parser_config: {
+    chunk_token_num: number;
+    delimiter: string;
+    html4excel: boolean;
+    layout_recognize: string;
+    raptor: Record<string, any>;
+  };
+  permission: string;
+  similarity_threshold: number;
+  status: string;
+  tenant_id: string;
+  token_num: number;
+  update_date: string;
+  update_time: number;
+  vector_similarity_weight: number;
+}
+export interface FileInfo {
+  chunk_count: number;
+  chunk_method: string;
+  create_date: string; // ISO date string or formatted date
+  create_time: number; // timestamp in ms
+  created_by: string;
+  dataset_id: string;
+  id: string;
+  location: string;
+  meta_fields: Record<string, unknown>; // empty object or any meta info
+  name: string;
+  parser_config: {
+    chunk_token_num: number;
+    delimiter: string;
+    html4excel: boolean;
+    layout_recognize: string;
+    raptor: Record<string, unknown>; // could define more if you know structure
+  };
+  process_begin_at: number | null;
+  process_duation: number; // maybe typo: process_duration?
+  progress: number;
+  progress_msg: string;
+  run: string;
+  size: number;
+  source_type: string;
+  status: string;
+  thumbnail: string;
+  token_count: number;
+  type: string;
+  update_date: string;
+  update_time: number;
+}
