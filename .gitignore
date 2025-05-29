@@ -45,4 +45,3 @@ src/generated
 
 # sql files
 init-dev-role.sql
-nxchat-dev-backup.sql

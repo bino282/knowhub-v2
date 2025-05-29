@@ -32,6 +32,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useBots } from "../contexts/BotsContext";
 
 interface Props {
   open: boolean;
@@ -39,34 +40,49 @@ interface Props {
   onCreate: (
     name: string,
     description: string,
-    settings: Record<string, any>
+    settings: Record<string, any>,
+    dataSetId: string
   ) => Promise<void>;
 }
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
-  model: z.enum(["gpt-3.5-turbo", "nxchat", "gpt-4.0"]),
-  maxTokens: z.enum(["600", "1024", "2000"]),
+  model: z.enum(["gpt-3.5-turbo", "nxchat-internal", "gpt-4.0"]),
+  dataSetId: z.string().min(1, "Dataset is required"),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
+  const { datasets } = useBots();
+  const listOptionDatasets = datasets.map((dataset) => ({
+    value: dataset.id,
+    label: dataset.name,
+  }));
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       description: "",
-      model: "gpt-3.5-turbo",
-      maxTokens: "600",
+      model: "nxchat-internal",
+      dataSetId: "",
     },
   });
+  React.useEffect(() => {
+    if (datasets.length > 0) {
+      form.setValue("dataSetId", datasets[0].id);
+    }
+  }, [datasets, form]);
 
   const onSubmit = async (data: FormValues) => {
-    await onCreate(data.name, data.description, {
-      model: data.model,
-      maxTokens: parseInt(data.maxTokens, 10),
-    });
+    await onCreate(
+      data.name,
+      data.description,
+      {
+        model: data.model,
+      },
+      data.dataSetId
+    );
     form.reset();
     setOpen(false);
   };
@@ -132,17 +148,19 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      {["gpt-3.5-turbo", "nxchat", "gpt-4.0"].map((model) => (
-                        <div
-                          key={model}
-                          className="flex items-center space-x-2"
-                        >
-                          <RadioGroupItem value={model} id={model} />
-                          <FormLabel htmlFor={model} className="capitalize">
-                            {model}
-                          </FormLabel>
-                        </div>
-                      ))}
+                      {["gpt-3.5-turbo", "nxchat-internal", "gpt-4.0"].map(
+                        (model) => (
+                          <div
+                            key={model}
+                            className="flex items-center space-x-2"
+                          >
+                            <RadioGroupItem value={model} id={model} />
+                            <FormLabel htmlFor={model} className="capitalize">
+                              {model}
+                            </FormLabel>
+                          </div>
+                        )
+                      )}
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -151,33 +169,35 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
             />
 
             {/* Max Tokens (Select) */}
-            <FormField
-              control={form.control}
-              name="maxTokens"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="mb-2.5">Max Tokens</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select max tokens" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["600", "1024", "2000"].map((token) => (
-                          <SelectItem key={token} value={token}>
-                            {token}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {listOptionDatasets.length > 0 && (
+              <FormField
+                control={form.control}
+                name="dataSetId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="mb-2.5">Dataset</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select dataset" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {listOptionDatasets.map((item, index) => (
+                            <SelectItem key={index} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button
