@@ -21,11 +21,15 @@ const BotSchema = z.object({
   updatedAt: z.string().optional(),
 });
 export async function createNewBot(data: any) {
-  // const res = await apiRequest<ApiResponse>("POST", "api/v1/datasets", {
+  // const resDataset = await apiRequest<ApiResponse>("POST", "api/v1/datasets", {
   //   name: data.name,
   // });
-  // if (res.code === 0) {
-  //   const dataSetId = res.data.id;
+  // if (resDataset.code === 0) {
+  //   const dataSetId = resDataset.data.id;
+  //   const resChat = await apiRequest<ApiResponse>("POST", "api/v1/chats", {
+  //     name: data.name,
+  //     dataSetId: dataSetId,
+  //   });
   // }
   const validated = BotSchema.parse({
     name: data.name,

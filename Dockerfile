@@ -24,6 +24,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm generate
 RUN pnpm build
 
 # Production image, copy all the files and run next
