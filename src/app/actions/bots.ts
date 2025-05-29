@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+type ApiResponse = {
+  code: number;
+  data: any;
+};
 const BotSchema = z.object({
   name: z.string(),
   description: z.string(),
@@ -17,10 +21,12 @@ const BotSchema = z.object({
   updatedAt: z.string().optional(),
 });
 export async function createNewBot(data: any) {
-  const res = await apiRequest("POST", "api/v1/datasets", {
-    name: data.name,
-  });
-
+  // const res = await apiRequest<ApiResponse>("POST", "api/v1/datasets", {
+  //   name: data.name,
+  // });
+  // if (res.code === 0) {
+  //   const dataSetId = res.data.id;
+  // }
   const validated = BotSchema.parse({
     name: data.name,
     description: data.description,
