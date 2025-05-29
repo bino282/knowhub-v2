@@ -11,8 +11,3 @@ services:
     environment:
       - NODE_ENV=production
       - RUN_MIGRATIONS=true
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    command: ["./start.sh"]

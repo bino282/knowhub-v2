@@ -1,0 +1,39 @@
+# version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: hct_knowhub-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hct_knowhub
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # - ./init-dev-role.sql:/docker-entrypoint-initdb.d/01-init-dev-role.sql
+      # - ./nxchat-dev-backup.sql:/docker-entrypoint-initdb.d/02-nxchat-dev-backup.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hct-knowup-app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nxchat
+      - NODE_ENV=production
+      - RUN_MIGRATIONS=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
