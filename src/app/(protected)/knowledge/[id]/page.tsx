@@ -6,13 +6,14 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { id: string }; // dynamic route params
-  searchParams: { [key: string]: string | string[] | undefined }; // query params
+  params: Promise<{ id: string }>; // dynamic route params
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // query params
 }) {
-  const page = searchParams.page || "1";
-  const name = searchParams.name || "";
+  const query = await searchParams;
+  const page = query.page || "1";
+  const name = query.name || "";
 
-  const { id } = params;
+  const { id } = await params;
 
   const respon = await getAllFileDatasets({
     datasetId: id,
