@@ -47,6 +47,7 @@ export interface Database {
           chatId: string;
           createdAt: Date;
           updatedAt: Date;
+          dataset: DatasetInfo | null;
         };
         Insert: {
           id?: string;

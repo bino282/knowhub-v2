@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useBots } from "../contexts/BotsContext";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;

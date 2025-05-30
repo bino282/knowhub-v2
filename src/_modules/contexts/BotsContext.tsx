@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
-import { getAllDatasets } from "@/app/actions/datasets";
+import { createDataset, getAllDatasets } from "@/app/actions/datasets";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
 type Document = Database["public"]["Tables"]["documents"]["Row"];
@@ -42,6 +42,9 @@ interface BotsContextType {
   getTotalDocuments: () => number;
   getTotalMessages: () => number;
   getRecentActivity: () => Message[];
+  createDatasetFunction: (
+    name: string
+  ) => Promise<{ success: boolean; message: string }>;
 }
 
 const BotsContext = createContext<BotsContextType | undefined>(undefined);
@@ -67,17 +70,36 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const loadData = async () => {
       try {
-        // Load bots
-        const res = await getAllBots();
+        const resDataset = await getAllDatasets();
 
-        if (res.success) {
-          const botsData = res.data as Bot[];
-          setBots(botsData || []);
+        if (!resDataset.success) {
+          toast.error(resDataset.message || "Failed to fetch datasets");
+          return;
+        }
+
+        const datasets = resDataset.data as Dataset[];
+        setDatasets(datasets);
+        // Load bots
+        const resBots = await getAllBots();
+
+        if (resBots.success) {
+          const bots = resBots.data as Bot[];
+
+          const datasetById = new Map(
+            datasets.map((ds) => [ds.id, ds] as const)
+          );
+
+          const botsWithDataset = bots.map((bot) => ({
+            ...bot,
+            dataset: datasetById.get(bot.dataSetId) ?? null,
+          }));
+
+          setBots(botsWithDataset);
 
           // Load documents and messages for each bot
           const docsMap: Record<string, Document[]> = {};
           const msgsMap: Record<string, Message[]> = {};
-          for (const bot of botsData || []) {
+          for (const bot of bots || []) {
             // Load documents
             // const { data: documents, error: docsError } = await supabase
             //   .from("documents")
@@ -98,14 +120,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
           setDocumentsByBot(docsMap);
           setMessagesByBot(msgsMap);
         } else {
-          toast.error(res.error);
-        }
-        const resDataset = await getAllDatasets();
-
-        if (resDataset.success) {
-          setDatasets(resDataset.data as Dataset[]);
-        } else {
-          toast.error(resDataset.message || "Failed to fetch datasets");
+          toast.error(resBots.error);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -340,7 +355,20 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   //     throw error;
   //   }
   // };
-
+  const createDatasetFunction = async (name: string) => {
+    const res = await createDataset(name);
+    if (res.success) {
+      setDatasets((prev) => [...prev, res.data as Dataset]);
+      toast.success("Dataset created successfully");
+      return { success: true, message: "Dataset created successfully" };
+    } else {
+      toast.error(res.message || "Failed to create dataset");
+      return {
+        success: false,
+        message: "Failed to create dataset",
+      };
+    }
+  };
   const getBotSummaries = (): BotSummary[] => {
     return bots.map((bot) => ({
       id: bot.id,
@@ -401,6 +429,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         getTotalDocuments,
         getTotalMessages,
         getRecentActivity,
+        createDatasetFunction,
       }}
     >
       {children}

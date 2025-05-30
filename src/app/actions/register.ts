@@ -15,17 +15,98 @@ export async function registerUser(
     if (existingUser) {
       return { message: "", error: "User already exists", success: false };
     }
-    // Hash password
-    const hashedPassword = hashPassword(password);
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    });
+    // Register ragflow
+    const res = await registerRagflowUser(email, name);
+    if (res.success) {
+      const apiKey = res.data as string;
+      // Hash password
+      const hashedPassword = hashPassword(password);
+      await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          apiKey: apiKey,
+        },
+      });
+    }
 
     return { message: "User registered successfully", success: true };
+  } catch (error) {
+    return {
+      message: "",
+      error: "An unexpected error occurred",
+      success: false,
+    };
+  }
+}
+export async function registerRagflowUser(
+  email: string,
+  nickname: string
+): Promise<{
+  message: string;
+  error?: string;
+  success: boolean;
+  data?: string;
+}> {
+  const passwordRagflow = process.env.PASSWORD_RAGFLOW_ENCODE ?? "";
+
+  try {
+    const response = await fetch(
+      `${process.env.RAGFLOW_API_URL}/v1/user/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          nickname,
+          password: passwordRagflow,
+        }),
+      }
+    );
+
+    if (response.status !== 200) {
+      const errorData = await response.json();
+      return { message: "", error: errorData.message, success: false };
+    }
+
+    const setCookie = response.headers.get("set-cookie");
+    const authorization = response.headers.get("authorization");
+
+    if (setCookie && authorization) {
+      const cookie = setCookie.split(";")[0];
+
+      const apiKeyResponse = await fetch(
+        `${process.env.RAGFLOW_API_URL}/v1/system/new_token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: cookie,
+            Authorization: authorization,
+          },
+        }
+      );
+      if (apiKeyResponse.status !== 200) {
+        const errorData = await apiKeyResponse.json();
+        return { message: "", error: errorData.message, success: false };
+      }
+
+      const dataKey = await apiKeyResponse.json();
+      return {
+        message: "Ragflow user registered successfully",
+        success: true,
+        data: dataKey.data.token,
+      };
+    }
+
+    return {
+      message: "",
+      error: "Missing authentication headers in Ragflow response",
+      success: false,
+    };
   } catch (error) {
     return {
       message: "",

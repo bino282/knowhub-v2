@@ -15,6 +15,7 @@ model User {
   image         String?    @db.VarChar
   password      String?    @db.VarChar
   emailVerified DateTime?  @map("email_verified")
+  apiKey        String     @unique @map("api_key")
   accounts      Account[]
   sessions      Session[]
   messages      Message[]
