@@ -1,12 +1,24 @@
 "use server";
 import { apiRequest } from "@/lib/apiRequest";
 import { ApiResponse } from "@/types";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
 export async function createFileDataset(datasetId: string, formData: FormData) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
   try {
     const result = await apiRequest<ApiResponse>(
       "POST",
       `api/v1/datasets/${datasetId}/documents`,
+      user.apiKey,
       formData
     );
 
@@ -35,10 +47,19 @@ export async function getAllFileDatasets({
   page?: number;
   name?: string;
 }) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
   try {
     const response = await apiRequest<ApiResponse>(
       "GET",
       `api/v1/datasets/${datasetId}/documents`,
+      user.apiKey,
       {
         page: page,
         name: name,

@@ -21,7 +21,6 @@ export default async function Page({
     name: typeof name === "string" ? name : "",
   });
   const listFile = (respon.data.docs as FileInfo[]) || [];
-  const totalPage = respon.data.total as number;
 
-  return <KnowledgeDetailPage listFile={listFile} total={totalPage} />;
+  return <KnowledgeDetailPage listFile={listFile} />;
 }

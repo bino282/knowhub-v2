@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTheme } from "../contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -82,10 +83,12 @@ const Header: React.FC = () => {
           <div className="ml-2 flex items-center">
             <Button className="flex items-center space-x-2 text-gray-700  dark:text-gray-200 cursor-default">
               <div className="relative">
-                <img
+                <Image
                   src={user?.image || "https://i.pravatar.cc/150?img=68"}
                   alt="User avatar"
                   className="h-8 w-8 rounded-full object-cover"
+                  width={32}
+                  height={32}
                 />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-success-500 border-2 border-white dark:border-gray-800"></span>
               </div>

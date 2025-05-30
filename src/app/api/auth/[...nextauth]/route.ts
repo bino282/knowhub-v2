@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions, Session } from "next-auth";
 import { verifyPassword } from "@/utils/password";
 import { prisma } from "@/lib/prisma";
+import { registerRagflowUser } from "@/app/actions/register";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -66,6 +67,20 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google" && profile) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: profile.email },
+        });
+        // register user ragflow
+        if (!profile.email || !profile.name || existingUser) {
+          return false;
+        }
+        await registerRagflowUser(profile.email, profile.name);
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

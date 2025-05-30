@@ -7,6 +7,17 @@ import {
   Trash2,
   Edit,
   MoreVertical,
+  Settings2Icon,
+  ChevronDownIcon,
+  DatabaseIcon,
+  CalendarIcon,
+  UserIcon,
+  UsersIcon,
+  AlignJustifyIcon,
+  FileIcon,
+  FileTextIcon,
+  MessageCircleIcon,
+  MessageSquareIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -14,12 +25,32 @@ import { useBots } from "../contexts/BotsContext";
 import ModalCreateBot from "../components/ModalCreateBot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { formatGmtDate } from "@/lib/format-date";
+import { format, formatDate } from "date-fns";
 
 const BotsPage: React.FC = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const { bots, selectBot, createBot } = useBots();
+  const [category, setCategory] = React.useState<string>("");
+  const [timeRange, setTimeRange] = React.useState<string>("");
+  const { bots, selectBot, createBot, datasets } = useBots();
+  const isCreate =
+    datasets.reduce((sum, { document_count }) => sum + document_count, 0) > 0;
   const filteredBots = bots.filter(
     (bot) =>
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -40,6 +71,15 @@ const BotsPage: React.FC = () => {
     ) {
     }
   };
+  const handleCreateBot = () => {
+    if (!isCreate) {
+      toast.error(
+        "You need to create a dataset and add file before creating a bot."
+      );
+      return;
+    }
+    setIsCreateModalOpen(true);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -55,30 +95,76 @@ const BotsPage: React.FC = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
-
+  console.log("bots", bots);
   return (
     <div className="h-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Manage Bots</h1>
-        <Button
-          className="text-gray-70 border hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 border-gray-700 dark:hover:bg-gray-700 p-2 py-1.5 "
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <Plus className="h-5 w-5 mr-1" />
-          Create Bot
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Search bots..."
-            className="input px-3 py-2 pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="flex items-center justify-between mb-10">
+        <div className="w-full">
+          <div className="flex items-center justify-between w-full gap-4">
+            <h2 className="font-semibold text-xl">Knowledge Bases</h2>
+            <div className="flex items-center gap-7">
+              <Button
+                className="text-gray-70  px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 "
+                onClick={handleCreateBot}
+              >
+                <Plus className="h-5 w-5 mr-1" />
+                Create New Chatbots
+              </Button>
+            </div>
+          </div>
+          <div className="mt-6 flex items-center justify-between">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 " />
+              <Input
+                type="text"
+                placeholder="Search name chatbots..."
+                className="input px-10 py-2 pl-10 bg-white dark:bg-gray-800"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="px-6 py-2 bg-white dark:bg-gray-800"
+                >
+                  <Settings2Icon className="h-5 w-5 mr-2" />
+                  Filters
+                  <ChevronDownIcon className="h-4 w-4 ml-2" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 space-y-4 mt-2 mr-6">
+                <div className="w-full">
+                  <label className="text-sm font-medium">Status</label>
+                  <Select onValueChange={setCategory}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="tech">Training</SelectItem>
+                      <SelectItem value="finance">Active</SelectItem>
+                      <SelectItem value="health">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full">
+                  <label className="text-sm font-medium">Updated Time</label>
+                  <Select onValueChange={setTimeRange}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="Select time range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">Last 24 hours</SelectItem>
+                      <SelectItem value="7d">Last 7 days</SelectItem>
+                      <SelectItem value="30d">Last 30 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 
@@ -99,60 +185,83 @@ const BotsPage: React.FC = () => {
               onClick={() => handleBotClick(bot.id)}
             >
               <div className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center">
-                        <BotIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold">{bot.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {/* {bot.documents.length} documents · {bot.messages.length} messages */}
-                        2 documents · 4 messages
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between">
+                  <div className="p-3 rounded-md bg-purple-500/10">
+                    <BotIcon className="h-6 w-6 text-purple-600" />
                   </div>
-                  <div className="relative group">
-                    <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <MoreVertical className="h-5 w-5 text-gray-500" />
-                    </Button>
-                    <div className="absolute right-0 z-10 pt-2 w-48 origin-top-right hidden group-hover:block">
-                      <div
-                        className="mt-1 py-2 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-300 ring-opacity-5 focus:outline-none "
-                        role="none"
-                      >
-                        <Button
-                          className="flex w-full justify-baseline rounded-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleBotClick(bot.id);
-                          }}
+                  <div className="flex items-center gap-2">
+                    <Badge variant={"success"}>Active</Badge>
+                    <div className="relative group">
+                      <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <MoreVertical className="h-5 w-5 text-gray-500" />
+                      </Button>
+                      <div className="absolute right-0 z-10 pt-2 w-48 origin-top-right hidden group-hover:block">
+                        <div
+                          className="mt-1 py-2 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-300 ring-opacity-5 focus:outline-none "
+                          role="none"
                         >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                        <Button
-                          className="flex w-full justify-baseline rounded-none  px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={(e) => handleDeleteBot(e, bot.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
+                          <Button
+                            className="flex w-full justify-baseline rounded-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBotClick(bot.id);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                          <Button
+                            className="flex w-full justify-baseline rounded-none  px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={(e) => handleDeleteBot(e, bot.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                  {bot.description}
-                </p>
+                <div className=" mt-6">
+                  <h3 className="text-lg font-semibold">{bot.name}</h3>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {bot.description}
+                  </p>
+                  {bot.dataset && (
+                    <div className="mt-3 flex items-center gap-2 text-gray-800 dark:text-gray-400">
+                      <DatabaseIcon className="size-4" />
+                      <p className="text-sm">Linked to: {bot.dataset.name}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-sm text-primary-600 dark:text-primary-400">
-                  Click to manage
-                </span>
+              <div className="p-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4 gap-y-4">
+                <div className="text-start flex flex-col gap-2">
+                  <p className="flex items-center">
+                    <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400" />
+                    <span className="ml-1 text-base text-gray-800 dark:text-gray-400">
+                      Interactions
+                    </span>
+                  </p>
+                  <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
+                    0
+                  </p>
+                </div>
+                <div className="ftext-start flex flex-col gap-2">
+                  <p className="flex items-center">
+                    <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
+                    <span className="ml-1 text-base text-gray-800 dark:text-gray-400">
+                      Users
+                    </span>
+                  </p>
+                  <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
+                    1
+                  </p>
+                </div>
               </div>
+              <p className="px-5 pb-5 text-sm text-gray-500 dark:text-gray-400">
+                Updated {formatGmtDate(bot.dataset?.update_date || "")}
+              </p>
             </motion.div>
           ))
         ) : (
@@ -172,7 +281,7 @@ const BotsPage: React.FC = () => {
             )}
             <Button
               className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mt-4"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={handleCreateBot}
             >
               <Plus className="h-4 w-4 mr-1" />
               Create Bot

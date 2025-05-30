@@ -2,12 +2,28 @@
 
 import { apiRequest } from "@/lib/apiRequest";
 import { ApiResponse } from "@/types";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
 export async function createDataset(name: string) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
   try {
-    const response = await apiRequest<ApiResponse>("POST", "api/v1/datasets", {
-      name,
-    });
+    const response = await apiRequest<ApiResponse>(
+      "POST",
+      "api/v1/datasets",
+      user.apiKey,
+      {
+        name,
+      }
+    );
 
     if (response.code !== 0) {
       throw new Error("Failed to create dataset");
@@ -21,8 +37,21 @@ export async function createDataset(name: string) {
   }
 }
 export async function getAllDatasets() {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+
   try {
-    const response = await apiRequest<ApiResponse>("GET", "api/v1/datasets");
+    const response = await apiRequest<ApiResponse>(
+      "GET",
+      "api/v1/datasets",
+      user.apiKey
+    );
 
     if (response.code !== 0) {
       throw new Error("Failed to fetch datasets");
