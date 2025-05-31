@@ -1,31 +1,36 @@
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import { getAllFileDatasets } from "@/app/actions/file-dataset";
+import {
+  getAllFileDatasets,
+  parseFileDocument,
+} from "@/app/actions/file-dataset";
 import { Badge } from "@/components/ui/badge";
 import { formatGmtDate } from "@/lib/format-date";
 import { getVariant } from "@/lib/get-variant";
 import { FileInfo } from "@/types/database.type";
 import {
-  CheckCircle2,
   Database,
   Download,
   FileText,
   MoreVertical,
   Play,
+  PlayIcon,
   RefreshCw,
+  RefreshCwIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
+import { toast } from "sonner";
 
 export default function TabTraining() {
   const params = useParams();
+  const router = useRouter();
   const { theme } = useTheme();
   const { bots } = useBots();
   const [page, setPage] = React.useState("1");
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const datasetId = bots.find((bot) => bot.id === params.id)?.dataSetId;
-
   React.useEffect(() => {
     getAllFileDatasets({
       datasetId: datasetId as string,
@@ -45,7 +50,27 @@ export default function TabTraining() {
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
-
+  const handleParseFile = async (fileId: string) => {
+    if (fileId === "all") {
+      const ids = fileList.map((file) => file.id);
+      const res = await parseFileDocument(params.id as string, ids);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      toast.success(res.message);
+      router.refresh();
+      return;
+    }
+    const fileIds = [fileId];
+    const res = await parseFileDocument(params.id as string, fileIds);
+    if (!res.success) {
+      toast.error(res.message);
+      return;
+    }
+    toast.success(res.message);
+    router.refresh();
+  };
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
@@ -160,12 +185,14 @@ export default function TabTraining() {
                         }`}
                       >
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center">
+                          <div className="flex items-center max-w-80 overflow-hidden">
                             <FileText
                               size={16}
                               className="mr-2 text-gray-500"
                             />
-                            <span className="text-sm">{file.name}</span>
+                            <span className="text-sm flex-1 truncate">
+                              {file.name}
+                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -178,9 +205,23 @@ export default function TabTraining() {
                           {file.chunk_method}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <Badge variant={getVariant(file.run)}>
-                            {file.run}
-                          </Badge>
+                          <div className="flex items-center justify-between">
+                            <Badge variant={getVariant(file.run)}>
+                              {file.run}
+                            </Badge>
+                            {file.run === "UNSTART" ? (
+                              <div
+                                className="p-2 rounded-full bg-green-700/20 cursor-pointer"
+                                onClick={() => handleParseFile(file.id)}
+                              >
+                                <PlayIcon className="size-4 text-green-500" />
+                              </div>
+                            ) : (
+                              <div className="p-2 rounded-full bg-yellow-700/20">
+                                <RefreshCwIcon className="size-4 text-yellow-500" />
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-right">
                           <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -201,6 +242,7 @@ export default function TabTraining() {
                   ? "bg-purple-600 hover:bg-purple-700"
                   : "bg-purple-600 hover:bg-purple-700"
               } text-white transition-colors`}
+              onClick={() => handleParseFile("all")}
             >
               <Play size={16} className="mr-2" />
               Start Training
