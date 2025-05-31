@@ -52,7 +52,9 @@ export default function TabTraining() {
       : "bg-white border-gray-200";
   const handleParseFile = async (fileId: string) => {
     if (fileId === "all") {
-      const ids = fileList.map((file) => file.id);
+      const ids = fileList
+        .filter((file) => file.run === "UNSTART")
+        .map((file) => file.id);
       const res = await parseFileDocument(params.id as string, ids);
       if (!res.success) {
         toast.error(res.message);

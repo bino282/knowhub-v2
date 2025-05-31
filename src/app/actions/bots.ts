@@ -41,6 +41,7 @@ export async function createNewBot(data: any) {
       dataset_ids: [dataSetId],
     }
   );
+  console.log("Create chat response:", res);
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }
@@ -93,4 +94,26 @@ export async function getBotById(id: string) {
   } catch (error) {
     return { success: false, error: "Failed to fetch bot" };
   }
+}
+export async function updateChatBot(botId: string, data: any) {
+  const res = await prisma.bot.update({
+    where: { id: botId },
+    data: {
+      name: data.name,
+      description: data.description,
+      dataSetId: data.dataSetId,
+      updatedAt: new Date(),
+    },
+  });
+  revalidatePath("/bots");
+  if (!res) {
+    return { success: false, error: "Failed to update bot" };
+  }
+  return { data: res, success: true, message: "Bot updated successfully" };
+}
+export async function deleteChatBot(botId: string) {
+  await prisma.bot.delete({
+    where: { id: botId },
+  });
+  return { success: true, message: "Bot deleted successfully" };
 }

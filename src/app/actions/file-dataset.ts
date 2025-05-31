@@ -110,3 +110,32 @@ export async function parseFileDocument(botId: string, documentIds: string[]) {
   }
   return { success: true, message: "File document parsed successfully" };
 }
+
+export async function parseFileDocumentWithDataset(
+  datasetId: string,
+  documentIds: string[]
+) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  console.log("Dataset ID:", datasetId);
+  const res = await apiRequest<ApiResponse>(
+    "POST",
+    `api/v1/datasets/${datasetId}/chunks`,
+    user.apiKey,
+    {
+      document_ids: documentIds,
+    }
+  );
+  console.log("res", res);
+  if (res.code !== 0) {
+    console.error("Failed to parse file document");
+    return { success: false, message: "Failed to parse file document" };
+  }
+  return { success: true, message: "File document parsed successfully" };
+}

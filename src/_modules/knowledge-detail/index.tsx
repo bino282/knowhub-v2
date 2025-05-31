@@ -25,6 +25,7 @@ import {
   ExternalLink,
   Edit,
   Trash2,
+  PlayIcon,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
 import { DocumentCard } from "./components/DocumentCard";
@@ -33,6 +34,9 @@ import Link from "next/link";
 import { useBots } from "../contexts/BotsContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { formatDate } from "date-fns";
+import { useParams } from "next/navigation";
+import { parseFileDocumentWithDataset } from "@/app/actions/file-dataset";
+import { toast } from "sonner";
 
 interface Props {
   listFile: FileInfo[];
@@ -57,6 +61,7 @@ const documentTypes = [
 export default function KnowledgeDetailPage({ listFile }: Props) {
   const { selectedDataset } = useBots();
   const { theme } = useTheme();
+  const params = useParams();
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
@@ -71,11 +76,20 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
       file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       file.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const handlePlay = async (id: string) => {
+    const ids = [id];
+    const res = await parseFileDocumentWithDataset(params.id as string, ids);
+    if (!res.success) {
+      toast.error(res.message);
+      return;
+    }
+    toast.success(res.message);
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
         <Link
-          href="/knowledge-bases"
+          href="/knowledge"
           className="hover:text-blue-600 flex items-center"
         >
           <ArrowLeft size={16} className="mr-1" /> Knowledge Bases
@@ -357,6 +371,14 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
                     </div>
 
                     <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className={`p-1 rounded-full hover:${
+                          theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                        } text-amber-500 opacity-100`}
+                        onClick={() => handlePlay(document.id)}
+                      >
+                        <PlayIcon className="text-green-400" size={16} />
+                      </button>
                       <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
