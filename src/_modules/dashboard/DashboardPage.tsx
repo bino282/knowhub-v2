@@ -74,7 +74,11 @@ const DashboardPage: React.FC = () => {
           <StatsCard
             title="Total Bots"
             value={bots.length || 0}
-            icon={<Bot className="h-5 w-5" />}
+            icon={
+              <div className="p-3 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400">
+                <Bot className="h-5 w-5 " />
+              </div>
+            }
             color="primary"
           />
         </motion.div>
@@ -83,7 +87,11 @@ const DashboardPage: React.FC = () => {
           <StatsCard
             title="Total Documents"
             value={totalDocuments}
-            icon={<FileText className="h-5 w-5" />}
+            icon={
+              <div className="p-3 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                <FileText className="h-5 w-5" />
+              </div>
+            }
             color="accent"
           />
         </motion.div>
@@ -92,7 +100,9 @@ const DashboardPage: React.FC = () => {
           <StatsCard
             title="Total Messages"
             value={totalMessages}
-            icon={<MessageSquare className="h-5 w-5" />}
+            icon={<div className="p-3 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+              <MessageSquare className="h-5 w-5 " />
+            </div>}
             color="highlight"
           />
         </motion.div>
@@ -104,7 +114,7 @@ const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-semibold">Your Bots</h2>
               <Button
-                className="text-gray-70 border hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 border-gray-700 dark:hover:bg-gray-700 p-2 py-1.5 "
+                className="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md"
                 onClick={() => setOpenModalCreateBot(true)}
               >
                 <Plus className="h-4 w-4 mr-1" />

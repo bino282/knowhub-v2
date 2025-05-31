@@ -24,6 +24,7 @@ interface BotsContextType {
   bots: Bot[];
   datasets: Dataset[];
   selectedBot: Bot | null;
+  selectedDataset: Dataset | null;
   documentsByBot: Record<string, Document[]>;
   messagesByBot: Record<string, Message[]>;
   createBot: (
@@ -35,6 +36,7 @@ interface BotsContextType {
   // updateBot: (id: string, data: Partial<Bot>) => Promise<void>;
   // deleteBot: (id: string) => Promise<void>;
   selectBot: (id: string) => void;
+  selectKnowledge: (id: string) => void;
   // uploadDocument: (botId: string, file: File) => Promise<void>;
   // deleteDocument: (botId: string, documentId: string) => Promise<void>;
   // sendMessage: (botId: string, content: string) => Promise<void>;
@@ -55,6 +57,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [bots, setBots] = useState<Bot[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [documentsByBot, setDocumentsByBot] = useState<
     Record<string, Document[]>
   >({});
@@ -182,7 +185,14 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (res.success) {
       const bot = res.data as Bot;
-      setBots((prev) => [bot, ...prev]);
+      const matchedDataset = datasets.find((ds) => ds.id === bot.dataSetId);
+      const botWithDataset = {
+        ...bot,
+        dataset: matchedDataset ?? undefined,
+      } as Bot & { dataset?: Dataset };
+
+      // push to state
+      setBots((prev) => [botWithDataset, ...prev]);
       setDocumentsByBot((prev) => ({ ...prev, [bot.id]: [] }));
       setMessagesByBot((prev) => ({ ...prev, [bot.id]: [] }));
       setSelectedBot(bot);
@@ -226,6 +236,10 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   const selectBot = (id: string) => {
     const bot = bots.find((b) => b.id === id) || null;
     setSelectedBot(bot);
+  };
+  const selectKnowledge = (id: string) => {
+    const dataset = datasets.find((d) => d.id === id) || null;
+    setSelectedDataset(dataset);
   };
 
   // const uploadDocument = async (botId: string, file: File) => {
@@ -373,17 +387,24 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     return bots.map((bot) => ({
       id: bot.id,
       name: bot.name,
-      documentsCount: documentsByBot[bot.id]?.length || 0,
+      documentsCount: bot.dataset?.document_count || 0,
       messagesCount: messagesByBot[bot.id]?.length || 0,
       lastActivity: new Date(bot.updatedAt),
     }));
   };
 
   const getTotalDocuments = (): number => {
-    return Object.values(documentsByBot).reduce(
-      (total, docs) => total + (docs?.length || 0),
-      0
+    const datasetMap = new Map(
+      datasets.map((ds) => [ds.id, ds.document_count])
     );
+
+    const uniqueDatasetIds = new Set(bots.map((bot) => bot.dataSetId));
+
+    const totalChunkCount = Array.from(uniqueDatasetIds).reduce((sum, id) => {
+      const chunkCount = datasetMap.get(id) || 0;
+      return sum + chunkCount;
+    }, 0);
+    return totalChunkCount;
   };
 
   const getTotalMessages = (): number => {
@@ -416,12 +437,14 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         bots,
         datasets,
         selectedBot,
+        selectedDataset,
         documentsByBot,
         messagesByBot,
         createBot,
         // updateBot,
         // deleteBot,
         selectBot,
+        selectKnowledge,
         // uploadDocument,
         // deleteDocument,
         // sendMessage,

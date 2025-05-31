@@ -50,3 +50,16 @@ export async function getAllBots() {
     return { success: false, error: "Failed to fetch bots" };
   }
 }
+export async function getBotById(id: string) {
+  try {
+    const bot = await prisma.bot.findUnique({
+      where: { id },
+    });
+    if (!bot) {
+      return { success: false, error: "Bot not found" };
+    }
+    return { data: bot, success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch bot" };
+  }
+}
