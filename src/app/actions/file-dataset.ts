@@ -21,7 +21,6 @@ export async function createFileDataset(datasetId: string, formData: FormData) {
       user.apiKey,
       formData
     );
-
     if (result.code !== 0) {
       console.error("Failed to create file dataset:");
       throw new Error("Failed to create file dataset");

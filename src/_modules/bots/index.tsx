@@ -49,8 +49,6 @@ const BotsPage: React.FC = () => {
   const [category, setCategory] = React.useState<string>("");
   const [timeRange, setTimeRange] = React.useState<string>("");
   const { bots, selectBot, createBot, datasets } = useBots();
-  const isCreate =
-    datasets.reduce((sum, { document_count }) => sum + document_count, 0) > 0;
   const filteredBots = bots.filter(
     (bot) =>
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,7 +70,7 @@ const BotsPage: React.FC = () => {
     }
   };
   const handleCreateBot = () => {
-    if (!isCreate) {
+    if (datasets.length === 0) {
       toast.error(
         "You need to create a dataset and add file before creating a bot."
       );
