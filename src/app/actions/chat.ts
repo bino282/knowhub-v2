@@ -1,10 +1,10 @@
 "use server";
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { apiRequest } from "@/lib/apiRequest";
 import { ApiResponse } from "@/types";
+import { authOptions } from "@/lib/authOption";
 
 export async function createSessionId(botId: string) {
   const session = await getServerSession(authOptions);

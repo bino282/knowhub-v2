@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { ApiResponse } from "@/types";
+import { authOptions } from "@/lib/authOption";
 
 const BotSchema = z.object({
   name: z.string(),

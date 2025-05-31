@@ -2,8 +2,8 @@
 import { apiRequest } from "@/lib/apiRequest";
 import { ApiResponse } from "@/types";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/authOption";
 
 export async function createFileDataset(datasetId: string, formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -77,4 +77,36 @@ export async function getAllFileDatasets({
     console.error("Error fetching file datasets:", error);
     return { success: false, message: "Failed to fetch file datasets" };
   }
+}
+export async function parseFileDocument(botId: string, documentIds: string[]) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const botDatasetId = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { dataSetId: true },
+  });
+  if (!botDatasetId || !botDatasetId.dataSetId) {
+    return { success: false, message: "Bot dataset ID not found" };
+  }
+  console.log("Dataset ID:", botDatasetId?.dataSetId);
+  console.log("Document IDs:", documentIds);
+  const res = await apiRequest<ApiResponse>(
+    "POST",
+    `api/v1/datasets/${botDatasetId?.dataSetId}/chunks`,
+    user.apiKey,
+    {
+      document_ids: documentIds,
+    }
+  );
+  if (res.code !== 0) {
+    console.error("Failed to parse file document");
+    return { success: false, message: "Failed to parse file document" };
+  }
+  return { success: true, message: "File document parsed successfully" };
 }
