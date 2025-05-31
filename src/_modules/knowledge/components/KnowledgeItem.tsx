@@ -16,7 +16,7 @@ interface Props {
 export default function KnowledgeItem({ data }: Props) {
   return (
     <Link href={`/knowledge/${data.id}`}>
-      <div className="p-6 border border-gray-700 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 rounded-xl">
+      <div className="p-6 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 rounded-xl">
         <div className="flex items-center justify-between">
           <div className="p-4 rounded-md bg-blue-500/10">
             <DatabaseIcon className="size-5 text-blue-500" />
@@ -27,7 +27,7 @@ export default function KnowledgeItem({ data }: Props) {
           <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="font-semibold text-xl ">{data.name}</h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-              {data.description || "No description available"}
+              {data.description || ""}
             </p>
           </div>
           <div className="pt-4 grid grid-cols-2 gap-4">

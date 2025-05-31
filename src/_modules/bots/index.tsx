@@ -95,7 +95,6 @@ const BotsPage: React.FC = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
-  console.log("bots", bots);
   return (
     <div className="h-full">
       <div className="flex items-center justify-between mb-10">
@@ -238,8 +237,8 @@ const BotsPage: React.FC = () => {
               <div className="p-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4 gap-y-4">
                 <div className="text-start flex flex-col gap-2">
                   <p className="flex items-center">
-                    <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400" />
-                    <span className="ml-1 text-base text-gray-800 dark:text-gray-400">
+                    <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400 " />
+                    <span className="ml-1 text-base text-gray-800 dark:text-gray-400 flex-1">
                       Interactions
                     </span>
                   </p>

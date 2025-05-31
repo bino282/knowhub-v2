@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      console.log("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
     const res = await signIn("credentials", {
@@ -33,10 +34,10 @@ export default function LoginForm() {
       redirect: false,
     });
     if (res?.error === null) {
-      console.log("Login successful");
       router.push(`/dashboard`);
+      toast.success("Login successful");
     } else {
-      console.log("Login failed. Please check your credentials and try again.");
+      toast.error("Login failed. Please check your credentials and try again.");
     }
   };
 

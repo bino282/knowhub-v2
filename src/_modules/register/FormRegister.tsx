@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BrainCircuit, UserPlus } from "lucide-react";
 import { registerUser } from "@/app/actions/register";
+import { toast } from "sonner";
 export default function FormRegister() {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -30,25 +31,26 @@ export default function FormRegister() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
-      console.log("Please fill in all required fields!");
+      toast.warning("Please fill in all required fields!");
       return;
     }
     if (form.password !== form.confirmPassword) {
-      console.log("Password and Confirm Password do not match!");
+      toast.warning("Password and Confirm Password do not match!");
       return;
     }
     setIsLoading(true);
     try {
       const response = await registerUser(form.name, form.email, form.password);
       if (response.success) {
+        setIsLoading(false);
         router.push("/login");
         router.refresh();
-        console.log(response.message);
+        toast.message(response.message);
       } else {
-        console.log(response.error || "An error occurred during registration.");
+        toast.error(response.error || "An error occurred during registration.");
       }
     } catch (error) {
-      console.error("Registration failed:", error);
+      toast.error("Registration failed. Please try again.");
       setIsLoading(false);
     }
   };
