@@ -107,7 +107,7 @@ const BotsPage: React.FC = () => {
                 onClick={handleCreateBot}
               >
                 <Plus className="h-5 w-5 mr-1" />
-                Create New Chatbots
+                Create New Chatbot
               </Button>
             </div>
           </div>
