@@ -8,9 +8,10 @@ import { Database } from "@/types/database.type";
 import TabTraining from "./components/TabTraining";
 import { CheckCircle2, HelpCircle, PanelLeft, Share2 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
+import { createSessionId } from "@/app/actions/chat";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
@@ -20,6 +21,12 @@ export default function PageBotDetail({ bot }: Props) {
   const router = useRouter();
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
   const [showShareModal, setShowShareModal] = React.useState(false);
+  const handleOpenPageTestChatbot = async () => {
+    const res = await createSessionId(bot.id);
+    if (res.success) {
+      router.push(`/bots/${bot.id}/test`);
+    }
+  };
   return (
     <main className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -50,7 +57,7 @@ export default function PageBotDetail({ bot }: Props) {
           </Button>
 
           <Button
-            onClick={() => router.push(`/chatbots/${bot.id}/test`)}
+            onClick={handleOpenPageTestChatbot}
             className={`flex items-center px-4 py-2 rounded-md ${
               theme === "dark"
                 ? "bg-gray-700 hover:bg-gray-600 text-white"

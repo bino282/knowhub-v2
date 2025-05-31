@@ -15,16 +15,20 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import React from "react";
 
 export default function TabTraining() {
+  const params = useParams();
   const { theme } = useTheme();
-  const { selectedBot } = useBots();
+  const { bots } = useBots();
   const [page, setPage] = React.useState("1");
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
+  const datasetId = bots.find((bot) => bot.id === params.id)?.dataSetId;
+
   React.useEffect(() => {
     getAllFileDatasets({
-      datasetId: selectedBot?.dataSetId as string,
+      datasetId: datasetId as string,
       page: Number(page),
     })
       .then((respon) => {
@@ -35,7 +39,7 @@ export default function TabTraining() {
       .catch((error) => {
         console.error("Error fetching datasets:", error);
       });
-  }, [page, selectedBot?.dataSetId]);
+  }, [page]);
 
   const baseCardClasses =
     theme === "dark"

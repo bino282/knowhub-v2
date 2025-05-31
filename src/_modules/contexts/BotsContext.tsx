@@ -83,7 +83,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         const datasets = resDataset.data as Dataset[];
         setDatasets(datasets);
         // Load bots
-        const resBots = await getAllBots();
+        const resBots = await getAllBots(user.id);
 
         if (resBots.success) {
           const bots = resBots.data as Bot[];

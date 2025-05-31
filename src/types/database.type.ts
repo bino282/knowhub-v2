@@ -48,6 +48,7 @@ export interface Database {
           createdAt: Date;
           updatedAt: Date;
           dataset: DatasetInfo | null;
+          sessionId: string | null;
         };
         Insert: {
           id?: string;
