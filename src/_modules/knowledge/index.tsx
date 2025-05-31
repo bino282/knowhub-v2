@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 
 export default function PageKnowledges() {
   const { theme } = useTheme();
-  const { datasets, selectBot } = useBots();
+  const { datasets, selectBot, selectKnowledge } = useBots();
   const router = useRouter();
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [filterOpen, setFilterOpen] = React.useState(false);
@@ -41,9 +41,8 @@ export default function PageKnowledges() {
         )
       : [];
   const handleClick = (id: string) => {
-    selectBot(id);
-    router.push(`/knowledge/${id}`); // Assuming you have a route for bot details
-    // Navigate to the bot detail page
+    selectKnowledge(id);
+    router.push(`/knowledge/${id}`);
   };
   const containerVariants = {
     hidden: { opacity: 0 },

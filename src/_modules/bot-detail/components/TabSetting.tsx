@@ -1,73 +1,99 @@
+import { DeleteBotModal } from "@/_modules/components/ModalDeleteBot";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
+import { updateChatBot } from "@/app/actions/bots";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Database } from "@/types/database.type";
 import { CircleOff, Play, Save, Trash2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
 }
+type FormValues = {
+  name: string;
+  description: string;
+  dataSetId: string;
+};
 export default function TabSetting({ bot }: Props) {
   const { theme } = useTheme();
   const { datasets } = useBots();
+  const params = useParams();
+  const router = useRouter();
   const listOptionDatasets = datasets.map((dataset) => ({
     value: dataset.id,
     label: dataset.name,
   }));
+  const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      name: bot.name,
+      description: bot.description,
+      dataSetId: bot.dataSetId,
+    },
+  });
+  const onSubmit = async (data: FormValues) => {
+    const res = await updateChatBot(params.id as string, data);
+    if (!res.success) {
+      toast.error(res.message);
+    }
+    toast.success(res.message);
+    router.refresh();
+  };
+
+  const inputStyle = `w-full rounded-md ${
+    theme === "dark"
+      ? "bg-gray-700 border-gray-600"
+      : "bg-white border-gray-300"
+  } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`;
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
         <h3 className="font-semibold mb-4">Chatbot Settings</h3>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <Label className="block text-sm font-medium mb-1">
               Chatbot Name
-            </label>
+            </Label>
             <Input
               type="text"
-              defaultValue={bot.name}
-              className={`w-full rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600"
-                  : "bg-white border-gray-300"
-              } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+              {...register("name", { required: "Name is required" })}
+              className={inputStyle}
             />
+            {errors.name && (
+              <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <Label className="block text-sm font-medium mb-1">
               Description
-            </label>
+            </Label>
             <textarea
-              defaultValue={bot.description}
+              {...register("description")}
               rows={3}
-              className={`w-full rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600"
-                  : "bg-white border-gray-300"
-              } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+              className={inputStyle}
             ></textarea>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <Label className="block text-sm font-medium mb-1">
               Linked Knowledge Base
-            </label>
-            <select
-              defaultValue={bot.dataSetId}
-              className={`w-full rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600"
-                  : "bg-white border-gray-300"
-              } border px-3 py-2`}
-            >
+            </Label>
+            <select {...register("dataSetId")} className={inputStyle}>
               {listOptionDatasets.map((dataset) => (
                 <option key={dataset.value} value={dataset.value}>
                   {dataset.label}
@@ -80,13 +106,13 @@ export default function TabSetting({ bot }: Props) {
             <Label className="flex items-center">
               <Input
                 type="checkbox"
-                defaultChecked
                 className="rounded text-blue-600 focus:ring-blue-500"
               />
               <span className="ml-2">Active</span>
             </Label>
 
             <button
+              type="submit"
               className={`flex items-center px-4 py-2 rounded-md ${
                 theme === "dark"
                   ? "bg-blue-600 hover:bg-blue-700"
@@ -97,7 +123,7 @@ export default function TabSetting({ bot }: Props) {
               Save Changes
             </button>
           </div>
-        </div>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -258,13 +284,22 @@ export default function TabSetting({ bot }: Props) {
                 Permanently delete this chatbot and all its data
               </p>
             </div>
-            <button className="px-4 py-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors flex items-center">
+            <button
+              onClick={() => setOpenDeleteModal(true)}
+              className="px-4 py-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors flex items-center"
+            >
               <Trash2 size={16} className="mr-2" />
               Delete
             </button>
           </div>
         </div>
       </div>
+      <DeleteBotModal
+        open={openDeleteModal}
+        close={() => setOpenDeleteModal(false)}
+        botId={bot.id}
+        botName={bot.name}
+      />
     </div>
   );
 }
