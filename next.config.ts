@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["minio.ntq.ai", "i.pravatar.cc", "lh3.googleusercontent.com"],
   },
+  experimental: {
+    serverActions: {
+      // Set your desired size limit (e.g., 2MB, 4MB, etc.)
+      bodySizeLimit: "500mb",
+    },
+  },
 };
 
 export default nextConfig;
