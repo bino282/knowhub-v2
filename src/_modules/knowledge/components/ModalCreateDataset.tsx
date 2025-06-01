@@ -1,4 +1,5 @@
 "use client";
+import { useBots } from "@/_modules/contexts/BotsContext";
 import { createDataset } from "@/app/actions/datasets";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ export default function ModalCreateDataset({
   close: () => void;
 }) {
   const router = useRouter();
+  const { createDatasetFunction } = useBots();
   const [datasetName, setDatasetName] = React.useState<string>("");
   const [loading, setLoading] = React.useState<boolean>(false);
   const handleCreateDataset = async () => {
@@ -31,7 +33,7 @@ export default function ModalCreateDataset({
     }
     setLoading(true);
     try {
-      const res = await createDataset(datasetName);
+      const res = await createDatasetFunction(datasetName);
       if (!res.success) {
         toast.error(res.message || "Failed to create dataset");
         return;

@@ -1,11 +1,12 @@
 export async function apiRequest<T>(
   method: "GET" | "POST" | "PUT" | "PATCH",
   url: string,
+  apiKey: string,
   data?: unknown,
   customHeaders?: HeadersInit
 ): Promise<T> {
   const API_URL = process.env.RAGFLOW_API_URL;
-  const API_KEY = process.env.RAGFLOW_API_KEY;
+  const API_KEY = apiKey;
 
   if (!API_KEY) {
     throw new Error(
