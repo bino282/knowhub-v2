@@ -70,7 +70,7 @@ export default function FormRegister() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          Join HCT KnowHub to manage your knowledge base
+          Join KnowHub to manage your knowledge base
         </p>
       </motion.div>
 

@@ -6,6 +6,7 @@ import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
 import { createDataset, getAllDatasets } from "@/app/actions/datasets";
+import { useRouter } from "next/navigation";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
 type Document = Database["public"]["Tables"]["documents"]["Row"];
@@ -45,7 +46,8 @@ interface BotsContextType {
   getTotalMessages: () => number;
   getRecentActivity: () => Message[];
   createDatasetFunction: (
-    name: string
+    name: string,
+    description?: string
   ) => Promise<{ success: boolean; message: string }>;
 }
 
@@ -54,6 +56,7 @@ const BotsContext = createContext<BotsContextType | undefined>(undefined);
 export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const router = useRouter();
   const [bots, setBots] = useState<Bot[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
@@ -369,11 +372,12 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   //     throw error;
   //   }
   // };
-  const createDatasetFunction = async (name: string) => {
-    const res = await createDataset(name);
+  const createDatasetFunction = async (name: string, description?: string) => {
+    const res = await createDataset(name, description);
     if (res.success) {
       setDatasets((prev) => [...prev, res.data as Dataset]);
       toast.success("Dataset created successfully");
+      router.refresh();
       return { success: true, message: "Dataset created successfully" };
     } else {
       toast.error(res.message || "Failed to create dataset");

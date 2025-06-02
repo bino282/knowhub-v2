@@ -30,7 +30,7 @@ const Header: React.FC = () => {
     if (pathname.includes("/workspace")) return "Workspace";
     if (pathname.includes("/settings")) return "Settings";
 
-    return "HCT KnowHub";
+    return "KnowHub";
   };
 
   return (

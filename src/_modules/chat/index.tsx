@@ -14,6 +14,11 @@ import {
   X,
   BotIcon,
   CircleAlert,
+  Plus,
+  Clock,
+  ChevronUp,
+  ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useParams, useRouter } from "next/navigation";
@@ -31,6 +36,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -45,6 +51,13 @@ type Reference = {
   }[];
 };
 
+interface ChatHistory {
+  id: number;
+  name: string;
+  lastMessage: string;
+  timestamp: Date;
+  messages: Message[];
+}
 const TestChatbot: React.FC = () => {
   const { theme } = useTheme();
   const params = useParams();
@@ -83,110 +96,66 @@ const TestChatbot: React.FC = () => {
     if (!content.trim()) return;
     getMessage(content);
   };
-  // async function getMessage(content: string): Promise<void> {
-  //   // --- setup ---------------------------------------------------------------
-  //   const decoder = new TextDecoder("utf-8");
-  //   let buffer = ""; // keeps partial text between chunks
+  const [showHistory, setShowHistory] = useState(true);
 
-  //   try {
-  //     setLoading(true);
-
-  //     // optimistic UI: user line + placeholder “...”
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       { role: "user", content, isRendered: true },
-  //       { role: "assistant", content: "...", isRendered: false },
-  //     ]);
-  //     setContent("");
-
-  //     // small artificial delay (optional)
-  //     await new Promise((res) => setTimeout(res, 1_000));
-
-  //     const response = await fetch("/api/chat-stream", {
-  //       method: "POST",
-  //       headers: {
-  //         Accept: "application/json",
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         message: content,
-  //         stream: true,
-  //         bot_id: params.id,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(
-  //         response.status === 429
-  //           ? "Too many requests, retry later!"
-  //           : "Network response was not ok"
-  //       );
-  //     }
-
-  //     const reader = response.body!.getReader();
-
-  //     // build up our local copy of the messages array
-  //     const updated = [
-  //       ...messages,
-  //       { role: "user", content, isRendered: true },
-  //     ];
-  //     const assistant = { role: "assistant", content: "", isRendered: false };
-  //     updated.push(assistant);
-  //     setMessages([...updated]);
-
-  //     // --- read the stream ----------------------------------------------------
-  //     while (true) {
-  //       const { value, done } = await reader.read();
-  //       if (done) {
-  //         assistant.isRendered = true;
-  //         setMessages([...updated]);
-  //         setLoading(false);
-  //         break;
-  //       }
-
-  //       // 1️⃣ decode this binary chunk to text
-  //       buffer += decoder.decode(value, { stream: true });
-
-  //       // 2️⃣ split on *complete* lines that start with "data:"
-  //       let newlineIdx;
-  //       // process as many complete events as we already have in buffer
-  //       while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
-  //         const rawLine = buffer.slice(0, newlineIdx).trim(); // inclusive of "data:"
-  //         buffer = buffer.slice(newlineIdx + 1); // remainder
-
-  //         if (!rawLine.startsWith("data:")) continue; // skip noise
-
-  //         const jsonPart = rawLine.slice(5).trim(); // remove "data:"
-  //         if (!jsonPart) continue;
-
-  //         let payload: any;
-  //         try {
-  //           payload = JSON.parse(jsonPart);
-  //         } catch {
-  //           console.warn("Could not JSON-parse:", jsonPart);
-  //           continue;
-  //         }
-
-  //         if (payload?.data === true) {
-  //           assistant.isRendered = true;
-  //           setMessages([...updated]);
-  //           setLoading(false);
-  //           break;
-  //         }
-
-  //         const fragment = payload?.data?.answer;
-  //         if (typeof fragment === "string") {
-  //           assistant.content = fragment;
-  //           setMessages([...updated]);
-  //         }
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     setLoading(false);
-  //     toast.error("An error occurred. Please try again!!");
-  //   }
-  // }
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
+    {
+      id: 1,
+      name: "Previous Chat 1",
+      lastMessage: "How do I reset my password?",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      messages: [],
+    },
+    {
+      id: 2,
+      name: "Previous Chat 2",
+      lastMessage: "What are your business hours?",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      messages: [],
+    },
+    {
+      id: 3,
+      name: "Previous Chat 1",
+      lastMessage: "How do I reset my password?",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      messages: [],
+    },
+    {
+      id: 4,
+      name: "Previous Chat 2",
+      lastMessage: "What are your business hours?",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      messages: [],
+    },
+    {
+      id: 5,
+      name: "Previous Chat 1",
+      lastMessage: "How do I reset my password?",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      messages: [],
+    },
+    {
+      id: 6,
+      name: "Previous Chat 2",
+      lastMessage: "What are your business hours?",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      messages: [],
+    },
+    {
+      id: 7,
+      name: "Previous Chat 1",
+      lastMessage: "How do I reset my password?",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      messages: [],
+    },
+    {
+      id: 8,
+      name: "Previous Chat 2",
+      lastMessage: "What are your business hours?",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      messages: [],
+    },
+  ]);
   async function getMessage(content: string): Promise<void> {
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
@@ -312,17 +281,21 @@ const TestChatbot: React.FC = () => {
   }
   return (
     <div className="h-[calc(100vh-7.8rem)] flex flex-col">
-      <div className="flex items-center justify-between mb-4 px-4 py-4">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
           <button
             onClick={() => router.push(`/bots/${params.id}`)}
-            className="hover:text-blue-600 flex items-center"
+            className="hover:text-blue-600 flex items-center text-base"
           >
             <ArrowLeft size={16} className="mr-1" /> Back to Chatbots
           </button>
         </div>
 
         <div className="flex items-center space-x-2">
+          <Button className="flex items-center px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+            <Plus size={16} className="mr-1" />
+            New Chat
+          </Button>
           <button
             onClick={() => setShowSettings(true)}
             className={`p-2 rounded-md ${
@@ -341,8 +314,55 @@ const TestChatbot: React.FC = () => {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex flex-1 gap-6 overflow-hidden px-4 pb-4">
+      <div className="flex flex-1 gap-6">
+        <div
+          className={`w-64 ${baseCardClasses} rounded-lg border p-4 flex flex-col`}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold flex items-center">
+              <Clock size={16} className="mr-2" />
+              Chat History
+            </h3>
+            <Button
+              onClick={() => setShowHistory(!showHistory)}
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              {showHistory ? (
+                <ChevronUp size={16} />
+              ) : (
+                <ChevronDown size={16} />
+              )}
+            </Button>
+          </div>
+
+          {showHistory && (
+            <div className="flex-1 overflow-y-auto">
+              {chatHistory.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={`w-full text-left p-3 rounded-md mb-2 ${
+                    theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                  } transition-colors group`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{chat.name}</span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button className="text-gray-500 hover:text-red-500">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
+                    {chat.lastMessage}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    {chat.timestamp.toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {/* Chat area */}
         <div className="flex-1 flex flex-col">
           {/* Message list (scrollable) */}

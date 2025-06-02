@@ -64,7 +64,7 @@ const Sidebar: React.FC = () => {
       <div className="p-4 flex items-center justify-between">
         {!collapsed && (
           <h1 className="text-xl font-bold whitespace-nowrap">
-            <span className="text-blue-600">KMS</span>
+            <span className="text-blue-600">Know</span>
             <span className="text-teal-500">Hub</span>
           </h1>
         )}

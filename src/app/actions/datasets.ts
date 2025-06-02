@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/authOption";
 
-export async function createDataset(name: string) {
+export async function createDataset(name: string, description?: string) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
@@ -22,6 +22,7 @@ export async function createDataset(name: string) {
       user.apiKey,
       {
         name,
+        description,
       }
     );
 

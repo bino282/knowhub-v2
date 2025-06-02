@@ -25,12 +25,10 @@ import { Input } from "@/components/ui/input";
 
 export default function PageKnowledges() {
   const { theme } = useTheme();
-  const { datasets, selectBot, selectKnowledge } = useBots();
+  const { datasets, selectKnowledge } = useBots();
   const router = useRouter();
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [filterOpen, setFilterOpen] = React.useState(false);
-  const [category, setCategory] = React.useState<string>("");
-  const [timeRange, setTimeRange] = React.useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
@@ -228,9 +226,13 @@ export default function PageKnowledges() {
                   variants={itemVariants}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="card cursor-pointer overflow-hidden"
+                  className=" cursor-pointer overflow-hidden"
                 >
-                  <div key={dataset.id} onClick={() => handleClick(dataset.id)}>
+                  <div
+                    key={dataset.id}
+                    onClick={() => handleClick(dataset.id)}
+                    className="h-full"
+                  >
                     <KnowledgeItem data={dataset} />
                   </div>
                 </motion.div>
