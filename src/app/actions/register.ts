@@ -52,6 +52,7 @@ export async function registerRagflowUser(
   const passwordRagflow = process.env.PASSWORD_RAGFLOW_ENCODE ?? "";
 
   try {
+    // register ragflow
     const response = await fetch(
       `${process.env.RAGFLOW_API_URL}/v1/user/register`,
       {
@@ -66,39 +67,52 @@ export async function registerRagflowUser(
         }),
       }
     );
-
-    if (response.status !== 200) {
-      const errorData = await response.json();
-      return { message: "", error: errorData.message, success: false };
-    }
-
-    const setCookie = response.headers.get("set-cookie");
-    const authorization = response.headers.get("authorization");
-
-    if (setCookie && authorization) {
-      const cookie = setCookie.split(";")[0];
-
-      const apiKeyResponse = await fetch(
-        `${process.env.RAGFLOW_API_URL}/v1/system/new_token`,
+    const data = await response.json();
+    // tồn tại email thì cho login
+    if (data.code === 103) {
+      const response = await fetch(
+        `${process.env.RAGFLOW_API_URL}/v1/user/login`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Cookie: cookie,
-            Authorization: authorization,
           },
+          body: JSON.stringify({
+            email,
+            password: passwordRagflow,
+          }),
         }
       );
-      if (apiKeyResponse.status !== 200) {
-        const errorData = await apiKeyResponse.json();
+      if (response.status !== 200) {
+        const errorData = await response.json();
         return { message: "", error: errorData.message, success: false };
       }
+      const setCookie = response.headers.get("set-cookie");
+      const authorization = response.headers.get("authorization");
+      if (setCookie && authorization) {
+        const apiKey = await createNewTokenRagflow(setCookie, authorization);
+        return {
+          message: "Ragflow user registered successfully",
+          success: true,
+          data: apiKey,
+        };
+      }
+    }
+    if (data.code !== 0) {
+      return {
+        message: "Ragflow user registered faild",
+        success: true,
+      };
+    }
+    const setCookie = response.headers.get("set-cookie");
+    const authorization = response.headers.get("authorization");
 
-      const dataKey = await apiKeyResponse.json();
+    if (setCookie && authorization) {
+      const apiKey = await createNewTokenRagflow(setCookie, authorization);
       return {
         message: "Ragflow user registered successfully",
         success: true,
-        data: dataKey.data.token,
+        data: apiKey,
       };
     }
 
@@ -114,4 +128,26 @@ export async function registerRagflowUser(
       success: false,
     };
   }
+}
+async function createNewTokenRagflow(setCookie: string, authorization: string) {
+  const cookie = setCookie.split(";")[0];
+
+  const apiKeyResponse = await fetch(
+    `${process.env.RAGFLOW_API_URL}/v1/system/new_token`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+        Authorization: authorization,
+      },
+    }
+  );
+  if (apiKeyResponse.status !== 200) {
+    const errorData = await apiKeyResponse.json();
+    return { message: "", error: errorData.message, success: false };
+  }
+
+  const dataKey = await apiKeyResponse.json();
+  return dataKey.data.token;
 }
