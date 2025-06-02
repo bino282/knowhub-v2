@@ -53,7 +53,7 @@ export default function LoginForm() {
           <BrainCircuit className="h-12 w-12 text-[#2563EB]" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-          HCT KnowHub
+          KnowHub
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
           Your intelligent knowledge management system

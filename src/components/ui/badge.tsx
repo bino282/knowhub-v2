@@ -19,11 +19,17 @@ const badgeVariants = cva(
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         blue: "bg-blue-100 text-blue-800",
         process: "bg-[#EFF8FF] border border-[#B2DDFF] text-[#175CD3]",
-        success: "bg-green-500/20 text-green-400 border-green-300",
-        pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        error: "bg-red-100 text-red-800 border-red-300",
-        warning: "bg-orange-100 text-orange-800 border-orange-300",
-        info: "bg-blue-100 text-blue-800 border-blue-300",
+        success:
+          "flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+        info: "flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+        pending:
+          "flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+
+        error:
+          "flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+
+        warning:
+          "flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
       },
     },
     defaultVariants: {

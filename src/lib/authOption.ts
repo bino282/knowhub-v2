@@ -71,11 +71,21 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await prisma.user.findUnique({
           where: { email: profile.email },
         });
-        // register user ragflow
-        if (!profile.email || !profile.name || existingUser) {
+        if (!profile.email || !profile.name) {
           return false;
         }
-        await registerRagflowUser(profile.email, profile.name);
+        if (!existingUser) {
+          const apiKey = await registerRagflowUser(profile.email, profile.name);
+          await prisma.user.upsert({
+            where: { email: profile.email },
+            create: {
+              email: profile.email,
+              name: profile.name,
+              apiKey: apiKey.data,
+            },
+            update: { apiKey: apiKey.data },
+          });
+        }
       }
 
       return true;

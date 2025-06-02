@@ -18,6 +18,8 @@ import {
   FileTextIcon,
   MessageCircleIcon,
   MessageSquareIcon,
+  CheckCircle2,
+  HelpCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -40,10 +42,11 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { formatGmtDate } from "@/lib/format-date";
-import { format, formatDate } from "date-fns";
+import { useTheme } from "../contexts/ThemeContext";
 
 const BotsPage: React.FC = () => {
   const router = useRouter();
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [category, setCategory] = React.useState<string>("");
@@ -109,15 +112,15 @@ const BotsPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          <div className="mt-6 flex items-center justify-between">
-            <div className="relative">
+          <div className="mt-6 flex items-center justify-between gap-4">
+            <div className="relative max-w-md w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 " />
               <Input
-                type="text"
-                placeholder="Search name chatbots..."
-                className="input px-10 py-2 pl-10 bg-white dark:bg-gray-800"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                type="text"
+                placeholder="Search chatbots..."
+                className="w-full pl-10 pr-4 py-2 rounded-md bg-gray-700 border-gray-600 border focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <Popover>
@@ -187,7 +190,10 @@ const BotsPage: React.FC = () => {
                     <BotIcon className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={"success"}>Active</Badge>
+                    <Badge variant={"success"}>
+                      <CheckCircle2 size={12} />
+                      Active
+                    </Badge>
                     <div className="relative group">
                       <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                         <MoreVertical className="h-5 w-5 text-gray-500" />
@@ -232,8 +238,8 @@ const BotsPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="p-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4 gap-y-4">
-                <div className="text-start flex flex-col gap-2">
+              <div className="px-5 pt-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4">
+                <div className="text-start flex flex-col gap-1">
                   <p className="flex items-center">
                     <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400 " />
                     <span className="ml-1 text-base text-gray-800 dark:text-gray-400 flex-1">
@@ -244,7 +250,7 @@ const BotsPage: React.FC = () => {
                     0
                   </p>
                 </div>
-                <div className="ftext-start flex flex-col gap-2">
+                <div className="ftext-start flex flex-col gap-1">
                   <p className="flex items-center">
                     <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
                     <span className="ml-1 text-base text-gray-800 dark:text-gray-400">
@@ -256,9 +262,26 @@ const BotsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <p className="px-5 pb-5 text-sm text-gray-500 dark:text-gray-400">
-                Updated {formatGmtDate(bot.dataset?.update_date || "")}
-              </p>
+              <div className="mt-4 px-5 pb-5 flex items-center justify-between">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Updated {formatGmtDate(bot.dataset?.update_date || "")}
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    router.push(`/bots/${bot.id}/test`);
+                  }}
+                  className={`flex items-center px-3 py-1.5 rounded-md ${
+                    theme === "dark"
+                      ? "bg-gray-700 hover:bg-gray-600"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  } transition-colors text-sm`}
+                >
+                  <HelpCircle size={14} className="mr-1.5" />
+                  Chat
+                </button>
+              </div>
             </motion.div>
           ))
         ) : (
