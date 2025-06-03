@@ -120,7 +120,7 @@ const BotsPage: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 type="text"
                 placeholder="Search chatbots..."
-                className="w-full pl-10 pr-4 py-2 rounded-md bg-gray-700 border-gray-600 border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 rounded-md dark:bg-gray-700 bg-white border-gray-100 dark:border-gray-600 border focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <Popover>
