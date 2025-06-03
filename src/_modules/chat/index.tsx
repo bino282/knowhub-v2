@@ -13,6 +13,9 @@ import {
   ChevronUp,
   ChevronDown,
   Trash2,
+  ThumbsUp,
+  ThumbsDown,
+  Copy,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useParams, useRouter } from "next/navigation";
@@ -458,8 +461,8 @@ const TestChatbot: React.FC = () => {
                             {t.content}
                           </Markdown>
                         </div>
-                        <div className="p-2 w-fit h-fit rounded-full bg-blue-800/20 ml-2 ">
-                          <MessageSquare className="size-4 text-blue-500" />
+                        <div className="p-2 w-fit h-fit rounded-full bg-blue-100 ml-2 ">
+                          <MessageSquare className="size-4 text-blue-600" />
                         </div>
                       </div>
                     </div>
@@ -489,13 +492,26 @@ const TestChatbot: React.FC = () => {
                                     </div>
                                   ) : (
                                     <div className="flex flex-col items-start">
-                                      <div className="rounded-lg border px-3.5 py-2.5 text-base font-normal dark:text-gray-200 text-gray-800">
-                                        <div className="flex items-end p-2 gap-2">
+                                      <div className="rounded-lg border px-3.5 py-2.5 text-sm font-normal dark:text-gray-200 text-gray-800 bg-gray-100 dark:bg-gray-700 ">
+                                        <div className="flex items-end gap-2">
                                           {renderTextWithReferences(
                                             t.content,
                                             t.reference
                                           )}
                                         </div>
+                                        {t.content && t.isRendered && (
+                                          <div className="flex items-center mt-2 space-x-4">
+                                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                              <ThumbsUp size={14} />
+                                            </button>
+                                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                              <ThumbsDown size={14} />
+                                            </button>
+                                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                              <Copy size={14} />
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                       {ReferenceDocuments(t.reference)}
                                     </div>
