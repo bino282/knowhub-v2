@@ -13,7 +13,23 @@ import ModalCreateBot from "../components/ModalCreateBot";
 import BotListItem from "./components/BotListItem";
 import ActivityItem from "./components/ActivityItem";
 
-const DashboardPage: React.FC = () => {
+interface Props {
+  listMessage: {
+    id: string;
+    createdAt: Date;
+    role: string;
+    content: string;
+    sessionChatId: string;
+    reference: any;
+  }[];
+}
+const DashboardPage = ({ listMessage }: Props) => {
+  const listMessageUser =
+    listMessage.length > 0
+      ? listMessage.filter((msg) => msg.role === "user")
+      : [];
+  const top10Messages =
+    listMessageUser.length > 0 ? listMessageUser.slice(0, 10) : [];
   const session = useSession();
   const router = useRouter();
   const [opneModalCreateBot, setOpenModalCreateBot] =
@@ -99,10 +115,12 @@ const DashboardPage: React.FC = () => {
         <motion.div variants={itemVariants}>
           <StatsCard
             title="Total Messages"
-            value={totalMessages}
-            icon={<div className="p-3 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
-              <MessageSquare className="h-5 w-5 " />
-            </div>}
+            value={listMessageUser.length}
+            icon={
+              <div className="p-3 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                <MessageSquare className="h-5 w-5 " />
+              </div>
+            }
             color="highlight"
           />
         </motion.div>

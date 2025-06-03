@@ -17,10 +17,8 @@ export default async function Page({
 
   const respon = await getAllFileDatasets({
     datasetId: id,
-    page: Number(page),
-    name: typeof name === "string" ? name : "",
   });
   const listFile = (respon.data.docs as FileInfo[]) || [];
 
-  return <KnowledgeDetailPage listFile={listFile} />;
+  return <KnowledgeDetailPage initialListFile={listFile} />;
 }

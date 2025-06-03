@@ -14,6 +14,7 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
+  console.log(activity);
   const { role, content, botName } = activity;
 
   // Truncate content if it's too long

@@ -3,8 +3,14 @@ import { useTheme } from "@/_modules/contexts/ThemeContext";
 import {
   getAllFileDatasets,
   parseFileDocument,
+  stopParseFileDocument,
 } from "@/app/actions/file-dataset";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { formatGmtDate } from "@/lib/format-date";
 import { getVariant } from "@/lib/get-variant";
 import { FileInfo } from "@/types/database.type";
@@ -12,11 +18,13 @@ import {
   Database,
   Download,
   FileText,
+  InfoIcon,
   MoreVertical,
   Play,
   PlayIcon,
   RefreshCw,
   RefreshCwIcon,
+  XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -29,12 +37,12 @@ export default function TabTraining() {
   const { theme } = useTheme();
   const { bots } = useBots();
   const [page, setPage] = React.useState("1");
+  const [activeFile, setActiveFile] = React.useState<string | null>(null);
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const datasetId = bots.find((bot) => bot.id === params.id)?.dataSetId;
   React.useEffect(() => {
     getAllFileDatasets({
       datasetId: datasetId as string,
-      page: Number(page),
     })
       .then((respon) => {
         if (respon.success && respon.data.total > 0) {
@@ -44,34 +52,86 @@ export default function TabTraining() {
       .catch((error) => {
         console.error("Error fetching datasets:", error);
       });
-  }, [page]);
+  }, []);
 
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
   const handleParseFile = async (fileId: string) => {
-    if (fileId === "all") {
-      const ids = fileList
-        .filter((file) => file.run === "UNSTART")
-        .map((file) => file.id);
-      const res = await parseFileDocument(params.id as string, ids);
+    const getList = async () => {
+      const res = await getAllFileDatasets({
+        datasetId: datasetId as string,
+      });
+      if (res.success && res.data.total > 0) {
+        setFileList(res.data.docs as FileInfo[]);
+        return res.data.docs as FileInfo[];
+      }
+      return [];
+    };
+
+    const pollUntilDone = async () => {
+      let polling = true;
+      while (polling) {
+        const list = await getList();
+        const hasRunning = list.some((file) => file.run === "RUNNING");
+        if (!hasRunning) {
+          polling = false;
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // wait 2s
+        }
+      }
+    };
+
+    try {
+      if (fileId === "all") {
+        const ids = fileList
+          .filter((file) => file.run === "UNSTART")
+          .map((file) => file.id);
+
+        const res = await parseFileDocument(params.id as string, ids);
+        if (!res.success) {
+          toast.error(res.message);
+          return;
+        }
+        toast.success(res.message);
+        await pollUntilDone();
+        router.refresh();
+        return;
+      }
+
+      const res = await parseFileDocument(params.id as string, [fileId]);
       if (!res.success) {
         toast.error(res.message);
         return;
       }
       toast.success(res.message);
+      await pollUntilDone();
       router.refresh();
-      return;
+    } catch (err) {
+      toast.error("Something went wrong!");
+      console.error(err);
     }
-    const fileIds = [fileId];
-    const res = await parseFileDocument(params.id as string, fileIds);
-    if (!res.success) {
-      toast.error(res.message);
-      return;
+  };
+  const handleStopParseFile = async (fileId: string) => {
+    try {
+      const res = await stopParseFileDocument(params.id as string, [fileId]);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      toast.success(res.message);
+      const updatedList = await getAllFileDatasets({
+        datasetId: datasetId as string,
+      });
+      if (updatedList.success && updatedList.data.total > 0) {
+        setFileList(updatedList.data.docs as FileInfo[]);
+      }
+      router.refresh();
+    } catch (err) {
+      toast.error("Something went wrong!");
+      console.error(err);
     }
-    toast.success(res.message);
-    router.refresh();
   };
   return (
     <div className="space-y-6">
@@ -209,19 +269,79 @@ export default function TabTraining() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center justify-between">
                             <Badge variant={getVariant(file.run)}>
-                              {file.run}
+                              {file.run === "RUNNING" ? "Parsing" : file.run}
+                              {file.run === "RUNNING" && (
+                                <span className="ml-1">{`${(
+                                  file.progress * 100
+                                ).toFixed(2)}%`}</span>
+                              )}
                             </Badge>
-                            {file.run === "UNSTART" ? (
+                            {file.run === "UNSTART" && (
                               <div
                                 className="p-2 rounded-full bg-green-700/20 cursor-pointer"
                                 onClick={() => handleParseFile(file.id)}
                               >
-                                <PlayIcon className="size-4 text-green-500" />
+                                <PlayIcon className="size-4 text-green-500 cursor-pointer" />
                               </div>
-                            ) : (
-                              <div className="p-2 rounded-full bg-yellow-700/20">
-                                <RefreshCwIcon className="size-4 text-yellow-500" />
+                            )}
+
+                            {file.run === "RUNNING" && (
+                              <div className="p-2 rounded-full bg-red-700/20 cursor-pointer hover:bg-red-700/30 ">
+                                <XIcon
+                                  className="size-4 text-red-500"
+                                  onClick={() => handleStopParseFile(file.id)}
+                                />
                               </div>
+                            )}
+
+                            {(file.run === "DONE" || file.run === "CANCEL") && (
+                              <Popover
+                                open={activeFile === file.id}
+                                onOpenChange={(open) =>
+                                  setActiveFile(open ? file.id : null)
+                                }
+                              >
+                                <PopoverTrigger asChild>
+                                  <div
+                                    className="p-2 rounded-full bg-white dark:bg-green-700/20 cursor-pointer hover:bg-green-700/30"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveFile(file.id);
+                                    }}
+                                  >
+                                    <RefreshCwIcon className="size-4 text-green-500" />
+                                  </div>
+                                </PopoverTrigger>
+
+                                <PopoverContent>
+                                  <p className="text-sm text-gray-800 dark:text-white flex items-start">
+                                    <InfoIcon className="dark:text-yellow-200 text-gray-700 size-4 mr-2 mt-1" />
+                                    Do you want to clear the existing{" "}
+                                    {file.chunk_count} chunks?
+                                  </p>
+                                  <div className="mt-2 flex justify-end space-x-2">
+                                    <button
+                                      className="px-2 py-0.5 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveFile(null);
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleParseFile(file.id);
+                                        setActiveFile(null);
+                                      }}
+                                    >
+                                      Yes
+                                    </button>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                             )}
                           </div>
                         </td>

@@ -27,6 +27,8 @@ export async function createFileDataset(datasetId: string, formData: FormData) {
     }
 
     const data = await result.data;
+    await parseFileDocumentWithDataset(data[0].dataset_id, [data[0].id]);
+
     return {
       data,
       success: true,
@@ -93,8 +95,6 @@ export async function parseFileDocument(botId: string, documentIds: string[]) {
   if (!botDatasetId || !botDatasetId.dataSetId) {
     return { success: false, message: "Bot dataset ID not found" };
   }
-  console.log("Dataset ID:", botDatasetId?.dataSetId);
-  console.log("Document IDs:", documentIds);
   const res = await apiRequest<ApiResponse>(
     "POST",
     `api/v1/datasets/${botDatasetId?.dataSetId}/chunks`,
@@ -122,7 +122,6 @@ export async function parseFileDocumentWithDataset(
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };
   }
-  console.log("Dataset ID:", datasetId);
   const res = await apiRequest<ApiResponse>(
     "POST",
     `api/v1/datasets/${datasetId}/chunks`,
@@ -131,10 +130,42 @@ export async function parseFileDocumentWithDataset(
       document_ids: documentIds,
     }
   );
-  console.log("res", res);
   if (res.code !== 0) {
     console.error("Failed to parse file document");
     return { success: false, message: "Failed to parse file document" };
   }
   return { success: true, message: "File document parsed successfully" };
+}
+export async function stopParseFileDocument(
+  botId: string,
+  documentIds: string[]
+) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const botDatasetId = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { dataSetId: true },
+  });
+  if (!botDatasetId || !botDatasetId.dataSetId) {
+    return { success: false, message: "Bot dataset ID not found" };
+  }
+  const res = await apiRequest<ApiResponse>(
+    "DELETE",
+    `api/v1/datasets/${botDatasetId?.dataSetId}/chunks`,
+    user.apiKey,
+    {
+      document_ids: documentIds,
+    }
+  );
+  if (res.code !== 0) {
+    console.error("Failed to stop parse file document");
+    return { success: false, message: "Failed to stop parse file document" };
+  }
+  return { success: true, message: "File document stop parsed successfully" };
 }

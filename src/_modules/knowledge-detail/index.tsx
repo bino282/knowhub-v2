@@ -2,8 +2,6 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   ListIcon,
   File as FilePdf,
@@ -25,41 +23,42 @@ import {
   ExternalLink,
   Edit,
   Trash2,
-  PlayIcon,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
-import { DocumentCard } from "./components/DocumentCard";
 import { FileInfo } from "@/types/database.type";
 import Link from "next/link";
 import { useBots } from "../contexts/BotsContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { formatDate } from "date-fns";
 import { useParams } from "next/navigation";
-import { parseFileDocumentWithDataset } from "@/app/actions/file-dataset";
+import { getAllFileDatasets } from "@/app/actions/file-dataset";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { getVariant } from "@/lib/get-variant";
 
 interface Props {
-  listFile: FileInfo[];
+  initialListFile: FileInfo[];
 }
-const folders = [
-  { name: "Campaigns", count: 0 },
-  { name: "Brand Guidelines", count: 0 },
-  { name: "Social Media", count: 0 },
-  { name: "Presentations", count: 0 },
-  { name: "Market Research", count: 0 },
-];
+// const folders = [
+//   { name: "Campaigns", count: 0 },
+//   { name: "Brand Guidelines", count: 0 },
+//   { name: "Social Media", count: 0 },
+//   { name: "Presentations", count: 0 },
+//   { name: "Market Research", count: 0 },
+// ];
 
-const documentTypes = [
-  "PDFs",
-  "Word Documents",
-  "Spreadsheets",
-  "Images",
-  "Videos",
-  "Other",
-];
+// const documentTypes = [
+//   "PDFs",
+//   "Word Documents",
+//   "Spreadsheets",
+//   "Images",
+//   "Videos",
+//   "Other",
+// ];
 
-export default function KnowledgeDetailPage({ listFile }: Props) {
+export default function KnowledgeDetailPage({ initialListFile }: Props) {
   const { selectedDataset } = useBots();
+  const [listFile, setListFile] = useState<FileInfo[]>(initialListFile);
   const { theme } = useTheme();
   const params = useParams();
   const baseCardClasses =
@@ -76,15 +75,34 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
       file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       file.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const handlePlay = async (id: string) => {
-    const ids = [id];
-    const res = await parseFileDocumentWithDataset(params.id as string, ids);
+  const [isPolling, setIsPolling] = useState(false);
+  const fetchList = React.useCallback(async () => {
+    console.log("Fetching file datasets...");
+    const res = await getAllFileDatasets({
+      datasetId: params.id as string,
+    });
     if (!res.success) {
       toast.error(res.message);
       return;
     }
-    toast.success(res.message);
-  };
+
+    setListFile(res.data.docs);
+    const hasRunning = res.data.docs.some(
+      (item: FileInfo) => item.run === "RUNNING"
+    );
+    if (!hasRunning) {
+      setIsPolling(false);
+    }
+  }, []);
+  React.useEffect(() => {
+    if (!isPolling) return;
+
+    const interval = setInterval(() => {
+      fetchList();
+    }, 2000); // Poll mỗi 2s
+
+    return () => clearInterval(interval);
+  }, [isPolling, fetchList]);
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
@@ -173,7 +191,7 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
                 </Button>
               </li>
 
-              {folders.map((folder, index) => (
+              {/* {folders.map((folder, index) => (
                 <li key={index}>
                   <button
                     onClick={() => setSelectedFolder(folder.name)}
@@ -205,7 +223,7 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
                     </span>
                   </button>
                 </li>
-              ))}
+              ))} */}
 
               <li className="pt-2">
                 <button className="w-full text-left px-3 py-2 rounded-md flex items-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
@@ -371,14 +389,14 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
                     </div>
 
                     <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
+                      {/* <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
                         } text-amber-500 opacity-100`}
                         onClick={() => handlePlay(document.id)}
                       >
                         <PlayIcon className="text-green-400" size={16} />
-                      </button>
+                      </button> */}
                       <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
@@ -403,9 +421,14 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
                     </div>
                   </div>
 
-                  <h4 className="font-medium mt-3 line-clamp-1">
-                    {document.name}
-                  </h4>
+                  <div className="mt-3 flex items-center gap-3 overflow-hidden">
+                    <h4 className="font-medium flex-1 truncate">
+                      {document.name}
+                    </h4>
+                    <Badge variant={getVariant(document.run)}>
+                      {document.run}
+                    </Badge>
+                  </div>
 
                   <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 flex justify-between">
                     <span> {`${(document.size / 1024).toFixed(2)} MB`}</span>
@@ -520,6 +543,8 @@ export default function KnowledgeDetailPage({ listFile }: Props) {
         <ModalUploadFile
           open={isCreateModalOpen}
           close={() => setIsCreateModalOpen(false)}
+          fetchList={fetchList}
+          setIsPolling={setIsPolling}
         />
       )}
     </div>
