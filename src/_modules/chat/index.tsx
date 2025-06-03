@@ -3,17 +3,11 @@ import React, { useState } from "react";
 import {
   ArrowLeft,
   Send,
-  Bot,
   MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  Copy,
-  RotateCcw,
   Settings,
   HelpCircle,
   X,
   BotIcon,
-  CircleAlert,
   Plus,
   Clock,
   ChevronUp,
@@ -28,15 +22,17 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MarkdownComponents } from "../components/mark-down";
 import { toast } from "sonner";
-import exactTextFieldString from "@/lib/extractText";
-import { useBots } from "../contexts/BotsContext";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import {
+  createMessages,
+  createSessionId,
+  createSessionMessage,
+  getListChat,
+  getListMessages,
+} from "@/app/actions/chat";
+import { formatGmtDate, toGmtDateString } from "@/lib/format-date";
+import { renderTextWithReferences } from "./renderMesssage";
+import { ReferenceDocuments } from "./renderDocs";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -49,14 +45,17 @@ type Reference = {
     content: string;
     document_name?: string;
   }[];
+  doc_aggs: {
+    doc_name: string;
+  }[];
 };
 
 interface ChatHistory {
-  id: number;
+  id: string;
   name: string;
-  lastMessage: string;
-  timestamp: Date;
-  messages: Message[];
+  createdAt: string;
+  updatedAt: string;
+  botId: string;
 }
 const TestChatbot: React.FC = () => {
   const { theme } = useTheme();
@@ -73,15 +72,13 @@ const TestChatbot: React.FC = () => {
       isRendered: boolean;
       reference?: Reference;
     }>
-  >([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm your Customer Support Assistant. How can I help you today?",
-      isRendered: true,
-    },
-  ]);
+  >([]);
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+  const [showHistory, setShowHistory] = useState(true);
+  // get list chat history
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [selectedChatHistory, setSelectedChatHistory] =
+    useState<ChatHistory | null>(null);
   React.useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -92,71 +89,102 @@ const TestChatbot: React.FC = () => {
 
   const [content, setContent] = React.useState<string>("");
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!content.trim()) return;
-    getMessage(content);
-  };
-  const [showHistory, setShowHistory] = useState(true);
 
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
-    {
-      id: 1,
-      name: "Previous Chat 1",
-      lastMessage: "How do I reset my password?",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      messages: [],
-    },
-    {
-      id: 2,
-      name: "Previous Chat 2",
-      lastMessage: "What are your business hours?",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      messages: [],
-    },
-    {
-      id: 3,
-      name: "Previous Chat 1",
-      lastMessage: "How do I reset my password?",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      messages: [],
-    },
-    {
-      id: 4,
-      name: "Previous Chat 2",
-      lastMessage: "What are your business hours?",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      messages: [],
-    },
-    {
-      id: 5,
-      name: "Previous Chat 1",
-      lastMessage: "How do I reset my password?",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      messages: [],
-    },
-    {
-      id: 6,
-      name: "Previous Chat 2",
-      lastMessage: "What are your business hours?",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      messages: [],
-    },
-    {
-      id: 7,
-      name: "Previous Chat 1",
-      lastMessage: "How do I reset my password?",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      messages: [],
-    },
-    {
-      id: 8,
-      name: "Previous Chat 2",
-      lastMessage: "What are your business hours?",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      messages: [],
-    },
-  ]);
-  async function getMessage(content: string): Promise<void> {
+    const hasUserMessage = messages.some((msg) => msg.role === "user");
+
+    if (
+      hasUserMessage ||
+      (selectedChatHistory && selectedChatHistory.id !== "")
+    ) {
+      getMessage(selectedChatHistory?.id || "", content);
+    } else {
+      const res = await createSessionId(params.id as string, content);
+
+      if (!res.success) {
+        toast.error(res.message || "Failed to create session");
+        return;
+      }
+      await createSessionMessage(
+        res.data.id,
+        res.data.name,
+        params.id as string
+      );
+      // Tạo session mới dựa trên selectedChatHistory hiện tại
+      const updatedSession: ChatHistory = {
+        ...selectedChatHistory!,
+        id: res.data.id,
+        name: res.data.name || "",
+        createdAt: res.data.create_date || "",
+        updatedAt: res.data.update_date || "",
+      };
+
+      // Cập nhật đúng phần tử trong chatHistory có id === ""
+      setChatHistory((prev) =>
+        prev.map((chat) => (chat.id === "" ? updatedSession : chat))
+      );
+
+      // Cập nhật selected
+      setSelectedChatHistory(updatedSession);
+
+      // Gửi message
+      getMessage(res.data.id || "", content);
+    }
+  };
+
+  React.useEffect(() => {
+    getListChat(params.id as string)
+      .then((res) => {
+        if (res.success) {
+          const dataFormat = res.data.map((chat) => ({
+            ...chat,
+            createdAt: toGmtDateString(chat.createdAt),
+            updatedAt: toGmtDateString(chat.updatedAt),
+          }));
+          setChatHistory(dataFormat);
+        } else {
+          setChatHistory([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching chat history:", error);
+        toast.error("An error occurred while fetching chat history");
+      });
+  }, []);
+
+  // selected chat history
+
+  React.useEffect(() => {
+    if (!selectedChatHistory && chatHistory.length > 0) {
+      const firstHistory = chatHistory[0];
+      setSelectedChatHistory(firstHistory);
+      getListMessageSession(firstHistory.id);
+    }
+    if (selectedChatHistory) {
+      getListMessageSession(selectedChatHistory.id);
+    }
+  }, [selectedChatHistory, chatHistory]);
+  const handleNewConversation = () => {
+    const hasEmptyIdChat = chatHistory.some((chat) => chat.id === "");
+    if (hasEmptyIdChat) return;
+    const now = new Date();
+
+    const dateStr = now.toUTCString();
+
+    const newChat: ChatHistory = {
+      id: "",
+      botId: params.id as string,
+      name: "new conversation",
+      createdAt: dateStr,
+      updatedAt: dateStr,
+    };
+
+    // Append to existing history
+    setChatHistory((prev) => [newChat, ...prev]);
+    setSelectedChatHistory(newChat);
+  };
+  async function getMessage(sessionId: string, content: string): Promise<void> {
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
@@ -184,6 +212,7 @@ const TestChatbot: React.FC = () => {
           message: content,
           stream: true,
           bot_id: params.id,
+          session_id: sessionId,
         }),
       });
 
@@ -226,6 +255,19 @@ const TestChatbot: React.FC = () => {
           assistant.isRendered = true;
           setMessages([...updated]);
           setLoading(false);
+          const messages = [
+            { role: "user", content },
+            {
+              role: "assistant",
+              content: assistant.content,
+              reference: assistant.reference,
+            },
+          ];
+          try {
+            await createMessages(sessionId, messages);
+          } catch (e) {
+            console.error("Failed to save messages", e);
+          }
           break;
         }
 
@@ -244,9 +286,8 @@ const TestChatbot: React.FC = () => {
           let payload: any;
           try {
             payload = JSON.parse(jsonPart);
-            console.log("payload", payload);
           } catch {
-            console.warn("Could not JSON-parse:", jsonPart);
+            console.warn("Could not JSON-parse:", payload);
             continue;
           }
 
@@ -262,6 +303,7 @@ const TestChatbot: React.FC = () => {
           const fragment = payload?.data?.answer;
           if (typeof fragment === "string") {
             assistant.content = fragment;
+            console.log("value done", fragment);
           }
 
           // Extract reference if present
@@ -279,6 +321,27 @@ const TestChatbot: React.FC = () => {
       toast.error("An error occurred. Please try again!!");
     }
   }
+  async function getListMessageSession(sessionId: string) {
+    try {
+      const res = await getListMessages(sessionId);
+      if (res.success) {
+        console.log("getListMessageSession res", res.data);
+        const formattedMessages = res.data.map((message) => ({
+          role: message.role,
+          content: message.content,
+          reference: message.reference ?? undefined,
+          isRendered: true,
+        }));
+        setMessages(formattedMessages);
+      } else {
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      toast.error("An error occurred while fetching messages");
+    }
+  }
+
   return (
     <div className="h-[calc(100vh-7.8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-4">
@@ -292,7 +355,10 @@ const TestChatbot: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Button className="flex items-center px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+          <Button
+            className="flex items-center px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            onClick={handleNewConversation}
+          >
             <Plus size={16} className="mr-1" />
             New Chat
           </Button>
@@ -314,18 +380,18 @@ const TestChatbot: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6">
+      <div className="flex flex-1 gap-6 overflow-hidden">
         <div
-          className={`w-64 ${baseCardClasses} rounded-lg border p-4 flex flex-col`}
+          className={`w-64 ${baseCardClasses} rounded-lg border flex flex-col`}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between p-4">
             <h3 className="font-semibold flex items-center">
               <Clock size={16} className="mr-2" />
               Chat History
             </h3>
             <Button
               onClick={() => setShowHistory(!showHistory)}
-              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 pr-0"
             >
               {showHistory ? (
                 <ChevronUp size={16} />
@@ -336,27 +402,36 @@ const TestChatbot: React.FC = () => {
           </div>
 
           {showHistory && (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
               {chatHistory.map((chat) => (
                 <div
                   key={chat.id}
                   className={`w-full text-left p-3 rounded-md mb-2 ${
                     theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
-                  } transition-colors group`}
+                  } transition-colors group ${
+                    selectedChatHistory?.id === chat.id
+                      ? "dark:bg-gray-700 bg-gray-100"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedChatHistory(chat);
+                  }}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">{chat.name}</span>
+                    <span className="font-medium truncate">{chat.name}</span>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <button className="text-gray-500 hover:text-red-500">
                         <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
-                    {chat.lastMessage}
-                  </p>
+                  {messages.length > 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
+                      {messages[messages.length - 1].content || ""}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    {chat.timestamp.toLocaleDateString()}
+                    {formatGmtDate(chat.updatedAt)}
                   </p>
                 </div>
               ))}
@@ -365,7 +440,6 @@ const TestChatbot: React.FC = () => {
         </div>
         {/* Chat area */}
         <div className="flex-1 flex flex-col">
-          {/* Message list (scrollable) */}
           <div
             className={`flex-1 ${baseCardClasses} rounded-lg border p-4 overflow-y-auto mb-4`}
           >
@@ -413,67 +487,16 @@ const TestChatbot: React.FC = () => {
                                       <span className="dot">.</span>
                                     </div>
                                   ) : (
-                                    <div className="flex items-center">
+                                    <div className="flex flex-col items-start">
                                       <div className="rounded-lg border px-3.5 py-2.5 text-base font-normal dark:text-gray-200 text-gray-800">
                                         <div className="flex items-end p-2 gap-2">
-                                          <div>
-                                            <Markdown
-                                              components={MarkdownComponents}
-                                              remarkPlugins={[remarkGfm]}
-                                            >
-                                              {t.content}
-                                            </Markdown>
-                                          </div>
-                                          {(() => {
-                                            const ref = t.reference as
-                                              | {
-                                                  chunks: {
-                                                    vector_similarity: number;
-                                                    content: string;
-                                                    image_id?: string;
-                                                  }[];
-                                                }
-                                              | undefined;
-
-                                            if (
-                                              !ref?.chunks ||
-                                              ref.chunks.length === 0
-                                            )
-                                              return null;
-
-                                            const bestChunk = ref.chunks.reduce(
-                                              (max, cur) =>
-                                                cur.vector_similarity >
-                                                max.vector_similarity
-                                                  ? cur
-                                                  : max
-                                            );
-
-                                            return (
-                                              <Tooltip>
-                                                <TooltipTrigger>
-                                                  <CircleAlert className="size-6 mb-1 text-yellow-500" />
-                                                </TooltipTrigger>
-                                                <TooltipContent className="max-w-xs border border-gray-300 dark:border-gray-600 mb-4">
-                                                  {bestChunk.image_id ? (
-                                                    <Image
-                                                      src={bestChunk.image_id}
-                                                      alt="Reference"
-                                                      className="max-w-full h-auto mb-2 rounded-md"
-                                                      width={300}
-                                                      height={200}
-                                                    />
-                                                  ) : (
-                                                    <p className="text-sm">
-                                                      {bestChunk.content}
-                                                    </p>
-                                                  )}
-                                                </TooltipContent>
-                                              </Tooltip>
-                                            );
-                                          })()}
+                                          {renderTextWithReferences(
+                                            t.content,
+                                            t.reference
+                                          )}
                                         </div>
                                       </div>
+                                      {ReferenceDocuments(t.reference)}
                                     </div>
                                   )}
                                 </div>
@@ -492,16 +515,6 @@ const TestChatbot: React.FC = () => {
 
           {/* Input */}
           <div className="flex gap-2">
-            <button
-              className={`p-2 rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-gray-100 hover:bg-gray-200"
-              } transition-colors`}
-            >
-              <RotateCcw size={20} />
-            </button>
-
             <div className="flex-1 relative">
               <Input
                 type="text"
@@ -515,21 +528,29 @@ const TestChatbot: React.FC = () => {
                     : "bg-white border-gray-300"
                 } border pl-4 pr-12 py-2 focus:ring-blue-500 focus:border-blue-500`}
               />
-              <button
-                onClick={handleSend}
-                className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-md ${
-                  theme === "dark"
-                    ? content.trim()
-                      ? "text-blue-400 hover:text-blue-300"
-                      : "text-gray-500"
-                    : content.trim()
-                    ? "text-blue-600 hover:text-blue-700"
-                    : "text-gray-400"
-                }`}
-                disabled={!content.trim()}
-              >
-                <Send size={18} />
-              </button>
+              {loading ? (
+                <div className="flex justify-center items-center absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5">
+                  <div className="animate-spin rounded-full size-4 border-2 border-gray-300 border-t-blue-500"></div>
+                </div>
+              ) : (
+                <button
+                  onClick={handleSend}
+                  className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-md ${
+                    theme === "dark"
+                      ? content.trim() || !selectedChatHistory?.id
+                        ? "text-blue-400 hover:text-blue-300"
+                        : "text-gray-500"
+                      : content.trim()
+                      ? "text-blue-600 hover:text-blue-700"
+                      : "text-gray-400"
+                  }`}
+                  disabled={
+                    !content.trim() || !selectedChatHistory?.id || loading
+                  }
+                >
+                  <Send size={18} />
+                </button>
+              )}
             </div>
           </div>
         </div>

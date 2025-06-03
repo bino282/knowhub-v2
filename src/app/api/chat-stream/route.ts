@@ -4,6 +4,7 @@ interface Data extends Record<string, unknown> {
   message: string;
   stream: boolean;
   bot_id: string;
+  session_id: string;
 }
 export async function POST(req: Request) {
   const data: Partial<Data> = (await req.json()) || {};
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         question: data.message,
         stream: data.stream,
-        session_id: bot.sessionId,
+        session_id: data.session_id,
       }),
     }
   );

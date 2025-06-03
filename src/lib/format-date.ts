@@ -1,5 +1,8 @@
 import { parse, format } from "date-fns";
 
+export const toGmtDateString = (date: Date): string => {
+  return format(date, "EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+};
 export const formatGmtDate = (dateString: string): string => {
   try {
     const parsedDate = parse(

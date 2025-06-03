@@ -8,10 +8,9 @@ import { Database } from "@/types/database.type";
 import TabTraining from "./components/TabTraining";
 import { CheckCircle2, HelpCircle, PanelLeft, Share2 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
-import { createSessionId } from "@/app/actions/chat";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
@@ -22,10 +21,7 @@ export default function PageBotDetail({ bot }: Props) {
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const handleOpenPageTestChatbot = async () => {
-    const res = await createSessionId(bot.id);
-    if (res.success) {
-      router.push(`/bots/${bot.id}/test`);
-    }
+    router.push(`/bots/${bot.id}/test`);
   };
   return (
     <main className="p-6 space-y-6">
