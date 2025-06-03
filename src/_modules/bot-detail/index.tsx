@@ -11,11 +11,14 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
+import { ShareModal } from "./components/ModalShare";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
 }
 export default function PageBotDetail({ bot }: Props) {
+  const url = process.env.NEXT_PUBLIC_URL;
+  console.log("ủlr", url);
   const { theme } = useTheme();
   const router = useRouter();
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
@@ -99,6 +102,14 @@ export default function PageBotDetail({ bot }: Props) {
           bot={bot}
           showEmbedModal={showEmbedModal}
           setShowEmbedModal={() => setShowEmbedModal(false)}
+        />
+      )}
+      {showShareModal && (
+        <ShareModal
+          shareLink={`${url}/bots/${bot.id}`}
+          theme={theme}
+          open={showShareModal}
+          setOpen={setShowShareModal}
         />
       )}
     </main>

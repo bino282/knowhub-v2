@@ -1,6 +1,7 @@
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
 import {
+  deteleFileDataset,
   getAllFileDatasets,
   parseFileDocument,
   stopParseFileDocument,
@@ -17,6 +18,7 @@ import { FileInfo } from "@/types/database.type";
 import {
   Database,
   Download,
+  DownloadIcon,
   FileText,
   InfoIcon,
   MoreVertical,
@@ -24,12 +26,15 @@ import {
   PlayIcon,
   RefreshCw,
   RefreshCwIcon,
+  TrashIcon,
+  WrenchIcon,
   XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
+import { DeleteFileModal } from "./ModalDeleteFile";
 
 export default function TabTraining() {
   const params = useParams();
@@ -38,6 +43,7 @@ export default function TabTraining() {
   const { bots } = useBots();
   const [page, setPage] = React.useState("1");
   const [activeFile, setActiveFile] = React.useState<string | null>(null);
+  const [fileDelete, setFileDelete] = React.useState<FileInfo | null>(null);
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const datasetId = bots.find((bot) => bot.id === params.id)?.dataSetId;
   React.useEffect(() => {
@@ -133,6 +139,30 @@ export default function TabTraining() {
       console.error(err);
     }
   };
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      const ids = [fileId];
+      const res = await deteleFileDataset(params.id as string, ids);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      const updatedList = await getAllFileDatasets({
+        datasetId: datasetId as string,
+      });
+      if (updatedList.success && updatedList.data.total > 0) {
+        setFileList(updatedList.data.docs as FileInfo[]);
+      }
+      router.refresh();
+    } catch (err) {
+      toast.error("Something went wrong!");
+      console.error(err);
+    }
+  };
+  const handleDownload = async (fileId: string) => {
+    console.log("Downloading file with ID:", fileId);
+  };
+
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
@@ -221,7 +251,7 @@ export default function TabTraining() {
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Parsing Status
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
                       Action
                     </th>
                   </tr>
@@ -346,9 +376,23 @@ export default function TabTraining() {
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-right">
-                          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            <MoreVertical size={16} />
-                          </button>
+                          <div className="flex items-center justify-center space-x-2">
+                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+                              <WrenchIcon size={12} />
+                            </button>
+                            <button
+                              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                              onClick={() => setFileDelete(file)}
+                            >
+                              <TrashIcon size={12} />
+                            </button>
+                            <button
+                              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                              onClick={() => handleDownload(file.id)}
+                            >
+                              <DownloadIcon size={12} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -449,6 +493,18 @@ export default function TabTraining() {
           </table>
         </div>
       </div>
+      <DeleteFileModal
+        fileName={fileDelete?.name}
+        fileId={fileDelete?.id}
+        botId={params.id as string}
+        onClose={() => setFileDelete(null)}
+        onDelete={() => {
+          if (fileDelete) {
+            handleDeleteFile(fileDelete.id);
+            setFileDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }

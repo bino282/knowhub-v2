@@ -169,3 +169,69 @@ export async function stopParseFileDocument(
   }
   return { success: true, message: "File document stop parsed successfully" };
 }
+export async function deteleFileDataset(botId: string, documentIds: string[]) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const botDatasetId = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { dataSetId: true },
+  });
+  if (!botDatasetId || !botDatasetId.dataSetId) {
+    return { success: false, message: "Bot dataset ID not found" };
+  }
+  try {
+    const response = await apiRequest<ApiResponse>(
+      "DELETE",
+      `api/v1/datasets/${botDatasetId.dataSetId}/documents`,
+      user.apiKey,
+      {
+        ids: documentIds,
+      }
+    );
+    if (response.code !== 0) {
+      console.error("Failed to delete file dataset:");
+      throw new Error("Failed to delete file dataset");
+    }
+    return { success: true, message: "File dataset deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting file dataset:", error);
+    return { success: false, message: "Failed to delete file dataset" };
+  }
+}
+export async function dowloadFileDataset(botId: string, documentId: string) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const botDatasetId = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { dataSetId: true },
+  });
+  if (!botDatasetId || !botDatasetId.dataSetId) {
+    return { success: false, message: "Bot dataset ID not found" };
+  }
+  try {
+    const response = await fetch(
+      `${process.env.RAGFLOW_API_URL}/api/v1/datasets/${botDatasetId.dataSetId}/documents/${documentId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${user.apiKey}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error downloading file dataset:", error);
+    return { success: false, message: "Failed to download file dataset" };
+  }
+}
