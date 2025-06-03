@@ -33,6 +33,7 @@ import {
 import { formatGmtDate, toGmtDateString } from "@/lib/format-date";
 import { renderTextWithReferences } from "./renderMesssage";
 import { ReferenceDocuments } from "./renderDocs";
+import { set } from "date-fns";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -332,7 +333,7 @@ const TestChatbot: React.FC = () => {
           reference: message.reference ?? undefined,
           isRendered: true,
         }));
-        setMessages(formattedMessages);
+        setMessages(formattedMessages as typeof messages);
       } else {
         setMessages([]);
       }
@@ -425,11 +426,11 @@ const TestChatbot: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  {messages.length > 0 && (
+                  {/* {messages.length > 0 && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">
                       {messages[messages.length - 1].content || ""}
                     </p>
-                  )}
+                  )} */}
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                     {formatGmtDate(chat.updatedAt)}
                   </p>
