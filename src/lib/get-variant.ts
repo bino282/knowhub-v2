@@ -4,7 +4,7 @@ export const getVariant = (
   switch (status) {
     case "DONE":
       return "success";
-    case "PROCESSING":
+    case "RUNNING":
       return "info";
     case "FAILED":
       return "error";

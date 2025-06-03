@@ -1,5 +1,5 @@
 export async function apiRequest<T>(
-  method: "GET" | "POST" | "PUT" | "PATCH",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
   apiKey: string,
   data?: unknown,
