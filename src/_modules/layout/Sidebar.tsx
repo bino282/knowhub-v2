@@ -40,11 +40,11 @@ const Sidebar: React.FC = () => {
       label: "Knowledge",
     },
     { to: "/bots", icon: <Bot className="h-5 w-5" />, label: "Chatbots" },
-    {
-      to: "/user-management",
-      icon: <UsersIcon className="h-5 w-5" />,
-      label: "User Management",
-    },
+    // {
+    //   to: "/user-management",
+    //   icon: <UsersIcon className="h-5 w-5" />,
+    //   label: "User Management",
+    // },
     {
       to: "/settings",
       icon: <Settings className="h-5 w-5" />,
