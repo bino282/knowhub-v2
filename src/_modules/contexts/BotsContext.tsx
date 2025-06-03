@@ -204,37 +204,6 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       toast.error(res.error || "Failed to create bot:");
     }
   };
-  // const updateBot = async (id: string, data: Partial<Bot>) => {
-  //   const { error } = await supabase.from("bots").update(data).eq("id", id);
-
-  //   if (error) throw error;
-
-  //   setBots((prev) =>
-  //     prev.map((bot) => (bot.id === id ? { ...bot, ...data } : bot))
-  //   );
-  //   if (selectedBot?.id === id) {
-  //     setSelectedBot((prev) => (prev ? { ...prev, ...data } : prev));
-  //   }
-  // };
-
-  // const deleteBot = async (id: string) => {
-  //   const { error } = await supabase.from("bots").delete().eq("id", id);
-
-  //   if (error) throw error;
-
-  //   setBots((prev) => prev.filter((bot) => bot.id !== id));
-  //   if (selectedBot?.id === id) {
-  //     setSelectedBot(null);
-  //   }
-
-  //   // Clean up local state
-  //   const newDocsByBot = { ...documentsByBot };
-  //   const newMsgsByBot = { ...messagesByBot };
-  //   delete newDocsByBot[id];
-  //   delete newMsgsByBot[id];
-  //   setDocumentsByBot(newDocsByBot);
-  //   setMessagesByBot(newMsgsByBot);
-  // };
 
   const selectBot = (id: string) => {
     const bot = bots.find((b) => b.id === id) || null;

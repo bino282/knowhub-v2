@@ -14,12 +14,20 @@ import { toast } from "sonner";
 import { UploadIcon } from "lucide-react";
 import { createFileDataset } from "@/app/actions/file-dataset";
 import { useParams, useRouter } from "next/navigation";
+import { set } from "date-fns";
 
 interface Props {
   open: boolean;
   close: () => void;
+  fetchList?: () => void; // Optional prop to fetch list after upload
+  setIsPolling: React.Dispatch<React.SetStateAction<boolean>>;
 }
-export function ModalUploadFile({ open, close }: Props) {
+export function ModalUploadFile({
+  open,
+  close,
+  fetchList,
+  setIsPolling,
+}: Props) {
   const params = useParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -47,6 +55,10 @@ export function ModalUploadFile({ open, close }: Props) {
           toast.success(result.message);
           handleClose();
           router.refresh();
+          if (fetchList) {
+            fetchList();
+            setIsPolling(true); // Start polling after upload
+          }
         } else {
           toast.error(result.message || "Failed to upload file");
         }

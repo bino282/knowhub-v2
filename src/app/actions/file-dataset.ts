@@ -27,6 +27,8 @@ export async function createFileDataset(datasetId: string, formData: FormData) {
     }
 
     const data = await result.data;
+    await parseFileDocumentWithDataset(data[0].dataset_id, [data[0].id]);
+
     return {
       data,
       success: true,
