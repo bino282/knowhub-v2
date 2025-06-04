@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Database } from "@/types/database.type";
+import { set } from "date-fns";
 import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
@@ -23,7 +24,7 @@ type FormValues = {
 };
 export default function TabSetting({ bot }: Props) {
   const { theme } = useTheme();
-  const { datasets } = useBots();
+  const { datasets, selectedBot, setBots, bots } = useBots();
   const params = useParams();
   const router = useRouter();
   const listOptionDatasets = datasets.map((dataset) => ({
@@ -31,7 +32,17 @@ export default function TabSetting({ bot }: Props) {
     label: dataset.name,
   }));
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
-  const [prompt, setPrompt] = React.useState<string>("");
+  const [prompt, setPrompt] =
+    React.useState<string>(`You are a knowledgeable and context-aware assistant named ${selectedBot?.name} . Use the following knowledge base to answer the user's question. Your response should:
+Summarize the relevant content from the knowledge base.
+List the specific pieces of data from the knowledge base used in your answer.
+Provide a detailed and accurate response based on the retrieved information.
+Take the chat history into account when forming your answer.
+If the knowledge base does not contain relevant information to answer the question, respond with:
+"I cannot find information for this question in the knowledge base."
+Here is the knowledge base:
+{knowledge}
+Here is question:`);
   const [similarityThreshold, setSimilarityThreshold] =
     React.useState<number>(0.2);
   const [topN, setTopN] = React.useState<number>(6);
@@ -55,10 +66,18 @@ export default function TabSetting({ bot }: Props) {
     if (!res.success) {
       toast.error(res.message);
     }
+    setBots((prev) => {
+      const updatedBots = prev.map((b) => {
+        if (b.id === bot.id) {
+          return { ...b, ...data };
+        }
+        return b;
+      });
+      return updatedBots;
+    });
     toast.success(res.message);
     router.refresh();
   };
-
   const inputStyle = `w-full rounded-md ${
     theme === "dark"
       ? "bg-gray-700 border-gray-600"
@@ -75,14 +94,13 @@ export default function TabSetting({ bot }: Props) {
   };
   const handleSettingPrompt = async () => {
     const res = await settingPrompt(params.id as string, {
-      prompt: prompt + `{knowledge}`,
+      prompt: prompt,
       similarity_threshold: similarityThreshold,
       top_n: topN,
     });
     if (!res.success) {
       toast.error(res.message);
     } else {
-      console.log("res", res);
       toast.success(res.message);
       router.refresh();
     }

@@ -12,11 +12,45 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import { useSession } from "next-auth/react";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { updateUserProfile } from "@/app/actions/user";
 
 const SettingsPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const session = useSession();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const handleUpdateProfile = async () => {
+    if (!password) {
+      toast.error("Please enter a full name or a new password.");
+      return;
+    }
+
+    if (password && confirmPassword !== password) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    try {
+      const res = await updateUserProfile(session.data?.user?.id as string, {
+        profileData: {
+          password: password || undefined,
+        },
+      });
+
+      if (res.success) {
+        toast.success(res.message);
+      } else {
+        toast.error(res.message || "Update failed.");
+      }
+    } catch (err: any) {
+      console.error("Update error:", err);
+      toast.error(err?.message || "An unexpected error occurred.");
+    }
+  };
 
   const baseCardClasses =
     theme === "dark"
@@ -244,18 +278,19 @@ const SettingsPage: React.FC = () => {
       {/* Account Settings */}
       <div className={`${baseCardClasses} border rounded-lg p-6`}>
         <h3 className="font-semibold mb-4">Account Settings</h3>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input
+            <Input
               type="text"
-              defaultValue="John Doe"
-              className={`w-full rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-300 text-gray-800"
-              } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+              defaultValue={session.data?.user?.name || ""}
+              disabled
+              className={`w-full rounded-md 
+                !py-2.5 !px-4 ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-800"
+                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
             />
           </div>
 
@@ -263,14 +298,16 @@ const SettingsPage: React.FC = () => {
             <label className="block text-sm font-medium mb-1">
               Email Address
             </label>
-            <input
+            <Input
               type="email"
-              defaultValue="john.doe@example.com"
-              className={`w-full rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-300 text-gray-800"
-              } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+              disabled
+              defaultValue={session.data?.user?.email || ""}
+              className={`w-full rounded-md 
+                !py-2.5 !px-4 ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-800"
+                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
             />
           </div>
 
@@ -280,6 +317,8 @@ const SettingsPage: React.FC = () => {
             </label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className={`w-full rounded-md ${
                 theme === "dark"
                   ? "bg-gray-700 border-gray-600 text-gray-200"
@@ -294,11 +333,13 @@ const SettingsPage: React.FC = () => {
             </label>
             <input
               type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className={`w-full rounded-md ${
                 theme === "dark"
                   ? "bg-gray-700 border-gray-600 text-gray-200"
                   : "bg-gray-100 border-gray-300 text-gray-600"
-              } border px-3 py-2 bg-opacity-50 cursor-not-allowed`}
+              } border px-3 py-2 bg-opacity-50`}
             />
           </div>
         </div>
@@ -311,7 +352,11 @@ const SettingsPage: React.FC = () => {
             </span>
           </div>
 
-          <button className="flex items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+          <button
+            className="flex items-center px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            onClick={handleUpdateProfile}
+            disabled={!password || password !== confirmPassword}
+          >
             <Save size={16} className="mr-2" />
             Save Changes
           </button>
