@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { formatGmtDate } from "@/lib/format-date";
+import { formatDateTime } from "@/lib/format-date";
 import { useTheme } from "../contexts/ThemeContext";
 import { Database } from "@/types/database.type";
 import { DeleteBotModal } from "../components/ModalDeleteBot";
@@ -63,7 +63,7 @@ const BotsPage: React.FC = () => {
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bot.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  console.log("Filtered Bots:", filteredBots);
   const handleBotClick = (botId: string) => {
     selectBot(botId);
     router.push(`/bots/${botId}`);
@@ -237,7 +237,7 @@ const BotsPage: React.FC = () => {
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                     {bot.description}
                   </p>
-                  {bot.dataset && (
+                  {bot.dataset && bot.dataset !== null && (
                     <div className="mt-3 flex items-center gap-2 text-gray-800 dark:text-gray-400">
                       <DatabaseIcon className="size-4" />
                       <p className="text-sm">Linked to: {bot.dataset.name}</p>
@@ -271,7 +271,7 @@ const BotsPage: React.FC = () => {
               </div>
               <div className="mt-4 px-5 pb-5 flex items-center justify-between">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Updated {formatGmtDate(bot.dataset?.update_date || "")}
+                  Updated {formatDateTime(bot.updatedAt)}
                 </p>
                 <button
                   onClick={(e) => {
