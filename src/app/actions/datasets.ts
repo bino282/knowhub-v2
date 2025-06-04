@@ -65,3 +65,41 @@ export async function getAllDatasets() {
     return { success: false, message: "Failed to fetch datasets" };
   }
 }
+export async function deleteDataset(datasetId: string) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+
+  try {
+    const response = await apiRequest<ApiResponse>(
+      "DELETE",
+      `api/v1/datasets`,
+      user.apiKey,
+      {
+        ids: [datasetId],
+      }
+    );
+
+    if (response.code !== 0) {
+      throw new Error("Failed to delete dataset");
+    }
+    await prisma.bot.updateMany({
+      where: {
+        dataSetId: datasetId,
+      },
+      data: {
+        dataSetId: undefined,
+      },
+    });
+
+    return { success: true, message: "Dataset deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting dataset:", error);
+    return { success: false, message: "Failed to delete dataset" };
+  }
+}

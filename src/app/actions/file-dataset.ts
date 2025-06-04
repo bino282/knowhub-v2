@@ -169,7 +169,10 @@ export async function stopParseFileDocument(
   }
   return { success: true, message: "File document stop parsed successfully" };
 }
-export async function deteleFileDataset(botId: string, documentIds: string[]) {
+export async function deteleFileDataset(
+  datasetId: string,
+  documentIds: string[]
+) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
@@ -178,17 +181,10 @@ export async function deteleFileDataset(botId: string, documentIds: string[]) {
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };
   }
-  const botDatasetId = await prisma.bot.findUnique({
-    where: { id: botId },
-    select: { dataSetId: true },
-  });
-  if (!botDatasetId || !botDatasetId.dataSetId) {
-    return { success: false, message: "Bot dataset ID not found" };
-  }
   try {
     const response = await apiRequest<ApiResponse>(
       "DELETE",
-      `api/v1/datasets/${botDatasetId.dataSetId}/documents`,
+      `api/v1/datasets/${datasetId}/documents`,
       user.apiKey,
       {
         ids: documentIds,

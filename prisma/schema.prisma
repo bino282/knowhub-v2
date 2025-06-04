@@ -69,6 +69,7 @@ model Bot {
   name        String
   description String
   avatarUrl   String?  @map("avatar_url")
+  isActive    Boolean  @default(true) @map("is_active")
   settings    Json     @default("{\"model\": \"gpt-3.5-turbo\", \"temperature\": 0.7, \"maxTokens\": 1024}")
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id])

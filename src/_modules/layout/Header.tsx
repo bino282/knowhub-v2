@@ -16,15 +16,9 @@ const Header: React.FC = () => {
   // Get the current page title based on the route
   const getPageTitle = () => {
     if (pathname.includes("/dashboard")) return "Dashboard";
-    if (pathname.includes("/bots") && pathname.split("/").length > 2) {
-      return "Bot Detail";
-    }
 
-    if (pathname.includes("/bots")) return "Manage Bots";
-    if (pathname.includes("/knowledge") && pathname.split("/").length > 2) {
-      return "Dataset Detail";
-    }
-    if (pathname.includes("/knowledge")) return "KnowLedge";
+    if (pathname.includes("/bots")) return "Chatbots";
+    if (pathname.includes("/knowledge")) return "KnowLedge Bases";
 
     if (pathname.includes("/files")) return "Manage Files";
     if (pathname.includes("/workspace")) return "Workspace";
@@ -52,7 +46,7 @@ const Header: React.FC = () => {
             <Input
               type="text"
               placeholder="Search..."
-              className="input py-1.5 pl-9 pr-4"
+              className="input py-1.5 pl-9 pr-4 bg-white dark:bg-gray-700"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>

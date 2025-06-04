@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useBots } from "../contexts/BotsContext";
-import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -137,7 +136,7 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
             />
 
             {/* Model (Radio Group) */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="model"
               render={({ field }) => (
@@ -167,7 +166,7 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             {/* Max Tokens (Select) */}
             {listOptionDatasets.length > 0 && (

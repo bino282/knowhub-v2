@@ -18,6 +18,7 @@ const BotSchema = z.object({
   chatId: z.string(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  isActive: z.boolean().optional().default(true), // camel-case
 });
 export async function createNewBot(data: any) {
   const session = await getServerSession(authOptions);
@@ -41,7 +42,7 @@ export async function createNewBot(data: any) {
       dataset_ids: [dataSetId],
     }
   );
-  console.log("Create chat response:", res);
+  console.log("Response from chat creation:", res);
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }
@@ -56,6 +57,7 @@ export async function createNewBot(data: any) {
     updatedAt: data.updated_at,
     dataSetId: data.data_set_id,
     chatId: chatId,
+    isActive: data.is_active ?? true, // default to true if not provided
   });
   try {
     const data = await prisma.bot.create({
@@ -116,4 +118,57 @@ export async function deleteChatBot(botId: string) {
     where: { id: botId },
   });
   return { success: true, message: "Bot deleted successfully" };
+}
+export async function activeBot(botId: string, active: boolean) {
+  const res = await prisma.bot.update({
+    where: { id: botId },
+    data: {
+      isActive: active,
+    },
+  });
+  revalidatePath("/bots");
+  if (!res) {
+    return { success: false, error: "Failed to update bot status" };
+  }
+  return {
+    data: res,
+    success: true,
+    message: "Bot status updated successfully",
+  };
+}
+export async function settingPrompt(
+  botId: string,
+  prompt: {
+    prompt: string;
+    similarity_threshold: number;
+    top_n: number;
+  }
+) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const bot = await prisma.bot.findUnique({
+    where: { id: botId },
+  });
+  const res = await apiRequest<ApiResponse>(
+    "PUT",
+    `api/v1/chats/${bot?.chatId}`,
+    user.apiKey,
+    {
+      prompt: prompt,
+    }
+  );
+  if (res.code !== 0) {
+    return { success: false, error: "Failed to update bot prompt" };
+  }
+  return {
+    data: res.data,
+    success: true,
+    message: "Bot prompt updated successfully",
+  };
 }

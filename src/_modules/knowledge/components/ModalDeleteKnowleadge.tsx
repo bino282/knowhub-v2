@@ -7,42 +7,26 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { deleteChatBot } from "@/app/actions/bots";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useBots } from "../contexts/BotsContext";
 
 type DeleteBotModalProps = {
   open: boolean;
   close: () => void;
-  botName: string;
-  botId?: string;
+  knowledgeId: string;
+  onDeleteKnowLeadge: () => Promise<void>;
 };
 
-export function DeleteBotModal({
+export function DeleteKnowledgeModal({
   open,
   close,
-  botName,
-  botId,
+  onDeleteKnowLeadge,
 }: DeleteBotModalProps) {
   const router = useRouter();
-  const { setBots } = useBots();
   const onDelete = async (e: any) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!botId) {
-      toast.error("Bot ID is required for deletion");
-      return;
-    }
-    const res = await deleteChatBot(botId);
-    if (!res.success) {
-      toast.error(res.message);
-    }
-    setBots((prevBots) => prevBots.filter((bot) => bot.id !== botId));
-    toast.success(res.message);
+    await onDeleteKnowLeadge();
     router.refresh();
-    router.push("/bots");
     close();
   };
   return (
@@ -50,11 +34,10 @@ export function DeleteBotModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2  dark:text-white text-gray-800">
-            Delete Chatbot
+            Delete Knowledge
           </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <span>{botName}</span>? This action
-            cannot be undone.
+            Are you sure you want to delete? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
 

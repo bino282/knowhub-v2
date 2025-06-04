@@ -30,6 +30,7 @@ import {
   createMessages,
   createSessionId,
   createSessionMessage,
+  deleteChatHistory,
   getListChat,
   getListMessages,
 } from "@/app/actions/chat";
@@ -37,6 +38,7 @@ import { formatGmtDate, toGmtDateString } from "@/lib/format-date";
 import { renderTextWithReferences } from "./renderMesssage";
 import { ReferenceDocuments } from "./renderDocs";
 import { set } from "date-fns";
+import { DeleteChatHistoryModal } from "./components/ModalDeleteChatHistory";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -93,6 +95,7 @@ const TestChatbot: React.FC = () => {
 
   const [content, setContent] = React.useState<string>("");
   const [isSending, setIsSending] = React.useState<boolean>(false);
+  const [sessionDeleteId, setSessionDeleteId] = React.useState<string>("");
   React.useEffect(() => {
     getListChat(params.id as string)
       .then((res) => {
@@ -190,6 +193,23 @@ const TestChatbot: React.FC = () => {
       } finally {
         setIsSending(false); // luôn reset flag dù thành công hay lỗi
       }
+    }
+  };
+  const handleDeleteChatHistory = async () => {
+    if (!sessionDeleteId) return;
+    try {
+      const res = await deleteChatHistory(sessionDeleteId);
+      if (!res.success) {
+        toast.error(res.message || "Failed to delete chat history");
+        return;
+      }
+      setChatHistory((prev) =>
+        prev.filter((chat) => chat.id !== sessionDeleteId)
+      );
+      toast.success("Chat history deleted successfully");
+    } catch (error) {
+      console.error("Error deleting chat history:", error);
+      toast.error("An error occurred while deleting chat history");
     }
   };
   async function getMessage(sessionId: string, content: string): Promise<void> {
@@ -349,7 +369,6 @@ const TestChatbot: React.FC = () => {
       toast.error("An error occurred while fetching messages");
     }
   }
-
   return (
     <div className="h-[calc(100vh-7.8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-4">
@@ -427,7 +446,13 @@ const TestChatbot: React.FC = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium truncate">{chat.name}</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSessionDeleteId(chat.id);
+                      }}
+                    >
                       <button className="text-gray-500 hover:text-red-500">
                         <Trash2 size={14} />
                       </button>
@@ -658,6 +683,11 @@ const TestChatbot: React.FC = () => {
           </div>
         )}
       </div>
+      <DeleteChatHistoryModal
+        onConfirm={handleDeleteChatHistory}
+        open={!!sessionDeleteId}
+        close={() => setSessionDeleteId("")}
+      />
     </div>
   );
 };
