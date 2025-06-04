@@ -10,6 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import React from "react";
+import { toast } from "sonner";
 
 interface DeleteFileModalProps {
   fileId?: string;
@@ -25,8 +27,21 @@ export function DeleteFileModal({
   onDelete,
 }: DeleteFileModalProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const handleConfirm = () => {
-    onDelete();
+    if (!fileName) {
+      onClose();
+      return;
+    }
+    setIsLoading(true);
+    try {
+      onDelete();
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast.error("Failed to delete file. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
     onClose();
     router.refresh();
   };
@@ -49,6 +64,8 @@ export function DeleteFileModal({
             variant="destructive"
             onClick={handleConfirm}
             className="text-white"
+            disabled={isLoading}
+            isLoading={isLoading}
           >
             Delete
           </Button>
