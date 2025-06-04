@@ -1,4 +1,5 @@
 import { CustomSlider } from "@/_modules/components/custom-slider";
+import Loading from "@/_modules/components/loading";
 import { DeleteBotModal } from "@/_modules/components/ModalDeleteBot";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
@@ -27,6 +28,9 @@ export default function TabSetting({ bot }: Props) {
   const { datasets, selectedBot, setBots, bots } = useBots();
   const params = useParams();
   const router = useRouter();
+  const [isLoadingChangeBot, setIsLoadingChangeBot] =
+    React.useState<boolean>(false);
+  const [isSavePrompt, setIsSavePrompt] = React.useState<boolean>(false);
   const listOptionDatasets = datasets.map((dataset) => ({
     value: dataset.id,
     label: dataset.name,
@@ -62,21 +66,29 @@ Here is question:`);
     },
   });
   const onSubmit = async (data: FormValues) => {
-    const res = await updateChatBot(params.id as string, data);
-    if (!res.success) {
-      toast.error(res.message);
-    }
-    setBots((prev) => {
-      const updatedBots = prev.map((b) => {
-        if (b.id === bot.id) {
-          return { ...b, ...data };
-        }
-        return b;
+    setIsLoadingChangeBot(true);
+    try {
+      const res = await updateChatBot(params.id as string, data);
+      if (!res.success) {
+        toast.error(res.message);
+      }
+      setBots((prev) => {
+        const updatedBots = prev.map((b) => {
+          if (b.id === bot.id) {
+            return { ...b, ...data };
+          }
+          return b;
+        });
+        return updatedBots;
       });
-      return updatedBots;
-    });
-    toast.success(res.message);
-    router.refresh();
+      toast.success(res.message);
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating bot:", error);
+      toast.error("Failed to update bot. Please try again.");
+    } finally {
+      setIsLoadingChangeBot(false);
+    }
   };
   const inputStyle = `w-full rounded-md ${
     theme === "dark"
@@ -93,16 +105,24 @@ Here is question:`);
     }
   };
   const handleSettingPrompt = async () => {
-    const res = await settingPrompt(params.id as string, {
-      prompt: prompt,
-      similarity_threshold: similarityThreshold,
-      top_n: topN,
-    });
-    if (!res.success) {
-      toast.error(res.message);
-    } else {
-      toast.success(res.message);
-      router.refresh();
+    setIsSavePrompt(true);
+    try {
+      const res = await settingPrompt(params.id as string, {
+        prompt: prompt,
+        similarity_threshold: similarityThreshold,
+        top_n: topN,
+      });
+      if (!res.success) {
+        toast.error(res.message);
+      } else {
+        toast.success(res.message);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error saving prompt:", error);
+      toast.error("Failed to save prompt. Please try again.");
+    } finally {
+      setIsSavePrompt(false);
     }
   };
   return (
@@ -158,138 +178,16 @@ Here is question:`);
                   : "bg-blue-600 hover:bg-blue-700"
               } text-white transition-colors`}
             >
-              <Save size={16} className="mr-2" />
+              {isLoadingChangeBot ? (
+                <Loading />
+              ) : (
+                <Save size={16} className="mr-2" />
+              )}
               Save Changes
             </button>
           </div>
         </form>
       </div>
-
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`${baseCardClasses} rounded-lg border p-6`}>
-          <h3 className="font-semibold mb-4">Response Settings</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Response Style
-              </label>
-              <select
-                className={`w-full rounded-md ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-white border-gray-300"
-                } border px-3 py-2`}
-              >
-                <option>Friendly and Helpful</option>
-                <option>Concise and Direct</option>
-                <option>Technical and Detailed</option>
-                <option>Custom</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Maximum Response Length
-              </label>
-              <input
-                type="number"
-                defaultValue={150}
-                className={`w-full rounded-md ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-white border-gray-300"
-                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Maximum number of words in a response
-              </p>
-            </div>
-
-            <div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="ml-2">Include citations in responses</span>
-              </label>
-            </div>
-
-            <div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="ml-2">Allow follow-up questions</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className={`${baseCardClasses} rounded-lg border p-6`}>
-          <h3 className="font-semibold mb-4">Training Settings</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Training Frequency
-              </label>
-              <select
-                className={`w-full rounded-md ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-white border-gray-300"
-                } border px-3 py-2`}
-              >
-                <option>Manual only</option>
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option>When knowledge base updates</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Model Type
-              </label>
-              <select
-                className={`w-full rounded-md ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-white border-gray-300"
-                } border px-3 py-2`}
-              >
-                <option>Standard</option>
-                <option>Advanced</option>
-                <option>Enterprise</option>
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                Advanced and Enterprise models require additional credits
-              </p>
-            </div>
-
-            <div className="pt-4">
-              <button
-                className={`flex items-center px-4 py-2 rounded-md ${
-                  theme === "dark"
-                    ? "bg-purple-600 hover:bg-purple-700"
-                    : "bg-purple-600 hover:bg-purple-700"
-                } text-white transition-colors w-full justify-center`}
-              >
-                <Play size={16} className="mr-2" />
-                Start Training
-              </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Last trained: 3 days ago
-              </p>
-            </div>
-          </div>
-        </div>
-      </div> */}
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
         <h3 className="font-semibold mb-4">Setting Prompt</h3>
         <div>
@@ -336,7 +234,7 @@ Here is question:`);
             } text-white transition-colors`}
             onClick={handleSettingPrompt}
           >
-            <Save size={16} className="mr-2" />
+            {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
             Save Prompt
           </button>
         </div>

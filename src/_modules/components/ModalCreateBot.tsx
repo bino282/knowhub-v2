@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useBots } from "../contexts/BotsContext";
+import Loading from "./loading";
 
 interface Props {
   open: boolean;
@@ -55,6 +56,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
   const { datasets } = useBots();
+  const [isLoading, setIsLoading] = React.useState(false);
   const listOptionDatasets = datasets.map((dataset) => ({
     value: dataset.id,
     label: dataset.name,
@@ -75,16 +77,21 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
   }, [datasets, form]);
 
   const onSubmit = async (data: FormValues) => {
-    await onCreate(
-      data.name,
-      data.description,
-      {
-        model: data.model,
-      },
-      data.dataSetId
-    );
-    form.reset();
-    setOpen(false);
+    setIsLoading(true);
+    try {
+      await onCreate(
+        data.name,
+        data.description,
+        { model: data.model },
+        data.dataSetId
+      );
+      form.reset();
+      setOpen(false);
+    } catch (error) {
+      console.error("Error creating bot:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -214,6 +221,8 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
               <Button
                 type="submit"
                 className="bg-blue-600 text-gray-200 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                disabled={isLoading}
+                isLoading={isLoading}
               >
                 Create
               </Button>

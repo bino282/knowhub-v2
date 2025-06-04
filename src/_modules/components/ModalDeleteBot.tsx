@@ -12,6 +12,7 @@ import { deleteChatBot } from "@/app/actions/bots";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useBots } from "../contexts/BotsContext";
+import React from "react";
 
 type DeleteBotModalProps = {
   open: boolean;
@@ -27,6 +28,7 @@ export function DeleteBotModal({
   botId,
 }: DeleteBotModalProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { setBots } = useBots();
   const onDelete = async (e: any) => {
     e.preventDefault();
@@ -35,15 +37,23 @@ export function DeleteBotModal({
       toast.error("Bot ID is required for deletion");
       return;
     }
-    const res = await deleteChatBot(botId);
-    if (!res.success) {
-      toast.error(res.message);
+    setIsLoading(true);
+    try {
+      const res = await deleteChatBot(botId);
+      if (!res.success) {
+        toast.error(res.message);
+      }
+      setBots((prevBots) => prevBots.filter((bot) => bot.id !== botId));
+      toast.success(res.message);
+      router.refresh();
+      router.push("/bots");
+      close();
+    } catch (error) {
+      console.error("Error deleting bot:", error);
+      toast.error("Failed to delete bot. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    setBots((prevBots) => prevBots.filter((bot) => bot.id !== botId));
-    toast.success(res.message);
-    router.refresh();
-    router.push("/bots");
-    close();
   };
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -66,6 +76,8 @@ export function DeleteBotModal({
             variant="destructive"
             onClick={(e) => onDelete(e)}
             className="text-white"
+            disabled={isLoading}
+            isLoading={isLoading}
           >
             Delete
           </Button>
