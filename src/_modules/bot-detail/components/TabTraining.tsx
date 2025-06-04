@@ -21,6 +21,7 @@ import {
   Download,
   DownloadIcon,
   FileText,
+  Info,
   InfoIcon,
   Play,
   PlayIcon,
@@ -46,6 +47,9 @@ export default function TabTraining() {
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const bot = bots.find((bot) => bot.id === params.id);
   React.useEffect(() => {
+    if (!bot?.dataSetId) {
+      return;
+    }
     getAllFileDatasets({
       datasetId: bot?.dataSetId as string,
     })
@@ -90,9 +94,7 @@ export default function TabTraining() {
 
     try {
       if (fileId === "all") {
-        const ids = fileList
-          .filter((file) => file.run === "UNSTART")
-          .map((file) => file.id);
+        const ids = fileList.map((file) => file.id);
 
         const res = await parseFileDocument(params.id as string, ids);
         if (!res.success) {
@@ -164,33 +166,41 @@ export default function TabTraining() {
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
         <h3 className="font-semibold mb-4">Knowledge Base Training</h3>
 
-        <div className="flex items-start space-x-3 mb-6">
-          <div
-            className={`p-3 rounded-md ${
-              theme === "dark" ? "bg-blue-500/10" : "bg-blue-50"
-            }`}
-          >
-            <Database size={20} className="text-blue-500" />
-          </div>
-
-          <div>
-            <h4 className="font-medium">{bot?.dataset?.name}</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {bot?.dataset?.chunk_count} documents • Update{" "}
-              {formatGmtDate(bot?.dataset?.update_date as string)}
-            </p>
-
-            <Link
-              href={`/knowledge/${bot?.dataSetId}`}
-              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
+        {bot?.dataset ? (
+          <div className="flex items-start space-x-3 mb-6">
+            <div
+              className={`p-3 rounded-md ${
+                theme === "dark" ? "bg-blue-500/10" : "bg-blue-50"
+              }`}
             >
-              View Knowledge Base
-            </Link>
-          </div>
-        </div>
+              <Database size={20} className="text-blue-500" />
+            </div>
 
-        <div className="space-y-4">
-          {/* <div>
+            <div>
+              <h4 className="font-medium">{bot?.dataset?.name}</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {bot?.dataset?.chunk_count} documents • Update{" "}
+                {formatGmtDate(bot?.dataset?.update_date as string)}
+              </p>
+
+              <Link
+                href={`/knowledge/${bot?.dataSetId}`}
+                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
+              >
+                View Knowledge Base
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <Info className="mr-2 text-yellow-400" />
+            No dataset selected. Please select a dataset to start training.
+          </div>
+        )}
+
+        {bot?.dataset && (
+          <div className="space-y-4">
+            {/* <div>
             <label className="block text-sm font-medium mb-1">
               Document Selection
             </label>
@@ -207,217 +217,223 @@ export default function TabTraining() {
             </select>
           </div> */}
 
-          {/* File List Table */}
-          <div className="mt-6">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="font-medium">Document List</h4>
-              <div className="flex space-x-2">
-                <button
-                  className={`p-2 rounded-md ${
-                    theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
-                  } text-gray-500 transition-colors`}
-                >
-                  <Download size={16} />
-                </button>
-                <button
-                  className={`p-2 rounded-md ${
-                    theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
-                  } text-gray-500 transition-colors`}
-                >
-                  <RefreshCw size={16} />
-                </button>
+            {/* File List Table */}
+            <div className="mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-medium">Document List</h4>
+                <div className="flex space-x-2">
+                  <button
+                    className={`p-2 rounded-md ${
+                      theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    } text-gray-500 transition-colors`}
+                  >
+                    <Download size={16} />
+                  </button>
+                  <button
+                    className={`p-2 rounded-md ${
+                      theme === "dark"
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-100"
+                    } text-gray-500 transition-colors`}
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Chunk Number
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Upload Date
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Chunk Method
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Parsing Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {fileList.length === 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
                     <tr>
-                      <td
-                        colSpan={6}
-                        className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
-                      >
-                        No files found.
-                      </td>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Chunk Number
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Upload Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Chunk Method
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        Parsing Status
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                        Action
+                      </th>
                     </tr>
-                  ) : (
-                    fileList.map((file, index) => (
-                      <tr
-                        key={index}
-                        className={`${
-                          theme === "dark"
-                            ? "hover:bg-gray-700"
-                            : "hover:bg-gray-50"
-                        }`}
-                      >
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center max-w-80 overflow-hidden">
-                            <FileText
-                              size={16}
-                              className="mr-2 text-gray-500"
-                            />
-                            <span className="text-sm flex-1 truncate">
-                              {file.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                          {file.chunk_count}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                          {formatGmtDate(file.update_date)}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                          {file.chunk_method}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex items-center justify-between">
-                            <Badge variant={getVariant(file.run)}>
-                              {file.run === "RUNNING" ? "Parsing" : file.run}
-                              {file.run === "RUNNING" && (
-                                <span className="ml-1">{`${(
-                                  file.progress * 100
-                                ).toFixed(2)}%`}</span>
-                              )}
-                            </Badge>
-                            {file.run === "UNSTART" && (
-                              <div
-                                className="p-2 rounded-full bg-green-700/20 cursor-pointer"
-                                onClick={() => handleParseFile(file.id)}
-                              >
-                                <PlayIcon className="size-4 text-green-500 cursor-pointer" />
-                              </div>
-                            )}
-
-                            {file.run === "RUNNING" && (
-                              <div className="p-2 rounded-full bg-red-700/20 cursor-pointer hover:bg-red-700/30 ">
-                                <XIcon
-                                  className="size-4 text-red-500"
-                                  onClick={() => handleStopParseFile(file.id)}
-                                />
-                              </div>
-                            )}
-
-                            {(file.run === "DONE" || file.run === "CANCEL") && (
-                              <Popover
-                                open={activeFile === file.id}
-                                onOpenChange={(open) =>
-                                  setActiveFile(open ? file.id : null)
-                                }
-                              >
-                                <PopoverTrigger asChild>
-                                  <div
-                                    className="p-2 rounded-full bg-white dark:bg-green-700/20 cursor-pointer hover:bg-green-700/30"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveFile(file.id);
-                                    }}
-                                  >
-                                    <RefreshCwIcon className="size-4 text-green-500" />
-                                  </div>
-                                </PopoverTrigger>
-
-                                <PopoverContent>
-                                  <p className="text-sm text-gray-800 dark:text-white flex items-start">
-                                    <InfoIcon className="dark:text-yellow-200 text-gray-700 size-4 mr-2 mt-1" />
-                                    Do you want to clear the existing{" "}
-                                    {file.chunk_count} chunks?
-                                  </p>
-                                  <div className="mt-2 flex justify-end space-x-2">
-                                    <button
-                                      className="px-2 py-0.5 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActiveFile(null);
-                                      }}
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleParseFile(file.id);
-                                        setActiveFile(null);
-                                      }}
-                                    >
-                                      Yes
-                                    </button>
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-center space-x-2">
-                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
-                              <WrenchIcon size={12} />
-                            </button>
-                            <button
-                              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
-                              onClick={() => setFileDelete(file)}
-                            >
-                              <TrashIcon size={12} />
-                            </button>
-                            <button
-                              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
-                              onClick={() => handleDownload(file.id)}
-                            >
-                              <DownloadIcon size={12} />
-                            </button>
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {fileList.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+                        >
+                          No files found.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      fileList.map((file, index) => (
+                        <tr
+                          key={index}
+                          className={`${
+                            theme === "dark"
+                              ? "hover:bg-gray-700"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center max-w-80 overflow-hidden">
+                              <FileText
+                                size={16}
+                                className="mr-2 text-gray-500"
+                              />
+                              <span className="text-sm flex-1 truncate">
+                                {file.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            {file.chunk_count}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            {formatGmtDate(file.update_date)}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            {file.chunk_method}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center justify-between">
+                              <Badge variant={getVariant(file.run)}>
+                                {file.run === "RUNNING" ? "Parsing" : file.run}
+                                {file.run === "RUNNING" && (
+                                  <span className="ml-1">{`${(
+                                    file.progress * 100
+                                  ).toFixed(2)}%`}</span>
+                                )}
+                              </Badge>
+                              {file.run === "UNSTART" && (
+                                <div
+                                  className="p-2 rounded-full bg-green-700/20 cursor-pointer"
+                                  onClick={() => handleParseFile(file.id)}
+                                >
+                                  <PlayIcon className="size-4 text-green-500 cursor-pointer" />
+                                </div>
+                              )}
+
+                              {file.run === "RUNNING" && (
+                                <div className="p-2 rounded-full bg-red-700/20 cursor-pointer hover:bg-red-700/30 ">
+                                  <XIcon
+                                    className="size-4 text-red-500"
+                                    onClick={() => handleStopParseFile(file.id)}
+                                  />
+                                </div>
+                              )}
+
+                              {(file.run === "DONE" ||
+                                file.run === "CANCEL") && (
+                                <Popover
+                                  open={activeFile === file.id}
+                                  onOpenChange={(open) =>
+                                    setActiveFile(open ? file.id : null)
+                                  }
+                                >
+                                  <PopoverTrigger asChild>
+                                    <div
+                                      className="p-2 rounded-full bg-white dark:bg-green-700/20 cursor-pointer hover:bg-green-700/30"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveFile(file.id);
+                                      }}
+                                    >
+                                      <RefreshCwIcon className="size-4 text-green-500" />
+                                    </div>
+                                  </PopoverTrigger>
+
+                                  <PopoverContent>
+                                    <p className="text-sm text-gray-800 dark:text-white flex items-start">
+                                      <InfoIcon className="dark:text-yellow-200 text-gray-700 size-4 mr-2 mt-1" />
+                                      Do you want to clear the existing{" "}
+                                      {file.chunk_count} chunks?
+                                    </p>
+                                    <div className="mt-2 flex justify-end space-x-2">
+                                      <button
+                                        className="px-2 py-0.5 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveFile(null);
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleParseFile(file.id);
+                                          setActiveFile(null);
+                                        }}
+                                      >
+                                        Yes
+                                      </button>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-right">
+                            <div className="flex items-center justify-center space-x-2">
+                              <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+                                <WrenchIcon size={12} />
+                              </button>
+                              <button
+                                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                                onClick={() => setFileDelete(file)}
+                              >
+                                <TrashIcon size={12} />
+                              </button>
+                              <button
+                                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                                onClick={() => handleDownload(file.id)}
+                              >
+                                <DownloadIcon size={12} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                className={`flex items-center px-4 py-2 rounded-md ${
+                  theme === "dark"
+                    ? "bg-purple-600 hover:bg-purple-700"
+                    : "bg-purple-600 hover:bg-purple-700"
+                } text-white transition-colors`}
+                onClick={() => handleParseFile("all")}
+              >
+                <Play size={16} className="mr-2" />
+                Start Training
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                Estimated time: 5-10 minutes
+              </p>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              className={`flex items-center px-4 py-2 rounded-md ${
-                theme === "dark"
-                  ? "bg-purple-600 hover:bg-purple-700"
-                  : "bg-purple-600 hover:bg-purple-700"
-              } text-white transition-colors`}
-              onClick={() => handleParseFile("all")}
-            >
-              <Play size={16} className="mr-2" />
-              Start Training
-            </button>
-            <p className="text-xs text-gray-500 mt-2">
-              Estimated time: 5-10 minutes
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
-      <div className={`${baseCardClasses} rounded-lg border p-6`}>
+      {/* <div className={`${baseCardClasses} rounded-lg border p-6`}>
         <h3 className="font-semibold mb-4">Training History</h3>
 
         <div className="overflow-x-auto">
@@ -489,7 +505,7 @@ export default function TabTraining() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
       <DeleteFileModal
         fileName={fileDelete?.name}
         fileId={fileDelete?.id}

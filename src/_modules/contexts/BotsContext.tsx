@@ -34,6 +34,7 @@ interface BotsContextType {
     settings: Record<string, any>,
     dataSetId: string
   ) => Promise<void>;
+  setSelectedBot: React.Dispatch<React.SetStateAction<Bot | null>>;
   setBots: React.Dispatch<React.SetStateAction<Bot[]>>;
   setDatasets: React.Dispatch<React.SetStateAction<Dataset[]>>;
   // updateBot: (id: string, data: Partial<Bot>) => Promise<void>;
@@ -418,6 +419,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         setBots,
         setDatasets,
         createBot,
+        setSelectedBot,
         // updateBot,
         // deleteBot,
         selectBot,
