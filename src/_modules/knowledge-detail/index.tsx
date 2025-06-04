@@ -30,11 +30,18 @@ import Link from "next/link";
 import { useBots } from "../contexts/BotsContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { formatDate } from "date-fns";
-import { useParams } from "next/navigation";
-import { getAllFileDatasets } from "@/app/actions/file-dataset";
+import { useParams, useRouter } from "next/navigation";
+import {
+  deteleFileDataset,
+  getAllFileDatasets,
+} from "@/app/actions/file-dataset";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { getVariant } from "@/lib/get-variant";
+import { bytesToMB } from "@/lib/formatFile";
+import { useSession } from "next-auth/react";
+import { DeleteFileModal } from "../components/ModalDeleteFile";
+import { formatGmtDate } from "@/lib/format-date";
 
 interface Props {
   initialListFile: FileInfo[];
@@ -57,6 +64,8 @@ interface Props {
 // ];
 
 export default function KnowledgeDetailPage({ initialListFile }: Props) {
+  const session = useSession();
+  const router = useRouter();
   const { selectedDataset } = useBots();
   const [listFile, setListFile] = useState<FileInfo[]>(initialListFile);
   const { theme } = useTheme();
@@ -77,7 +86,6 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
   );
   const [isPolling, setIsPolling] = useState(false);
   const fetchList = React.useCallback(async () => {
-    console.log("Fetching file datasets...");
     const res = await getAllFileDatasets({
       datasetId: params.id as string,
     });
@@ -103,6 +111,28 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
 
     return () => clearInterval(interval);
   }, [isPolling, fetchList]);
+  const [fileDelete, setFileDelete] = useState<FileInfo | null>(null);
+  const handleDeleteFile = async (fileId: string) => {
+    if (!fileId) {
+      toast.error("File ID is required for deletion.");
+      return;
+    }
+    try {
+      const ids = [fileId];
+      const res = await deteleFileDataset(params.id as string, ids);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      toast.success(res.message);
+      router.refresh();
+      setListFile((prev) => prev.filter((file) => file.id !== fileId));
+      setIsPolling(false);
+    } catch (err) {
+      toast.error("Something went wrong!");
+      console.error(err);
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
@@ -127,7 +157,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
         </div>
 
         <div className="flex space-x-3">
-          <button
+          {/* <button
             className={`flex items-center px-4 py-2 rounded-md ${
               theme === "dark"
                 ? "bg-gray-700 hover:bg-gray-600"
@@ -136,7 +166,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
           >
             <UsersIcon size={16} className="mr-2" />
             Manage Access
-          </button>
+          </button> */}
 
           <Button
             onClick={() => setIsCreateModalOpen(true)}
@@ -234,7 +264,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
             </ul>
           </div>
 
-          <div className={`${baseCardClasses} rounded-lg border p-4 mt-4`}>
+          {/* <div className={`${baseCardClasses} rounded-lg border p-4 mt-4`}>
             <h3 className="font-medium mb-3">Document Types</h3>
 
             <ul className="space-y-1">
@@ -299,7 +329,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                 </label>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         {/* Main Content */}
@@ -388,7 +418,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                       {getFileIcon(document.location)}
                     </div>
 
-                    <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {/* <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
@@ -397,13 +427,13 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                       >
                         <PlayIcon className="text-green-400" size={16} />
                       </button> */}
-                      <button
+                      {/* <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
                         } text-amber-500 opacity-100`}
                       >
                         <Star size={16} />
-                      </button>
+                      </button> */}
                       <button
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
@@ -412,11 +442,10 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                         <Download size={16} />
                       </button>
                       <button
-                        className={`p-1 rounded-full hover:${
-                          theme === "dark" ? "bg-gray-700" : "bg-gray-100"
-                        } text-gray-400`}
+                        className="text-gray-500 hover:text-red-600"
+                        onClick={() => setFileDelete(document)}
                       >
-                        <MoreHorizontal size={16} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -431,22 +460,17 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                   </div>
 
                   <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 flex justify-between">
-                    <span> {`${(document.size / 1024).toFixed(2)} MB`}</span>
-                    <span>
-                      {formatDate(document.update_date, "EEEE, MMMM d, yyyy")}
-                    </span>
+                    <span> {bytesToMB(document.size)}</span>
+                    <span>{formatGmtDate(document.update_date)}</span>
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center w-full overflow-hidden">
                     <div className="flex items-center  flex-1">
                       <div className="h-6 w-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">
-                        {document.created_by
-                          .split(" ")
-                          .map((name) => name[0])
-                          .join("")}
+                        {session.data?.user?.name?.[0].toUpperCase()}
                       </div>
                       <span className="ml-2 text-xs truncate flex-1">
-                        {document.created_by}
+                        {session.data?.user?.name}
                       </span>
                     </div>
                     <button
@@ -508,10 +532,10 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                         </div>
                       </td>
                       <td className="px-6 py-4 hidden md:table-cell text-gray-600 dark:text-gray-400">
-                        {`${(document.size / 1024).toFixed(2)} MB`}
+                        {bytesToMB(document.size)}
                       </td>
                       <td className="px-6 py-4 hidden sm:table-cell text-gray-600 dark:text-gray-400">
-                        {document.created_by}
+                        {session.data?.user?.name}
                       </td>
                       <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
                         {formatDate(document.update_date, "EEEE, MMMM d, yyyy")}
@@ -547,6 +571,18 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
           setIsPolling={setIsPolling}
         />
       )}
+      <DeleteFileModal
+        fileName={fileDelete?.name}
+        fileId={fileDelete?.id}
+        botId={params.id as string}
+        onClose={() => setFileDelete(null)}
+        onDelete={() => {
+          if (fileDelete) {
+            handleDeleteFile(fileDelete.id);
+            setFileDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -42,6 +42,7 @@ export async function createNewBot(data: any) {
       dataset_ids: [dataSetId],
     }
   );
+  console.log("Response from chat creation:", res);
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }

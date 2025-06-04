@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
 
 interface DeleteFileModalProps {
   fileId?: string;
@@ -23,9 +24,11 @@ export function DeleteFileModal({
   onClose,
   onDelete,
 }: DeleteFileModalProps) {
+  const router = useRouter();
   const handleConfirm = () => {
     onDelete();
     onClose();
+    router.refresh();
   };
 
   return (
@@ -34,8 +37,8 @@ export function DeleteFileModal({
         <DialogHeader>
           <DialogTitle>Delete File</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <strong>{fileName}</strong>? This
-            action cannot be undone.
+            Are you sure you want to delete <span>{fileName}</span>? This action
+            cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2">

@@ -7,6 +7,7 @@ import TabSetting from "./components/TabSetting";
 import { Database } from "@/types/database.type";
 import TabTraining from "./components/TabTraining";
 import {
+  ArrowLeft,
   CheckCircle2,
   CircleOff,
   HelpCircle,
@@ -19,6 +20,7 @@ import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
 import { ShareModal } from "./components/ModalShare";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
@@ -34,6 +36,13 @@ export default function PageBotDetail({ bot }: Props) {
   };
   return (
     <main className="p-6 space-y-6">
+      <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
+        <Link href="/bots" className="hover:text-blue-600 flex items-center">
+          <ArrowLeft size={16} className="mr-1" /> Chatbots
+        </Link>
+        <span>/</span>
+        <span className="text-gray-900 dark:text-gray-100">{bot.name}</span>
+      </div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <div className="flex items-center">

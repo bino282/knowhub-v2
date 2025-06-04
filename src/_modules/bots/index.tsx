@@ -43,7 +43,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { formatGmtDate } from "@/lib/format-date";
 import { useTheme } from "../contexts/ThemeContext";
+import { Database } from "@/types/database.type";
+import { DeleteBotModal } from "../components/ModalDeleteBot";
 
+type Bot = {};
 const BotsPage: React.FC = () => {
   const router = useRouter();
   const { theme } = useTheme();
@@ -51,6 +54,9 @@ const BotsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [category, setCategory] = React.useState<string>("");
   const [timeRange, setTimeRange] = React.useState<string>("");
+  const [botDelete, setBotDelete] = useState<
+    Database["public"]["Tables"]["bots"]["Row"] | null
+  >(null);
   const { bots, selectBot, createBot, datasets } = useBots();
   const filteredBots = bots.filter(
     (bot) =>
@@ -63,15 +69,6 @@ const BotsPage: React.FC = () => {
     router.push(`/bots/${botId}`);
   };
 
-  const handleDeleteBot = (e: React.MouseEvent, botId: string) => {
-    e.stopPropagation();
-    if (
-      confirm(
-        "Are you sure you want to delete this bot? This action cannot be undone."
-      )
-    ) {
-    }
-  };
   const handleCreateBot = () => {
     if (datasets.length === 0) {
       toast.error(
@@ -207,11 +204,11 @@ const BotsPage: React.FC = () => {
                       </Button>
                       <div className="absolute right-0 z-10 pt-2 w-48 origin-top-right hidden group-hover:block">
                         <div
-                          className="mt-1 py-2 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-gray-300 ring-opacity-5 focus:outline-none "
+                          className="mt-1 p-2 rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-500 focus:outline-none "
                           role="none"
                         >
                           <Button
-                            className="flex w-full justify-baseline rounded-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex w-full justify-baseline rounded-md px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleBotClick(bot.id);
@@ -221,8 +218,11 @@ const BotsPage: React.FC = () => {
                             Edit
                           </Button>
                           <Button
-                            className="flex w-full justify-baseline rounded-none  px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            onClick={(e) => handleDeleteBot(e, bot.id)}
+                            className="flex w-full justify-baseline rounded-md px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setBotDelete(bot);
+                            }}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -321,6 +321,15 @@ const BotsPage: React.FC = () => {
         open={isCreateModalOpen}
         setOpen={() => setIsCreateModalOpen(false)}
         onCreate={createBot}
+      />
+      <DeleteBotModal
+        open={!!botDelete}
+        close={() => {
+          setBotDelete(null);
+          router.refresh();
+        }}
+        botName={botDelete?.name || ""}
+        botId={botDelete?.id}
       />
     </div>
   );

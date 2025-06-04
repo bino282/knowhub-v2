@@ -11,6 +11,7 @@ import { Trash2 } from "lucide-react";
 import { deleteChatBot } from "@/app/actions/bots";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useBots } from "../contexts/BotsContext";
 
 type DeleteBotModalProps = {
   open: boolean;
@@ -26,7 +27,10 @@ export function DeleteBotModal({
   botId,
 }: DeleteBotModalProps) {
   const router = useRouter();
-  const onDelete = async () => {
+  const { setBots } = useBots();
+  const onDelete = async (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!botId) {
       toast.error("Bot ID is required for deletion");
       return;
@@ -35,6 +39,7 @@ export function DeleteBotModal({
     if (!res.success) {
       toast.error(res.message);
     }
+    setBots((prevBots) => prevBots.filter((bot) => bot.id !== botId));
     toast.success(res.message);
     router.refresh();
     router.push("/bots");
@@ -59,7 +64,7 @@ export function DeleteBotModal({
           </Button>
           <Button
             variant="destructive"
-            onClick={onDelete}
+            onClick={(e) => onDelete(e)}
             className="text-white"
           >
             Delete

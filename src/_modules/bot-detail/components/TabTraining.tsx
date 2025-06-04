@@ -1,3 +1,4 @@
+import { DeleteFileModal } from "@/_modules/components/ModalDeleteFile";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
 import {
@@ -21,7 +22,6 @@ import {
   DownloadIcon,
   FileText,
   InfoIcon,
-  MoreVertical,
   Play,
   PlayIcon,
   RefreshCw,
@@ -34,7 +34,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
-import { DeleteFileModal } from "./ModalDeleteFile";
 
 export default function TabTraining() {
   const params = useParams();
@@ -45,10 +44,10 @@ export default function TabTraining() {
   const [activeFile, setActiveFile] = React.useState<string | null>(null);
   const [fileDelete, setFileDelete] = React.useState<FileInfo | null>(null);
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
-  const datasetId = bots.find((bot) => bot.id === params.id)?.dataSetId;
+  const bot = bots.find((bot) => bot.id === params.id);
   React.useEffect(() => {
     getAllFileDatasets({
-      datasetId: datasetId as string,
+      datasetId: bot?.dataSetId as string,
     })
       .then((respon) => {
         if (respon.success && respon.data.total > 0) {
@@ -67,7 +66,7 @@ export default function TabTraining() {
   const handleParseFile = async (fileId: string) => {
     const getList = async () => {
       const res = await getAllFileDatasets({
-        datasetId: datasetId as string,
+        datasetId: bot?.dataSetId as string,
       });
       if (res.success && res.data.total > 0) {
         setFileList(res.data.docs as FileInfo[]);
@@ -128,7 +127,7 @@ export default function TabTraining() {
       }
       toast.success(res.message);
       const updatedList = await getAllFileDatasets({
-        datasetId: datasetId as string,
+        datasetId: bot?.dataSetId as string,
       });
       if (updatedList.success && updatedList.data.total > 0) {
         setFileList(updatedList.data.docs as FileInfo[]);
@@ -142,17 +141,14 @@ export default function TabTraining() {
   const handleDeleteFile = async (fileId: string) => {
     try {
       const ids = [fileId];
-      const res = await deteleFileDataset(params.id as string, ids);
+      const res = await deteleFileDataset(bot?.dataSetId as string, ids);
       if (!res.success) {
         toast.error(res.message);
         return;
       }
-      const updatedList = await getAllFileDatasets({
-        datasetId: datasetId as string,
-      });
-      if (updatedList.success && updatedList.data.total > 0) {
-        setFileList(updatedList.data.docs as FileInfo[]);
-      }
+      toast.success(res.message);
+      setFileList((prev) => prev.filter((file) => file.id !== fileId));
+      setFileDelete(null);
       router.refresh();
     } catch (err) {
       toast.error("Something went wrong!");
@@ -178,13 +174,14 @@ export default function TabTraining() {
           </div>
 
           <div>
-            <h4 className="font-medium">Customer Support</h4>
+            <h4 className="font-medium">{bot?.dataset?.name}</h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              203 documents • Last updated 3 hours ago
+              {bot?.dataset?.chunk_count} documents • Update{" "}
+              {formatGmtDate(bot?.dataset?.update_date as string)}
             </p>
 
             <Link
-              href={`/knowledge-bases/5`}
+              href={`/knowledge/${bot?.dataSetId}`}
               className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
             >
               View Knowledge Base
@@ -193,7 +190,7 @@ export default function TabTraining() {
         </div>
 
         <div className="space-y-4">
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium mb-1">
               Document Selection
             </label>
@@ -208,7 +205,7 @@ export default function TabTraining() {
               <option>Only documents with specific tags</option>
               <option>Selected documents</option>
             </select>
-          </div>
+          </div> */}
 
           {/* File List Table */}
           <div className="mt-6">

@@ -39,34 +39,6 @@ export async function createSessionId(botId: string, nameSession: string) {
   const data = res.data;
   return { success: true, data: data, name: name };
 }
-// export async function getListChat(botId: string) {
-//   try {
-//     const session = await getServerSession(authOptions);
-//     const userId = session?.user?.id;
-//     const user = await prisma.user.findUnique({
-//       where: { id: userId },
-//     });
-//     if (!user || !user.apiKey) {
-//       return { success: false, message: "User not found or API key missing" };
-//     }
-//     const bot = await prisma.bot.findUnique({
-//       where: { id: botId },
-//     });
-//     console.log("getListChat bot", bot?.chatId);
-//     const res = await apiRequest<ApiResponse>(
-//       "GET",
-//       `api/v1/chats/${bot?.chatId}/sessions`,
-//       user.apiKey
-//     );
-//     if (res.code !== 0) {
-//       throw new Error("Failed to fetch chat list");
-//     }
-//     return { success: true, data: res.data };
-//   } catch (error) {
-//     console.error("Error fetching chat list:", error);
-//     return { success: false, message: "Failed to fetch chat list" };
-//   }
-// }
 export async function getListChat(botId: string) {
   const listChat = await prisma.sessionChat.findMany({
     where: {
@@ -139,4 +111,19 @@ export async function createMessages(
   });
 
   return { success: true };
+}
+export async function deleteChatHistory(sessionId: string) {
+  const session = await prisma.sessionChat.findUnique({
+    where: { id: sessionId },
+  });
+  if (!session) {
+    return { success: false, message: "Session not found" };
+  }
+  await prisma.sessionChat.delete({
+    where: { id: sessionId },
+  });
+  await prisma.message.deleteMany({
+    where: { sessionChatId: sessionId },
+  });
+  return { success: true, message: "Chat history deleted successfully" };
 }
