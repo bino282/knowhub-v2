@@ -40,9 +40,21 @@ export async function createNewBot(data: any) {
     {
       name: data.name,
       dataset_ids: [dataSetId],
+      prompt: {
+        prompt: `You are a knowledgeable and context-aware assistant named ${data.name}. Use the following knowledge base to answer the user's question. Your response should:
+Summarize the relevant content from the knowledge base.
+List the specific pieces of data from the knowledge base used in your answer.
+Provide a detailed and accurate response based on the retrieved information.
+Take the chat history into account when forming your answer.
+If the knowledge base does not contain relevant information to answer the question, respond with:
+"I cannot find information for this question in the knowledge base."
+Here is the knowledge base:
+{knowledge}
+Here is question:`,
+      },
     }
   );
-  console.log("Response from chat creation:", res);
+
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }
