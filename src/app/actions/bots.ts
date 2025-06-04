@@ -136,3 +136,39 @@ export async function activeBot(botId: string, active: boolean) {
     message: "Bot status updated successfully",
   };
 }
+export async function settingPrompt(
+  botId: string,
+  prompt: {
+    prompt: string;
+    similarity_threshold: number;
+    top_n: number;
+  }
+) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const bot = await prisma.bot.findUnique({
+    where: { id: botId },
+  });
+  const res = await apiRequest<ApiResponse>(
+    "PUT",
+    `api/v1/chats/${bot?.chatId}`,
+    user.apiKey,
+    {
+      prompt: prompt,
+    }
+  );
+  if (res.code !== 0) {
+    return { success: false, error: "Failed to update bot prompt" };
+  }
+  return {
+    data: res.data,
+    success: true,
+    message: "Bot prompt updated successfully",
+  };
+}

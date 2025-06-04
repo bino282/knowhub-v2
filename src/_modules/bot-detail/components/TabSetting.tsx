@@ -1,9 +1,11 @@
+import { CustomSlider } from "@/_modules/components/custom-slider";
 import { DeleteBotModal } from "@/_modules/components/ModalDeleteBot";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import { activeBot, updateChatBot } from "@/app/actions/bots";
+import { activeBot, settingPrompt, updateChatBot } from "@/app/actions/bots";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Database } from "@/types/database.type";
 import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -29,6 +31,10 @@ export default function TabSetting({ bot }: Props) {
     label: dataset.name,
   }));
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
+  const [prompt, setPrompt] = React.useState<string>("");
+  const [similarityThreshold, setSimilarityThreshold] =
+    React.useState<number>(0.2);
+  const [topN, setTopN] = React.useState<number>(6);
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
@@ -63,6 +69,20 @@ export default function TabSetting({ bot }: Props) {
     if (!res.success) {
       toast.error(res.message);
     } else {
+      toast.success(res.message);
+      router.refresh();
+    }
+  };
+  const handleSettingPrompt = async () => {
+    const res = await settingPrompt(params.id as string, {
+      prompt: prompt + `{knowledge}`,
+      similarity_threshold: similarityThreshold,
+      top_n: topN,
+    });
+    if (!res.success) {
+      toast.error(res.message);
+    } else {
+      console.log("res", res);
       toast.success(res.message);
       router.refresh();
     }
@@ -127,7 +147,7 @@ export default function TabSetting({ bot }: Props) {
         </form>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className={`${baseCardClasses} rounded-lg border p-6`}>
           <h3 className="font-semibold mb-4">Response Settings</h3>
 
@@ -250,6 +270,57 @@ export default function TabSetting({ bot }: Props) {
               </p>
             </div>
           </div>
+        </div>
+      </div> */}
+      <div className={`${baseCardClasses} rounded-lg border p-6`}>
+        <h3 className="font-semibold mb-4">Setting Prompt</h3>
+        <div>
+          <p className="text-sm font-semibold mb-1.5">Prompt</p>
+          <Textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className={`w-full rounded-md ${
+              theme === "dark"
+                ? "bg-gray-700 border-gray-600"
+                : "bg-white border-gray-300"
+            } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+            rows={4}
+            placeholder="Enter your prompt here..."
+          />
+        </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Similarity threshold</p>
+          <CustomSlider
+            value={[similarityThreshold]}
+            onChange={(value) => setSimilarityThreshold(value[0])}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Top N</p>
+          <CustomSlider
+            value={[topN]}
+            onChange={(value) => setTopN(value[0])}
+            min={0}
+            max={30}
+            step={1}
+          />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="submit"
+            className={`flex items-center px-4 py-2 rounded-md ${
+              theme === "dark"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white transition-colors`}
+            onClick={handleSettingPrompt}
+          >
+            <Save size={16} className="mr-2" />
+            Save Prompt
+          </button>
         </div>
       </div>
 
