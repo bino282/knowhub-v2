@@ -92,51 +92,7 @@ const TestChatbot: React.FC = () => {
   const [loading, setLoading] = React.useState<boolean>(false);
 
   const [content, setContent] = React.useState<string>("");
-
-  const handleSend = async () => {
-    if (!content.trim()) return;
-
-    const hasUserMessage = messages.some((msg) => msg.role === "user");
-
-    if (
-      hasUserMessage ||
-      (selectedChatHistory && selectedChatHistory.id !== "")
-    ) {
-      getMessage(selectedChatHistory?.id || "", content);
-    } else {
-      const res = await createSessionId(params.id as string, content);
-
-      if (!res.success) {
-        toast.error(res.message || "Failed to create session");
-        return;
-      }
-      await createSessionMessage(
-        res.data.id,
-        res.data.name,
-        params.id as string
-      );
-      // Tạo session mới dựa trên selectedChatHistory hiện tại
-      const updatedSession: ChatHistory = {
-        ...selectedChatHistory!,
-        id: res.data.id,
-        name: res.data.name || "",
-        createdAt: res.data.create_date || "",
-        updatedAt: res.data.update_date || "",
-      };
-
-      // Cập nhật đúng phần tử trong chatHistory có id === ""
-      setChatHistory((prev) =>
-        prev.map((chat) => (chat.id === "" ? updatedSession : chat))
-      );
-
-      // Cập nhật selected
-      setSelectedChatHistory(updatedSession);
-
-      // Gửi message
-      getMessage(res.data.id || "", content);
-    }
-  };
-
+  const [isSending, setIsSending] = React.useState<boolean>(false);
   React.useEffect(() => {
     getListChat(params.id as string)
       .then((res) => {
@@ -160,6 +116,7 @@ const TestChatbot: React.FC = () => {
   // selected chat history
 
   React.useEffect(() => {
+    if (isSending) return;
     if (!selectedChatHistory && chatHistory.length > 0) {
       const firstHistory = chatHistory[0];
       setSelectedChatHistory(firstHistory);
@@ -187,6 +144,53 @@ const TestChatbot: React.FC = () => {
     // Append to existing history
     setChatHistory((prev) => [newChat, ...prev]);
     setSelectedChatHistory(newChat);
+  };
+  const handleSend = async () => {
+    if (!content.trim()) return;
+
+    const hasUserMessage = messages.some((msg) => msg.role === "user");
+
+    if (
+      hasUserMessage ||
+      (selectedChatHistory && selectedChatHistory.id !== "")
+    ) {
+      getMessage(selectedChatHistory?.id || "", content);
+    } else {
+      setIsSending(true);
+      try {
+        const res = await createSessionId(params.id as string, content);
+
+        if (!res.success) {
+          toast.error(res.message || "Failed to create session");
+          setIsSending(false); // reset flag nếu lỗi
+          return;
+        }
+        await createSessionMessage(
+          res.data.id,
+          res.data.name,
+          params.id as string
+        );
+
+        const updatedSession: ChatHistory = {
+          ...selectedChatHistory!,
+          id: res.data.id,
+          name: res.data.name || "",
+          createdAt: res.data.create_date || "",
+          updatedAt: res.data.update_date || "",
+        };
+
+        setChatHistory((prev) =>
+          prev.map((chat) => (chat.id === "" ? updatedSession : chat))
+        );
+        setSelectedChatHistory(updatedSession);
+
+        await getMessage(res.data.id || "", content);
+      } catch (error) {
+        toast.error("Error sending message");
+      } finally {
+        setIsSending(false); // luôn reset flag dù thành công hay lỗi
+      }
+    }
   };
   async function getMessage(sessionId: string, content: string): Promise<void> {
     const decoder = new TextDecoder("utf-8");
