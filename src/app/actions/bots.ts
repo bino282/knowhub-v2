@@ -18,6 +18,7 @@ const BotSchema = z.object({
   chatId: z.string(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  isActive: z.boolean().optional().default(true), // camel-case
 });
 export async function createNewBot(data: any) {
   const session = await getServerSession(authOptions);
@@ -41,7 +42,6 @@ export async function createNewBot(data: any) {
       dataset_ids: [dataSetId],
     }
   );
-  console.log("Create chat response:", res);
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }
@@ -56,6 +56,7 @@ export async function createNewBot(data: any) {
     updatedAt: data.updated_at,
     dataSetId: data.data_set_id,
     chatId: chatId,
+    isActive: data.is_active ?? true, // default to true if not provided
   });
   try {
     const data = await prisma.bot.create({
@@ -116,4 +117,21 @@ export async function deleteChatBot(botId: string) {
     where: { id: botId },
   });
   return { success: true, message: "Bot deleted successfully" };
+}
+export async function activeBot(botId: string, active: boolean) {
+  const res = await prisma.bot.update({
+    where: { id: botId },
+    data: {
+      isActive: active,
+    },
+  });
+  revalidatePath("/bots");
+  if (!res) {
+    return { success: false, error: "Failed to update bot status" };
+  }
+  return {
+    data: res,
+    success: true,
+    message: "Bot status updated successfully",
+  };
 }

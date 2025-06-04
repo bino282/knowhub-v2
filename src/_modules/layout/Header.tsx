@@ -20,11 +20,8 @@ const Header: React.FC = () => {
       return "Bot Detail";
     }
 
-    if (pathname.includes("/bots")) return "Manage Bots";
-    if (pathname.includes("/knowledge") && pathname.split("/").length > 2) {
-      return "Dataset Detail";
-    }
-    if (pathname.includes("/knowledge")) return "KnowLedge";
+    if (pathname.includes("/bots")) return "Chatbots";
+    if (pathname.includes("/knowledge")) return "KnowLedge Bases";
 
     if (pathname.includes("/files")) return "Manage Files";
     if (pathname.includes("/workspace")) return "Workspace";

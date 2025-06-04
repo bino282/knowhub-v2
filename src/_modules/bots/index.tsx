@@ -101,7 +101,7 @@ const BotsPage: React.FC = () => {
       <div className="flex items-center justify-between mb-10">
         <div className="w-full">
           <div className="flex items-center justify-between w-full gap-4">
-            <h2 className="font-semibold text-xl">Knowledge Bases</h2>
+            <h2 className="font-semibold text-xl">Chatbots</h2>
             <div className="flex items-center gap-7">
               <Button
                 className="text-gray-70  px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 "
@@ -190,10 +190,17 @@ const BotsPage: React.FC = () => {
                     <BotIcon className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={"success"}>
-                      <CheckCircle2 size={12} />
-                      Active
-                    </Badge>
+                    {bot.isActive === true ? (
+                      <Badge variant={"success"}>
+                        <CheckCircle2 size={12} />
+                        Active
+                      </Badge>
+                    ) : (
+                      <Badge variant={"warning"}>
+                        <CheckCircle2 size={12} />
+                        Deactive
+                      </Badge>
+                    )}
                     <div className="relative group">
                       <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
                         <MoreVertical className="h-5 w-5 text-gray-500" />

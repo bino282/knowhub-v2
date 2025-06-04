@@ -1,11 +1,11 @@
 import { DeleteBotModal } from "@/_modules/components/ModalDeleteBot";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import { updateChatBot } from "@/app/actions/bots";
+import { activeBot, updateChatBot } from "@/app/actions/bots";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Database } from "@/types/database.type";
-import { CircleOff, Play, Save, Trash2 } from "lucide-react";
+import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -58,6 +58,15 @@ export default function TabSetting({ bot }: Props) {
       ? "bg-gray-700 border-gray-600"
       : "bg-white border-gray-300"
   } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`;
+  const handleSetStatusBot = async () => {
+    const res = await activeBot(params.id as string, !bot.isActive);
+    if (!res.success) {
+      toast.error(res.message);
+    } else {
+      toast.success(res.message);
+      router.refresh();
+    }
+  };
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
@@ -102,15 +111,7 @@ export default function TabSetting({ bot }: Props) {
             </select>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Label className="flex items-center">
-              <Input
-                type="checkbox"
-                className="rounded text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2">Active</span>
-            </Label>
-
+          <div className="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="submit"
               className={`flex items-center px-4 py-2 rounded-md ${
@@ -266,14 +267,24 @@ export default function TabSetting({ bot }: Props) {
               </p>
             </div>
             <button
-              className={`px-4 py-2 rounded-md ${
+              className={`px-4 py-2 rounded-md  ${
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600"
-                  : "bg-gray-200 hover:bg-gray-300"
+                  : "bg-white hover:bg-gray-200 border border-gray-200"
+              } 
+              ${
+                bot.isActive === true
+                  ? "text-yellow-600 hover:text-yellow-700 "
+                  : "text-green-600 hover:text-green-700 "
               } transition-colors flex items-center`}
+              onClick={handleSetStatusBot}
             >
-              <CircleOff size={16} className="mr-2" />
-              Deactivate
+              {bot.isActive === true ? (
+                <CircleOff size={16} className="mr-2" />
+              ) : (
+                <CheckCircle size={16} className="mr-2" />
+              )}
+              {bot.isActive === true ? "Deactivate" : "Activate"}
             </button>
           </div>
 
