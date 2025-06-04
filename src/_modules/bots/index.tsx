@@ -63,7 +63,6 @@ const BotsPage: React.FC = () => {
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bot.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("Filtered Bots:", filteredBots);
   const handleBotClick = (botId: string) => {
     selectBot(botId);
     router.push(`/bots/${botId}`);
@@ -120,7 +119,7 @@ const BotsPage: React.FC = () => {
                 className="w-full pl-10 pr-4 py-2 rounded-md dark:bg-gray-700 bg-white border-gray-100 dark:border-gray-600 border focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <Popover>
+            {/* <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -160,7 +159,7 @@ const BotsPage: React.FC = () => {
                   </Select>
                 </div>
               </PopoverContent>
-            </Popover>
+            </Popover> */}
           </div>
         </div>
       </div>
