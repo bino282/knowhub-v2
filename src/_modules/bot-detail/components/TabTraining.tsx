@@ -35,6 +35,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
+import { SettingFIleModal } from "./ModalSettingFile";
 
 export default function TabTraining() {
   const params = useParams();
@@ -44,6 +45,9 @@ export default function TabTraining() {
   const [page, setPage] = React.useState("1");
   const [activeFile, setActiveFile] = React.useState<string | null>(null);
   const [fileDelete, setFileDelete] = React.useState<FileInfo | null>(null);
+  const [fileChunkMethod, setFileChunkMethod] = React.useState<FileInfo | null>(
+    null
+  );
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const bot = bots.find((bot) => bot.id === params.id);
   React.useEffect(() => {
@@ -78,7 +82,6 @@ export default function TabTraining() {
       }
       return [];
     };
-
     const pollUntilDone = async () => {
       let polling = true;
       while (polling) {
@@ -389,7 +392,10 @@ export default function TabTraining() {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-right">
                             <div className="flex items-center justify-center space-x-2">
-                              <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">
+                              <button
+                                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                                onClick={() => setFileChunkMethod(file)}
+                              >
                                 <WrenchIcon size={12} />
                               </button>
                               <button
@@ -518,6 +524,17 @@ export default function TabTraining() {
           }
         }}
       />
+      {fileChunkMethod && (
+        <SettingFIleModal
+          open={!!fileChunkMethod}
+          close={() => {
+            setFileChunkMethod(null);
+            router.refresh();
+          }}
+          file={fileChunkMethod}
+          setFile={setFileList}
+        />
+      )}
     </div>
   );
 }

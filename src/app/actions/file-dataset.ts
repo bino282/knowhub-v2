@@ -231,3 +231,40 @@ export async function dowloadFileDataset(botId: string, documentId: string) {
     return { success: false, message: "Failed to download file dataset" };
   }
 }
+export async function updateFileDataset(
+  datasetId: string,
+  documentId: string,
+  data: {
+    chunk_method: string;
+    parser_config: {
+      chunk_token_count: number;
+      delimiter: string;
+    };
+  }
+) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  try {
+    const response = await apiRequest<ApiResponse>(
+      "PUT",
+      `api/v1/datasets/${datasetId}/documents/${documentId}`,
+      user.apiKey,
+      data
+    );
+    console.log("Response from updateFileDataset:", response);
+    if (response.code !== 0) {
+      console.error("Failed to update file dataset:");
+      throw new Error("Failed to update file dataset");
+    }
+    return { success: true, message: "File dataset updated successfully" };
+  } catch (error) {
+    console.error("Error updating file dataset:", error);
+    return { success: false, message: "Failed to update file dataset" };
+  }
+}
