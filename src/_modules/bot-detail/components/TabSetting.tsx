@@ -302,7 +302,7 @@ Here is question:`);
                 ? "bg-gray-700 border-gray-600"
                 : "bg-white border-gray-300"
             } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
-            rows={4}
+            rows={12}
             placeholder="Enter your prompt here..."
           />
         </div>
