@@ -54,7 +54,7 @@ export async function registerRagflowUser(
   try {
     // register ragflow
     const response = await fetch(
-      `${process.env.RAGFLOW_API_URL}/v1/user/register`,
+      `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/v1/user/register`,
       {
         method: "POST",
         headers: {
@@ -71,7 +71,7 @@ export async function registerRagflowUser(
     // tồn tại email thì cho login
     if (data.code === 103) {
       const response = await fetch(
-        `${process.env.RAGFLOW_API_URL}/v1/user/login`,
+        `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/v1/user/login`,
         {
           method: "POST",
           headers: {
@@ -133,7 +133,7 @@ async function createNewTokenRagflow(setCookie: string, authorization: string) {
   const cookie = setCookie.split(";")[0];
 
   const apiKeyResponse = await fetch(
-    `${process.env.RAGFLOW_API_URL}/v1/system/new_token`,
+    `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/v1/system/new_token`,
     {
       method: "POST",
       headers: {
