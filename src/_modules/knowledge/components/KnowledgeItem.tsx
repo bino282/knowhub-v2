@@ -72,20 +72,22 @@ export default function KnowledgeItem({ data }: Props) {
             {data.description}
           </p>
         </div>
-        <div className="pt-4 grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2">
-            <FileTextIcon className="size-4 text-gray-800 dark:text-gray-400" />
-            <p className="text-sm text-gray-800 dark:text-gray-400 font-normal ">
-              {data.document_count} documents
-            </p>
+        <div className="pt-4 gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileTextIcon className="size-4 text-gray-800 dark:text-gray-400" />
+              <p className="text-sm text-gray-800 dark:text-gray-400 font-normal ">
+                {data.document_count} documents
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
+              <p className="text-sm text-gray-800 dark:text-gray-400 font-normal">
+                1
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
-            <p className="text-sm text-gray-800 dark:text-gray-400 font-normal">
-              1
-            </p>
-          </div>
-          <p className="text-xs text-gray-800 dark:text-gray-400 font-normal">
+          <p className="text-xs text-gray-800 dark:text-gray-400 font-normal mt-4">
             Update {formatGmtDate(data.update_date)}
           </p>
         </div>

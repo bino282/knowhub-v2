@@ -217,7 +217,7 @@ export default function PageKnowledges() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {filterDataset.length > 0 ? (
               filterDataset.map((dataset) => (
