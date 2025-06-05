@@ -371,7 +371,6 @@ const TestChatbot: React.FC = () => {
     try {
       const res = await getListMessages(sessionId);
       if (res.success) {
-        console.log("getListMessageSession res", res.data);
         const formattedMessages = res.data.map((message) => ({
           role: message.role,
           content: message.content,

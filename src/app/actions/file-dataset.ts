@@ -218,7 +218,7 @@ export async function dowloadFileDataset(botId: string, documentId: string) {
   }
   try {
     const response = await fetch(
-      `${process.env.RAGFLOW_API_URL}/api/v1/datasets/${botDatasetId.dataSetId}/documents/${documentId}`,
+      `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/api/v1/datasets/${botDatasetId.dataSetId}/documents/${documentId}`,
       {
         method: "GET",
         headers: {

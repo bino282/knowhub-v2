@@ -5,7 +5,7 @@ export async function apiRequest<T>(
   data?: unknown,
   customHeaders?: HeadersInit
 ): Promise<T> {
-  const API_URL = process.env.RAGFLOW_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_URL_RAGFLOW;
   const API_KEY = apiKey;
 
   if (!API_KEY) {

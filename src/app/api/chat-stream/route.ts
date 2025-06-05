@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     );
   }
   const response = await fetch(
-    `${process.env.RAGFLOW_API_URL}/api/v1/chats/${bot.chatId}/completions`,
+    `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/api/v1/chats/${bot.chatId}/completions`,
     {
       method: "POST",
       headers: {
