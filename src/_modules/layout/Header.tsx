@@ -76,7 +76,7 @@ const Header: React.FC = () => {
 
           <div className="ml-2 flex items-center">
             <Button className="flex items-center space-x-2 text-gray-700  dark:text-gray-200 cursor-default">
-              <div className="relative">
+              {/* <div className="relative">
                 <Image
                   src={user?.image || "https://i.pravatar.cc/150?img=68"}
                   alt="User avatar"
@@ -85,6 +85,9 @@ const Header: React.FC = () => {
                   height={32}
                 />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-success-500 border-2 border-white dark:border-gray-800"></span>
+              </div> */}
+              <div className="size-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">
+                {session.data?.user?.name?.[0].toUpperCase()}
               </div>
               <span className="hidden md:block text-sm font-medium">
                 {user?.name || "User"}
