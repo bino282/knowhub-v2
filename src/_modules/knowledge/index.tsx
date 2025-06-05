@@ -98,8 +98,8 @@ export default function PageKnowledges() {
         </div>
 
         <div className="flex space-x-3">
-          <div className="relative">
-            {/* <button
+          {/* <div className="relative">
+            <button
               onClick={() => setFilterOpen(!filterOpen)}
               className={`flex items-center px-3 py-2 rounded-md ${
                 theme === "dark"
@@ -110,7 +110,7 @@ export default function PageKnowledges() {
               <SlidersHorizontal size={16} className="mr-2" />
               Filters
               <ChevronDown size={16} className="ml-2" />
-            </button> */}
+            </button>
 
             {filterOpen && (
               <div
@@ -175,7 +175,7 @@ export default function PageKnowledges() {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           <div
             className={`flex rounded-md ${

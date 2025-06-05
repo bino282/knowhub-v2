@@ -13,6 +13,7 @@ import React from "react";
 import { toast } from "sonner";
 import { DeleteKnowledgeModal } from "./ModalDeleteKnowleadge";
 import { useBots } from "@/_modules/contexts/BotsContext";
+
 interface Props {
   data: DatasetInfo;
 }
@@ -33,6 +34,7 @@ export default function KnowledgeItem({ data }: Props) {
     toast.success(res.message);
     setDatasetDeleteId(null);
   };
+
   return (
     <div className="p-6 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 rounded-xl h-full flex flex-col">
       <div className="flex items-center justify-between flex-1">
@@ -64,16 +66,16 @@ export default function KnowledgeItem({ data }: Props) {
         </div>
       </div>
       <div className="mt-4">
-        <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="font-semibold text-xl ">{data.name}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 min-h-[1.25rem]">
+        <div className="pb-6 border-b border-gray-200 dark:border-gray-700 ">
+          <h2 className="font-semibold text-xl truncate">{data.name}</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 break-all flex-1 truncate">
             {data.description}
           </p>
         </div>
         <div className="pt-4 grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2">
             <FileTextIcon className="size-4 text-gray-800 dark:text-gray-400" />
-            <p className="text-sm text-gray-800 dark:text-gray-400 font-normal">
+            <p className="text-sm text-gray-800 dark:text-gray-400 font-normal ">
               {data.document_count} documents
             </p>
           </div>

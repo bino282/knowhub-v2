@@ -160,8 +160,30 @@ export default function TabTraining() {
       console.error(err);
     }
   };
-  const handleDownload = async (fileId: string) => {
-    console.log("Downloading file with ID:", fileId);
+  const handleDowloadFile = async (docId: string) => {
+    const datasetId = params.id as string;
+    if (!datasetId || !docId) {
+      console.error("Dataset ID or Document ID is missing");
+      return;
+    }
+    const res = await fetch(
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+    );
+    if (!res.ok) {
+      console.error("Failed to download file");
+      return;
+    }
+    const contentDisposition = res.headers.get("Content-Disposition");
+    const filename = contentDisposition
+      ? contentDisposition.split("filename=")[1].replace(/"/g, "")
+      : `file_${docId}`;
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
   };
 
   return (
@@ -406,7 +428,7 @@ export default function TabTraining() {
                               </button>
                               <button
                                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
-                                onClick={() => handleDownload(file.id)}
+                                onClick={() => handleDowloadFile(file.id)}
                               >
                                 <DownloadIcon size={12} />
                               </button>

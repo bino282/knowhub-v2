@@ -134,6 +134,31 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
       console.error(err);
     }
   };
+  const handleDowloadFile = async (docId: string) => {
+    const datasetId = params.id as string;
+    if (!datasetId || !docId) {
+      console.error("Dataset ID or Document ID is missing");
+      return;
+    }
+    const res = await fetch(
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+    );
+    if (!res.ok) {
+      console.error("Failed to download file");
+      return;
+    }
+    const contentDisposition = res.headers.get("Content-Disposition");
+    const filename = contentDisposition
+      ? contentDisposition.split("filename=")[1].replace(/"/g, "")
+      : `file_${docId}`;
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
@@ -439,6 +464,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                         className={`p-1 rounded-full hover:${
                           theme === "dark" ? "bg-gray-700" : "bg-gray-100"
                         } text-gray-400`}
+                        onClick={() => handleDowloadFile(document.id)}
                       >
                         <Download size={16} />
                       </button>
@@ -543,13 +569,19 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex space-x-2 justify-end">
-                          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                          <button
+                            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            onClick={() => handleDowloadFile(document.id)}
+                          >
                             <Download size={16} />
                           </button>
-                          <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                          {/* <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                             <Edit size={16} />
-                          </button>
-                          <button className="text-gray-500 hover:text-red-600">
+                          </button> */}
+                          <button
+                            className="text-gray-500 hover:text-red-600"
+                            onClick={() => setFileDelete(document)}
+                          >
                             <Trash2 size={16} />
                           </button>
                         </div>

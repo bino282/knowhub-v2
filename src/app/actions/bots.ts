@@ -51,6 +51,7 @@ If the knowledge base does not contain relevant information to answer the questi
 Here is the knowledge base:
 {knowledge}
 Here is question:`,
+        top_n: 10,
       },
     }
   );

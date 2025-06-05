@@ -166,6 +166,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import Image from "next/image";
+import Link from "next/link";
 
 interface MarkdownWithReferencesProps {
   content: string;
@@ -220,13 +221,18 @@ export function MarkdownWithReferences({
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs whitespace-pre-line overflow-hidden">
                     {chunk.image_id ? (
-                      <Image
-                        src={`${urlImage}${chunk.image_id}`}
-                        width={200}
-                        height={200}
-                        alt={`Reference Image ${index}`}
-                        className="mb-2 rounded-md max-w-ful object-cover"
-                      />
+                      <Link
+                        href={`${urlImage}${chunk.image_id}`}
+                        target="_blank"
+                      >
+                        <Image
+                          src={`${urlImage}${chunk.image_id}`}
+                          width={200}
+                          height={200}
+                          alt={`Reference Image ${index}`}
+                          className="mb-2 rounded-md max-w-ful object-cover"
+                        />
+                      </Link>
                     ) : (
                       <p>{chunk.content}</p>
                     )}
