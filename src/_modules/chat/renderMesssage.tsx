@@ -165,6 +165,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import Image from "next/image";
 
 interface MarkdownWithReferencesProps {
   content: string;
@@ -204,6 +205,8 @@ export function MarkdownWithReferences({
           const index = Number(indexAttr);
           const chunk = ref.chunks?.[index];
           if (!chunk) return null;
+          const urlImage =
+            process.env.NEXT_PUBLIC_URL_RAGFLOW + "/v1/document/image/";
 
           return (
             <span className=" text-white font-semibold rounded inline-flex items-center">
@@ -215,12 +218,14 @@ export function MarkdownWithReferences({
                       <AlertCircle className="inline w-4 h-4" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs whitespace-pre-line">
+                  <TooltipContent className="max-w-xs whitespace-pre-line overflow-hidden">
                     {chunk.image_id ? (
-                      <img
-                        src={chunk.image_id}
+                      <Image
+                        src={`${urlImage}${chunk.image_id}`}
+                        width={200}
+                        height={200}
                         alt={`Reference Image ${index}`}
-                        className="mb-2 rounded-md max-w-full"
+                        className="mb-2 rounded-md max-w-ful object-cover"
                       />
                     ) : (
                       <p>{chunk.content}</p>
