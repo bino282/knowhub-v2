@@ -110,10 +110,9 @@ const SettingsPage: React.FC = () => {
                 } border px-3 py-2`}
               >
                 <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="ja">日本語</option>
+                <option value="es">Japan</option>
+                <option value="fr">Korean</option>
+                <option value="vn">VietNam</option>
               </select>
             </div>
 
