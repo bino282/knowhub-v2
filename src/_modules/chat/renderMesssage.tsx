@@ -177,6 +177,7 @@ export function MarkdownWithReferences({
   content,
   references,
 }: MarkdownWithReferencesProps) {
+  const [showModal, setShowModal] = React.useState(false);
   const ref =
     typeof references === "object" && references !== null
       ? references
@@ -218,23 +219,36 @@ export function MarkdownWithReferences({
                       <AlertCircle className="inline w-4 h-4" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs whitespace-pre-line overflow-hidden">
-                    {chunk.image_id ? (
-                      <Link
-                        href={`${urlImage}${chunk.image_id}`}
-                        target="_blank"
-                      >
-                        <Image
-                          src={`${urlImage}${chunk.image_id}`}
-                          width={200}
-                          height={200}
-                          alt={`Reference Image ${index}`}
-                          className="mb-2 rounded-md max-w-ful object-cover"
-                        />
-                      </Link>
-                    ) : (
-                      <p>{chunk.content}</p>
-                    )}
+                  <TooltipContent className="max-w-3xl w-full ">
+                    <div className="flex gap-2 p-2">
+                      {chunk.image_id && (
+                        <div className="relative group ">
+                          <Link
+                            href={`${urlImage}${chunk.image_id}`}
+                            target="_blank"
+                          >
+                            <Image
+                              src={`${urlImage}${chunk.image_id}`}
+                              width={200}
+                              height={200}
+                              alt={`Reference Image ${index}`}
+                              className="mb-2 rounded-md max-w-full object-cover"
+                            />
+                          </Link>
+
+                          <div className="absolute bottom-0 right-full hidden group-hover:block z-50 w-[600px] aspect-square pr-10">
+                            <Image
+                              src={`${urlImage}${chunk.image_id}`}
+                              width={400}
+                              height={400}
+                              alt={`Zoomed Image ${index}`}
+                              className="rounded-md shadow-lg object-contain size-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <p className="flex-1">{chunk.content}</p>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
