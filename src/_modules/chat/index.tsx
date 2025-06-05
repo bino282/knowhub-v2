@@ -35,10 +35,11 @@ import {
   getListMessages,
 } from "@/app/actions/chat";
 import { formatGmtDate, toGmtDateString } from "@/lib/format-date";
-import { renderTextWithReferences } from "./renderMesssage";
+// import { renderTextWithReferences } from "./renderMesssage";
 import { ReferenceDocuments } from "./renderDocs";
 import { set } from "date-fns";
 import { DeleteChatHistoryModal } from "./components/ModalDeleteChatHistory";
+import { MarkdownWithReferences } from "./renderMesssage";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -523,10 +524,16 @@ const TestChatbot: React.FC = () => {
                                     <div className="flex flex-col items-start">
                                       <div className="rounded-lg border px-3.5 py-2.5 text-sm font-normal dark:text-gray-200 text-gray-800 bg-gray-100 dark:bg-gray-700 ">
                                         <div className="flex items-end gap-2">
-                                          {renderTextWithReferences(
+                                          {/* {renderTextWithReferences(
                                             t.content,
                                             t.reference
-                                          )}
+                                          )} */}
+                                          <div className=" mx-auto leading-tight text-start">
+                                            <MarkdownWithReferences
+                                              content={t.content}
+                                              references={t.reference!}
+                                            />
+                                          </div>
                                         </div>
                                         {t.content && t.isRendered && (
                                           <div className="flex items-center mt-2 space-x-4">
