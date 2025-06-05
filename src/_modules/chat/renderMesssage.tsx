@@ -206,9 +206,7 @@ export function MarkdownWithReferences({
           const index = Number(indexAttr);
           const chunk = ref.chunks?.[index];
           if (!chunk) return null;
-          const urlImage =
-            process.env.NEXT_PUBLIC_URL_RAGFLOW + "/v1/document/image/";
-          console.log("urlImage", urlImage);
+          const urlImage = "https://chatntq.ntq.ai/v1/document/image/";
 
           return (
             <span className=" text-white font-semibold rounded inline-flex items-center">
