@@ -52,7 +52,7 @@ export const ReferenceDocuments = ({
     ?.split(".")
     .pop()
     ?.toLowerCase();
-  const urlDoc = process.env.NEXT_PUBLIC_URL_RAGFLOW + "/document/";
+  const urlDoc = "https://chatntq.ntq.ai/document/";
   return (
     <div className="flex flex-col border w-full border-gray-200 dark:border-gray-700 mt-2 rounded-lg p-2 text-xs text-gray-800 dark:text-gray-200">
       {docs.map((item, index) => (

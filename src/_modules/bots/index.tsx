@@ -232,14 +232,16 @@ const BotsPage: React.FC = () => {
                   </div>
                 </div>
                 <div className=" mt-6">
-                  <h3 className="text-lg font-semibold">{bot.name}</h3>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                  <h3 className="text-lg font-semibold truncate">{bot.name}</h3>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 truncate-2-lines">
                     {bot.description}
                   </p>
                   {bot.dataset && bot.dataset !== null && (
                     <div className="mt-3 flex items-center gap-2 text-gray-800 dark:text-gray-400">
                       <DatabaseIcon className="size-4" />
-                      <p className="text-sm">Linked to: {bot.dataset.name}</p>
+                      <p className="text-sm flex-1 truncate">
+                        Linked to: {bot.dataset.name}
+                      </p>
                     </div>
                   )}
                 </div>

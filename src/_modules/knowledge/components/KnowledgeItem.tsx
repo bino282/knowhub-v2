@@ -68,7 +68,7 @@ export default function KnowledgeItem({ data }: Props) {
       <div className="mt-4">
         <div className="pb-6 border-b border-gray-200 dark:border-gray-700 ">
           <h2 className="font-semibold text-xl truncate">{data.name}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 break-all flex-1 truncate">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 break-all flex-1 truncate-2-lines">
             {data.description}
           </p>
         </div>
