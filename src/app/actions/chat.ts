@@ -12,6 +12,7 @@ interface MessageInput {
 }
 
 export async function createSessionId(botId: string, nameSession: string) {
+  console.log("botId", botId);
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
@@ -32,7 +33,6 @@ export async function createSessionId(botId: string, nameSession: string) {
       name: name,
     }
   );
-  console.log("createSessionId res", res);
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
   }
