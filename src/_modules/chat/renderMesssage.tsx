@@ -208,6 +208,7 @@ export function MarkdownWithReferences({
           if (!chunk) return null;
           const urlImage =
             process.env.NEXT_PUBLIC_URL_RAGFLOW + "/v1/document/image/";
+          console.log("urlImage", urlImage);
 
           return (
             <span className=" text-white font-semibold rounded inline-flex items-center">
