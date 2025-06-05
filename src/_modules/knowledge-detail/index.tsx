@@ -23,6 +23,7 @@ import {
   ExternalLink,
   Edit,
   Trash2,
+  FileType,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
 import { FileInfo } from "@/types/database.type";
@@ -602,7 +603,11 @@ const getFileIcon = (filename: string) => {
       return <FileSpreadsheet size={20} className="text-green-500" />;
     case "doc":
     case "docx":
-      return <FileVideo size={20} className="text-blue-500" />;
+      return <FileText size={20} className="text-blue-500" />;
+    case "mp4":
+      return <FileVideo size={20} className="text-yellow-500" />;
+    case "pptx":
+      return <FileType size={20} className="text-orange-500" />;
     default:
       return <FileText size={20} className="text-blue-500" />;
   }

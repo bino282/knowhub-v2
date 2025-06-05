@@ -16,6 +16,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Copy,
+  Check,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useParams, useRouter } from "next/navigation";
@@ -97,6 +98,22 @@ const TestChatbot: React.FC = () => {
   const [content, setContent] = React.useState<string>("");
   const [isSending, setIsSending] = React.useState<boolean>(false);
   const [sessionDeleteId, setSessionDeleteId] = React.useState<string>("");
+  const [isCopied, setIsCopied] = React.useState<boolean>(false);
+  const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (isCopied) return;
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        setIsCopied(true);
+        toast.success("Message copied to clipboard");
+        setTimeout(() => setIsCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        toast.error("Failed to copy message");
+      });
+  };
   React.useEffect(() => {
     getListChat(params.id as string)
       .then((res) => {
@@ -523,17 +540,15 @@ const TestChatbot: React.FC = () => {
                                   ) : (
                                     <div className="flex flex-col items-start">
                                       <div className="rounded-lg border px-3.5 py-2.5 text-sm font-normal dark:text-gray-200 text-gray-800 bg-gray-100 dark:bg-gray-700 ">
-                                        <div className="flex items-end gap-2">
-                                          {/* {renderTextWithReferences(
+                                        {/* {renderTextWithReferences(
                                             t.content,
                                             t.reference
                                           )} */}
-                                          <div className=" mx-auto leading-tight text-start">
-                                            <MarkdownWithReferences
-                                              content={t.content}
-                                              references={t.reference!}
-                                            />
-                                          </div>
+                                        <div className=" mx-auto leading-none text-start">
+                                          <MarkdownWithReferences
+                                            content={t.content}
+                                            references={t.reference!}
+                                          />
                                         </div>
                                         {t.content && t.isRendered && (
                                           <div className="flex items-center mt-2 space-x-4">
@@ -543,8 +558,18 @@ const TestChatbot: React.FC = () => {
                                             <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                                               <ThumbsDown size={14} />
                                             </button>
-                                            <button className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                                              <Copy size={14} />
+                                            <button
+                                              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                              onClick={handleCopy}
+                                            >
+                                              {isCopied ? (
+                                                <Check
+                                                  size={14}
+                                                  className="text-green-400"
+                                                />
+                                              ) : (
+                                                <Copy size={14} />
+                                              )}
                                             </button>
                                           </div>
                                         )}
