@@ -29,13 +29,13 @@ export default function CopyCodeButton(props: CopyButtonProps): JSX.Element {
     >
       {checked ? (
         <>
-          <Check size={14} className={"text-white"} />
-          <span className="not-prose text-xs text-gray-100">Copied!</span>
+          <Check size={14} className={"text-gray-800 "} />
+          <span className="not-prose text-xs text-gray-800 ">Copied!</span>
         </>
       ) : (
         <>
-          <Clipboard size={14} className={"text-white"} />
-          <span className="not-prose text-xs text-gray-100">Copy code</span>
+          <Clipboard size={14} className={"text-gray-800"} />
+          <span className="not-prose text-xs text-gray-800 ">Copy code</span>
         </>
       )}
     </div>

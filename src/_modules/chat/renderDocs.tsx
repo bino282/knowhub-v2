@@ -8,6 +8,7 @@ import { DownloadIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useBots } from "../contexts/BotsContext";
 import { Reference } from "@/types/database.type";
+import Link from "next/link";
 
 type ReferenceDocumentsProps = {
   reference?: Reference;
@@ -48,6 +49,11 @@ export const ReferenceDocuments = ({ reference }: ReferenceDocumentsProps) => {
     document.body.appendChild(a);
     a.click();
   };
+  const extension = ref?.doc_aggs?.[0]?.doc_name
+    ?.split(".")
+    .pop()
+    ?.toLowerCase();
+  const urlDoc = process.env.NEXT_PUBLIC_URL_RAGFLOW + "/document/";
   return (
     <div className="flex flex-col border w-full border-gray-200 dark:border-gray-700 mt-2 rounded-lg p-2 text-xs text-gray-800 dark:text-gray-200">
       {docs.map((item, index) => (
@@ -59,9 +65,13 @@ export const ReferenceDocuments = ({ reference }: ReferenceDocumentsProps) => {
         >
           <div className="flex items-center gap-2">
             {getFileIcon(item.doc_name)}
-            <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+            <Link
+              href={`${urlDoc}${item.doc_id}?ext=${extension}&prefix=document`}
+              target="_blank"
+              className="font-semibold text-sm text-blue-500 hover:underline "
+            >
               {item.doc_name}
-            </p>
+            </Link>
           </div>
           <Button onClick={() => handleDowloadFile(item.doc_id)}>
             <DownloadIcon className="w-4 h-4 dark:text-white text-gray-800 hover:text-gray-500" />
