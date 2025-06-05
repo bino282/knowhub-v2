@@ -16,7 +16,10 @@ export async function middleware(request: NextRequest) {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-
+  const isBotSharePage = pathname.startsWith("/bot/share/");
+  if (!token && isBotSharePage) {
+    return NextResponse.next();
+  }
   if (!token && !publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL(`/login${search}`, request.url));
   }

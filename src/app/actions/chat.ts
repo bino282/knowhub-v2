@@ -12,7 +12,6 @@ interface MessageInput {
 }
 
 export async function createSessionId(botId: string, nameSession: string) {
-  console.log("botId", botId);
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
@@ -126,4 +125,32 @@ export async function deleteChatHistory(sessionId: string) {
     where: { sessionChatId: sessionId },
   });
   return { success: true, message: "Chat history deleted successfully" };
+}
+export async function createSessionIdWithBotID(
+  botId: string,
+  nameSession: string
+) {
+  const userBot = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { userId: true, chatId: true },
+  });
+  const user = await prisma.user.findUnique({
+    where: { id: userBot?.userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const res = await apiRequest<ApiResponse>(
+    "POST",
+    `api/v1/chats/${userBot?.chatId}/sessions`,
+    user.apiKey,
+    {
+      name: nameSession,
+    }
+  );
+  if (res.code !== 0) {
+    throw new Error("Failed to create chat for bot");
+  }
+  const data = res.data;
+  return { success: true, data: data };
 }
