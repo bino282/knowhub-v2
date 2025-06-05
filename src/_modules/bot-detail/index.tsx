@@ -18,9 +18,9 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
-import { ShareModal } from "./components/ModalShare";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import ModalShare from "./components/ModalShare";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
@@ -160,9 +160,8 @@ export default function PageBotDetail({ bot }: Props) {
         />
       )}
       {showShareModal && (
-        <ShareModal
-          shareLink={`${url}/bots/${bot.id}`}
-          theme={theme}
+        <ModalShare
+          dataBotId={bot.id}
           open={showShareModal}
           setOpen={setShowShareModal}
         />

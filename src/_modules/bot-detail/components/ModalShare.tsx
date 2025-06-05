@@ -1,170 +1,71 @@
-import { useState } from "react";
-
-import { Copy, Share2, X, LinkIcon, Mail, Globe } from "lucide-react";
+"use client";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
-  DialogHeader,
+  DialogPortal,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { LinkIcon, Share } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import Link from "next/link";
+import React from "react";
+import CopyCodeButton from "@/_modules/components/copy-code";
 
-export function ShareModal({
-  shareLink,
-  theme,
+export default function ModalShare({
+  dataBotId,
   open,
   setOpen,
 }: {
-  shareLink: string;
-  theme: "light" | "dark";
+  dataBotId: string;
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [shareEmail, setShareEmail] = useState("");
-  const [shareAccess, setShareAccess] = useState("view");
-  const [accessSetting, setAccessSetting] = useState("link");
+  const [origin, setOrigin] = React.useState("");
 
+  React.useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md rounded-lg p-6">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-              <Share2 size={20} />
-              Share Chatbot
-            </DialogTitle>
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              <X size={20} />
-            </button>
-          </DialogHeader>
-
-          {/* Share via Link */}
-          <div className="space-y-2 my-4">
-            <h4 className="font-medium">Share via Link</h4>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={shareLink}
-                readOnly
-                className={`px-3 py-2 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-gray-100 border-gray-300"
-                }`}
-              />
-              <Button
-                variant="outline"
-                onClick={() => navigator.clipboard.writeText(shareLink)}
-              >
-                <Copy size={16} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Share via Email */}
-          <div className="space-y-2 my-4">
-            <h4 className="font-medium">Share via Email</h4>
-            <Input
-              type="email"
-              placeholder="Enter email address"
-              value={shareEmail}
-              onChange={(e: any) => setShareEmail(e.target.value)}
-              className={`px-3 py-2 ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600"
-                  : "bg-white border-gray-300"
-              }`}
-            />
-            <Select value={shareAccess} onValueChange={setShareAccess}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="view">Can view</SelectItem>
-                <SelectItem value="edit">Can edit</SelectItem>
-                <SelectItem value="admin">Can manage</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2 my-4">
-            <h4 className="font-medium">Access Settings</h4>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="access"
-                  checked={accessSetting === "link"}
-                  onChange={() => setAccessSetting("link")}
-                  className="text-blue-600 focus:ring-blue-500"
-                />
-                <span className="flex items-center space-x-2">
-                  <LinkIcon size={16} />
-                  <span>Anyone with the link</span>
-                </span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="access"
-                  checked={accessSetting === "specific"}
-                  onChange={() => setAccessSetting("specific")}
-                  className="text-blue-600 focus:ring-blue-500"
-                />
-                <span className="flex items-center space-x-2">
-                  <Mail size={16} />
-                  <span>Specific people only</span>
-                </span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="access"
-                  checked={accessSetting === "public"}
-                  onChange={() => setAccessSetting("public")}
-                  className="text-blue-600 focus:ring-blue-500"
-                />
-                <span className="flex items-center space-x-2">
-                  <Globe size={16} />
-                  <span>Public on the web</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <DialogFooter className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="dark:bg-gray-700 bg-gray-200"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                setOpen(false);
-              }}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white "
-            >
-              <Share2 size={16} />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogPortal>
+        <DialogContent className="max-w-3xl gap-0 dark:bg-gray-800">
+          <DialogTitle className="text-lg font-bold">
+            <p className="mb-2 scroll-m-20 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
               Share
-            </Button>
-          </DialogFooter>
+            </p>
+          </DialogTitle>
+          <div className="relative mx-auto flex size-full max-w-7xl flex-col gap-6">
+            <p className="text-sm text-muted-foreground">
+              To share the chatbot, scan this QR code or copy the following link
+            </p>
+            <Card className="flex flex-col overflow-hidden rounded-sm border shadow-xl dark:border-none dark:bg-gray-800">
+              <CardContent className="flex flex-col gap-8 pt-4">
+                <div
+                  className={
+                    "inline-flex max-w-2xl flex-col items-center justify-center gap-4 md:justify-start"
+                  }
+                >
+                  <QRCodeSVG value={`${origin}/bot/share/${dataBotId}`} />
+                  <div className="inline-flex w-fit items-center rounded-sm border border-blue-300 bg-blue-100 px-2.5 py-2  text-blue-500">
+                    <div className="flex items-center gap-1 flex-1">
+                      <LinkIcon size={14} className="mr-2 cursor-pointer" />
+                      <Link
+                        target="_blank"
+                        href={`${origin}/bot/share/${dataBotId}`}
+                        className="hover:underline"
+                      >{`${origin}/bot/share/${dataBotId}`}</Link>
+                    </div>
+                    <CopyCodeButton
+                      content={`${origin}/bot/share/${dataBotId}`}
+                    ></CopyCodeButton>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </DialogContent>
-      </Dialog>
-    </>
+      </DialogPortal>
+    </Dialog>
   );
 }

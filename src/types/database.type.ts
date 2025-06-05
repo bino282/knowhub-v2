@@ -205,3 +205,13 @@ export interface FileInfo {
   update_date: string;
   update_time: number;
 }
+export type Reference = {
+  chunks: {
+    vector_similarity: number;
+    content: string;
+    document_name?: string;
+  }[];
+  doc_aggs: {
+    doc_name: string;
+  }[];
+};

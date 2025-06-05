@@ -41,22 +41,13 @@ import { ReferenceDocuments } from "./renderDocs";
 import { set } from "date-fns";
 import { DeleteChatHistoryModal } from "./components/ModalDeleteChatHistory";
 import { MarkdownWithReferences } from "./renderMesssage";
+import { Reference } from "@/types/database.type";
 interface Message {
   id: number;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
 }
-type Reference = {
-  chunks: {
-    vector_similarity: number;
-    content: string;
-    document_name?: string;
-  }[];
-  doc_aggs: {
-    doc_name: string;
-  }[];
-};
 
 interface ChatHistory {
   id: string;
@@ -573,7 +564,9 @@ const TestChatbot: React.FC = () => {
                                           </div>
                                         )}
                                       </div>
-                                      {ReferenceDocuments(t.reference)}
+                                      <ReferenceDocuments
+                                        reference={t.reference}
+                                      />
                                     </div>
                                   )}
                                 </div>
