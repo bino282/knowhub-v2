@@ -216,3 +216,7 @@ export type Reference = {
     doc_name: string;
   }[];
 };
+export type FolderFile = {
+  name: string | null;
+  count: number;
+};

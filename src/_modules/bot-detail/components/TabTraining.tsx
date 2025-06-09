@@ -204,7 +204,7 @@ export default function TabTraining() {
             <div>
               <h4 className="font-medium">{bot?.dataset?.name}</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {bot?.dataset?.chunk_count} documents • Update{" "}
+                {bot?.dataset?.document_count} documents • Update{" "}
                 {formatGmtDate(bot?.dataset?.update_date as string)}
               </p>
 
