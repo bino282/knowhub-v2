@@ -98,6 +98,19 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
     fetchList();
   }, [selectedFolder]);
   React.useEffect(() => {
+    if (searchQuery.trim() === "") {
+      fetchList();
+      setListFile(initialListFile);
+      setSelectedFolder(null);
+      return;
+    }
+
+    const filteredFiles = initialListFile.filter((file) =>
+      file.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setListFile(filteredFiles);
+  }, [searchQuery]);
+  React.useEffect(() => {
     getFileTypeCounts(params.id as string).then((res) => {
       if (res.success && res.data) {
         const folderCounts: FolderFile[] = res.data.map((item) => ({

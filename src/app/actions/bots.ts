@@ -175,6 +175,7 @@ export async function settingPrompt(
     prompt: string;
     similarity_threshold: number;
     top_n: number;
+    empty_response: string;
   }
 ) {
   const session = await getServerSession(authOptions);
