@@ -50,6 +50,7 @@ export interface Database {
           dataset: DatasetInfo | null;
           sessionId: string | null;
           isActive: boolean;
+          chatInfo: any;
         };
         Insert: {
           id?: string;
