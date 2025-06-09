@@ -52,6 +52,7 @@ Here is the knowledge base:
 {knowledge}
 Here is question:`,
         top_n: 10,
+        empty_response: "",
       },
     }
   );
