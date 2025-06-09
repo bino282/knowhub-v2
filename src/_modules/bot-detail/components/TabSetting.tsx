@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Database } from "@/types/database.type";
-import { set } from "date-fns";
 import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
@@ -25,7 +24,7 @@ type FormValues = {
 };
 export default function TabSetting({ bot }: Props) {
   const { theme } = useTheme();
-  const { datasets, selectedBot, setBots, bots } = useBots();
+  const { datasets, setBots } = useBots();
   const params = useParams();
   const router = useRouter();
   const [isLoadingChangeBot, setIsLoadingChangeBot] =
@@ -36,20 +35,15 @@ export default function TabSetting({ bot }: Props) {
     label: dataset.name,
   }));
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
-  const [prompt, setPrompt] =
-    React.useState<string>(`You are a knowledgeable and context-aware assistant named ${selectedBot?.name} . Use the following knowledge base to answer the user's question. Your response should:
-Summarize the relevant content from the knowledge base.
-List the specific pieces of data from the knowledge base used in your answer.
-Provide a detailed and accurate response based on the retrieved information.
-Take the chat history into account when forming your answer.
-If the knowledge base does not contain relevant information to answer the question, respond with:
-"I cannot find information for this question in the knowledge base."
-Here is the knowledge base:
-{knowledge}
-Here is question:`);
-  const [similarityThreshold, setSimilarityThreshold] =
-    React.useState<number>(0.2);
-  const [topN, setTopN] = React.useState<number>(6);
+  const [prompt, setPrompt] = React.useState<string>(
+    bot.chatInfo[0]?.prompt?.prompt || ""
+  );
+  const [similarityThreshold, setSimilarityThreshold] = React.useState<number>(
+    bot.chatInfo[0]?.prompt?.similarity_threshold || 0.7
+  );
+  const [topN, setTopN] = React.useState<number>(
+    bot.chatInfo[0]?.prompt?.top_n || 5
+  );
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"

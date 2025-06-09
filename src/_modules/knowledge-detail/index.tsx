@@ -26,7 +26,7 @@ import {
   FileType,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
-import { FileInfo } from "@/types/database.type";
+import { FileInfo, FolderFile } from "@/types/database.type";
 import Link from "next/link";
 import { useBots } from "../contexts/BotsContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -35,6 +35,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   deteleFileDataset,
   getAllFileDatasets,
+  getFileTypeCounts,
 } from "@/app/actions/file-dataset";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -47,13 +48,6 @@ import { formatGmtDate } from "@/lib/format-date";
 interface Props {
   initialListFile: FileInfo[];
 }
-// const folders = [
-//   { name: "Campaigns", count: 0 },
-//   { name: "Brand Guidelines", count: 0 },
-//   { name: "Social Media", count: 0 },
-//   { name: "Presentations", count: 0 },
-//   { name: "Market Research", count: 0 },
-// ];
 
 // const documentTypes = [
 //   "PDFs",
@@ -77,18 +71,15 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
       : "bg-white border-gray-200";
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
+  const [folders, setFolders] = useState<FolderFile[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const filteredFiles = listFile.filter(
-    (file) =>
-      file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
   const [isPolling, setIsPolling] = useState(false);
   const fetchList = React.useCallback(async () => {
     const res = await getAllFileDatasets({
       datasetId: params.id as string,
+      type: selectedFolder || undefined,
     });
     if (!res.success) {
       toast.error(res.message);
@@ -102,6 +93,22 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
     if (!hasRunning) {
       setIsPolling(false);
     }
+  }, [params.id, selectedFolder]);
+  React.useEffect(() => {
+    fetchList();
+  }, [selectedFolder]);
+  React.useEffect(() => {
+    getFileTypeCounts(params.id as string).then((res) => {
+      if (res.success && res.data) {
+        const folderCounts: FolderFile[] = res.data.map((item) => ({
+          name: item.name,
+          count: item.count,
+        }));
+        setFolders(folderCounts);
+      } else {
+        toast.error(res.message);
+      }
+    });
   }, []);
   React.useEffect(() => {
     if (!isPolling) return;
@@ -242,12 +249,12 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                     All Documents
                   </span>
                   <span className="ml-auto text-gray-500 dark:text-gray-400">
-                    {listFile.length}
+                    {initialListFile.length}
                   </span>
                 </Button>
               </li>
 
-              {/* {folders.map((folder, index) => (
+              {folders.map((folder, index) => (
                 <li key={index}>
                   <button
                     onClick={() => setSelectedFolder(folder.name)}
@@ -272,14 +279,14 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                         selectedFolder === folder.name ? "font-medium" : ""
                       }`}
                     >
-                      {folder.name}
+                      {capitalize(folder.name || "")}
                     </span>
                     <span className="ml-auto text-gray-500 dark:text-gray-400">
                       {folder.count}
                     </span>
                   </button>
                 </li>
-              ))} */}
+              ))}
 
               <li className="pt-2">
                 <button className="w-full text-left px-3 py-2 rounded-md flex items-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
@@ -430,7 +437,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
 
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredFiles.map((document) => (
+              {listFile.map((document) => (
                 <div
                   key={document.id}
                   className={`${baseCardClasses} border rounded-lg p-4 hover:shadow-md transition-shadow group overflow-hidden`}
@@ -536,11 +543,11 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredFiles.map((document, idx) => (
+                  {listFile.map((document, idx) => (
                     <tr
                       key={document.id}
                       className={`${
-                        idx !== filteredFiles.length - 1
+                        idx !== listFile.length - 1
                           ? theme === "dark"
                             ? "border-b border-gray-700"
                             : "border-b border-gray-200"
@@ -602,6 +609,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
           close={() => setIsCreateModalOpen(false)}
           fetchList={fetchList}
           setIsPolling={setIsPolling}
+          setFolders={setFolders}
         />
       )}
       <DeleteFileModal
@@ -644,3 +652,6 @@ const getFileIcon = (filename: string) => {
       return <FileText size={20} className="text-blue-500" />;
   }
 };
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}

@@ -50,6 +50,7 @@ export interface Database {
           dataset: DatasetInfo | null;
           sessionId: string | null;
           isActive: boolean;
+          chatInfo: any;
         };
         Insert: {
           id?: string;
@@ -214,4 +215,8 @@ export type Reference = {
   doc_aggs: {
     doc_name: string;
   }[];
+};
+export type FolderFile = {
+  name: string | null;
+  count: number;
 };

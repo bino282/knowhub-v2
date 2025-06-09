@@ -5,7 +5,11 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/authOption";
 
-export async function createFileDataset(datasetId: string, formData: FormData) {
+export async function createFileDataset(
+  datasetId: string,
+  fileType: string | null,
+  formData: FormData
+) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
@@ -25,8 +29,15 @@ export async function createFileDataset(datasetId: string, formData: FormData) {
       console.error("Failed to create file dataset:");
       throw new Error("Failed to create file dataset");
     }
-
+    const type = fileType ? fileType.toLowerCase() : null;
     const data = await result.data;
+    await prisma.file.create({
+      data: {
+        id: data[0].id,
+        type: type,
+        datasetId: data[0].dataset_id,
+      },
+    });
     await parseFileDocumentWithDataset(data[0].dataset_id, [data[0].id]);
 
     return {
@@ -41,12 +52,10 @@ export async function createFileDataset(datasetId: string, formData: FormData) {
 }
 export async function getAllFileDatasets({
   datasetId,
-  page = 1,
-  name = "",
+  type,
 }: {
   datasetId: string;
-  page?: number;
-  name?: string;
+  type?: string;
 }) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -57,13 +66,19 @@ export async function getAllFileDatasets({
     return { success: false, message: "User not found or API key missing" };
   }
   try {
+    let fileIdsByType: string[] = [];
+    if (type) {
+      const files = await prisma.file.findMany({
+        where: { type },
+        select: { id: true },
+      });
+      fileIdsByType = files.map((file) => file.id);
+    }
     const response = await apiRequest<ApiResponse>(
       "GET",
       `api/v1/datasets/${datasetId}/documents`,
       user.apiKey,
       {
-        page: page,
-        name: name,
         desc: "desc",
       }
     );
@@ -73,7 +88,19 @@ export async function getAllFileDatasets({
       throw new Error("Failed to fetch file datasets");
     }
     const data = await response.data;
-    return { data, success: true };
+
+    const filteredData = type
+      ? {
+          docs: data.docs.filter((item: any) =>
+            fileIdsByType.includes(item.id)
+          ),
+          count: data.docs.filter((item: any) =>
+            fileIdsByType.includes(item.id)
+          ).length,
+        }
+      : data;
+
+    return { data: filteredData, success: true };
   } catch (error) {
     console.error("Error fetching file datasets:", error);
     return { success: false, message: "Failed to fetch file datasets" };
@@ -194,6 +221,12 @@ export async function deteleFileDataset(
       console.error("Failed to delete file dataset:");
       throw new Error("Failed to delete file dataset");
     }
+    await prisma.file.delete({
+      where: {
+        id: documentIds[0],
+        datasetId: datasetId,
+      },
+    });
     return { success: true, message: "File dataset deleted successfully" };
   } catch (error) {
     console.error("Error deleting file dataset:", error);
@@ -266,5 +299,56 @@ export async function updateFileDataset(
   } catch (error) {
     console.error("Error updating file dataset:", error);
     return { success: false, message: "Failed to update file dataset" };
+  }
+}
+export async function getTypeFile() {
+  // get all type from table file
+  const types = await prisma.file.findMany({
+    select: {
+      type: true,
+    },
+    distinct: ["type"],
+  });
+  if (!types) {
+    return { success: false, message: "No file types found" };
+  }
+  return {
+    success: true,
+    data: types.map((item) => item.type),
+  };
+}
+export async function getFileTypeCounts(datasetId: string) {
+  try {
+    // Step 1: lấy tất cả các type hiện có
+    const allTypes = await prisma.file.findMany({
+      distinct: ["type"],
+      select: {
+        type: true,
+      },
+    });
+
+    // Step 2: đếm số lượng theo datasetId được truyền vào
+    const counts = await prisma.file.groupBy({
+      by: ["type"],
+      where: { datasetId },
+      _count: { type: true },
+    });
+
+    // Step 3: gộp lại, đảm bảo type nào không có count thì set 0
+    const result = allTypes.map((typeObj) => {
+      const matched = counts.find((c) => c.type === typeObj.type);
+      return {
+        name: typeObj.type,
+        count: matched?._count.type || 0,
+      };
+    });
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error counting file types for datasetId:", error);
+    return { success: false, message: "Failed to count file types" };
   }
 }

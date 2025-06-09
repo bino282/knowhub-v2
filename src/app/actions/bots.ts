@@ -52,6 +52,7 @@ Here is the knowledge base:
 {knowledge}
 Here is question:`,
         top_n: 10,
+        empty_response: "",
       },
     }
   );
@@ -105,7 +106,26 @@ export async function getBotById(id: string) {
     if (!bot) {
       return { success: false, error: "Bot not found" };
     }
-    return { data: bot, success: true };
+    // get chat info
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user || !user.apiKey) {
+      return { success: false, message: "User not found or API key missing" };
+    }
+    const res = await apiRequest<ApiResponse>(
+      "GET",
+      `api/v1/chats?id=${bot.chatId}`,
+      user.apiKey
+    );
+    const chatInfo = res.data;
+    const data = {
+      ...bot,
+      chatInfo: chatInfo,
+    };
+    return { data: data, success: true };
   } catch (error) {
     return { success: false, error: "Failed to fetch bot" };
   }
