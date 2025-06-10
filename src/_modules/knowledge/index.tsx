@@ -17,7 +17,7 @@ import KnowledgeItem from "./components/KnowledgeItem";
 import { motion } from "framer-motion";
 import { useBots } from "../contexts/BotsContext";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
 import { formatDate } from "date-fns";
@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 
 export default function PageKnowledges() {
   const { theme } = useTheme();
+  const params = useParams();
   const { datasets, selectKnowledge } = useBots();
   const router = useRouter();
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
@@ -60,6 +61,7 @@ export default function PageKnowledges() {
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">

@@ -1,12 +1,18 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  use,
+} from "react";
 import { useSession } from "next-auth/react";
 import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
 import { createDataset, getAllDatasets } from "@/app/actions/datasets";
-import { useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
 type Document = Database["public"]["Tables"]["documents"]["Row"];
@@ -60,6 +66,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const router = useRouter();
+  const params = useParams();
+  const pathname = usePathname();
   const [bots, setBots] = useState<Bot[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
@@ -76,11 +84,9 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   // Load bots, documents, and messages
   useEffect(() => {
     if (!user) return;
-
     const loadData = async () => {
       try {
         const resDataset = await getAllDatasets();
-
         if (!resDataset.success) {
           toast.error(resDataset.message || "Failed to fetch datasets");
           return;
@@ -216,7 +222,6 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     const dataset = datasets.find((d) => d.id === id) || null;
     setSelectedDataset(dataset);
   };
-
   // const uploadDocument = async (botId: string, file: File) => {
   //   if (!user) throw new Error("User not authenticated");
 

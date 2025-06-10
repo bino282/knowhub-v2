@@ -26,7 +26,7 @@ import {
   FileType,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
-import { FileInfo, FolderFile } from "@/types/database.type";
+import { DatasetInfo, FileInfo, FolderFile } from "@/types/database.type";
 import Link from "next/link";
 import { useBots } from "../contexts/BotsContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -61,7 +61,10 @@ interface Props {
 export default function KnowledgeDetailPage({ initialListFile }: Props) {
   const session = useSession();
   const router = useRouter();
-  const { selectedDataset } = useBots();
+  const [selectedDataset, setSelectedDataset] = useState<DatasetInfo | null>(
+    null
+  );
+  const { datasets } = useBots();
   const [listFile, setListFile] = useState<FileInfo[]>(initialListFile);
   const { theme } = useTheme();
   const params = useParams();
@@ -132,6 +135,13 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
 
     return () => clearInterval(interval);
   }, [isPolling, fetchList]);
+  React.useEffect(() => {
+    if (!params.id) return;
+    const dataset = datasets.find((d) => d.id === params.id);
+    if (dataset) {
+      setSelectedDataset(dataset);
+    }
+  }, [params.id, datasets]);
   const [fileDelete, setFileDelete] = useState<FileInfo | null>(null);
   const handleDeleteFile = async (fileId: string) => {
     if (!fileId) {
@@ -301,12 +311,12 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                 </li>
               ))}
 
-              <li className="pt-2">
+              {/* <li className="pt-2">
                 <button className="w-full text-left px-3 py-2 rounded-md flex items-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
                   <FilePlus size={16} className="mr-2" />
                   <span>New Folder</span>
                 </button>
-              </li>
+              </li> */}
             </ul>
           </div>
 
