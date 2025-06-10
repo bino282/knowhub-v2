@@ -161,7 +161,7 @@ export default function TabTraining() {
     }
   };
   const handleDowloadFile = async (docId: string) => {
-    const datasetId = params.id as string;
+    const datasetId = bot?.dataSetId as string;
     if (!datasetId || !docId) {
       console.error("Dataset ID or Document ID is missing");
       return;
