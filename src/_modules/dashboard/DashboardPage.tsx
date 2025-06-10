@@ -28,8 +28,6 @@ const DashboardPage = ({ listMessage }: Props) => {
     listMessage.length > 0
       ? listMessage.filter((msg) => msg.role === "user")
       : [];
-  const top10Messages =
-    listMessageUser.length > 0 ? listMessageUser.slice(0, 10) : [];
   const session = useSession();
   const router = useRouter();
   const [opneModalCreateBot, setOpenModalCreateBot] =
@@ -39,14 +37,12 @@ const DashboardPage = ({ listMessage }: Props) => {
     createBot,
     selectBot,
     getTotalDocuments,
-    getTotalMessages,
     getBotSummaries,
     getRecentActivity,
   } = useBots();
 
   const botSummaries = getBotSummaries();
   const totalDocuments = getTotalDocuments();
-  const totalMessages = getTotalMessages();
   const recentActivity = getRecentActivity();
 
   const containerVariants = {

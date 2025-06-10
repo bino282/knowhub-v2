@@ -51,9 +51,10 @@ export interface Database {
           sessionId: string | null;
           isActive: boolean;
           chatInfo: any;
+          totalMessages?: number;
         };
         Insert: {
-          id?: string;
+          id: string;
           name: string;
           description: string;
           avatarUrl: string | null;
@@ -63,6 +64,9 @@ export interface Database {
           chatId: string;
           createdAt: Date;
           updatedAt: Date;
+          dataset: DatasetInfo | null;
+          sessionId: string | null;
+          isActive: boolean;
         };
         Update: {
           id?: string;

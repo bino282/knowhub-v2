@@ -25,6 +25,7 @@ interface BotSummary {
   documentsCount: number;
   messagesCount: number;
   lastActivity: Date;
+  totalMessages?: number; // Optional, if not available
 }
 
 interface BotsContextType {
@@ -97,8 +98,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         // Load bots
         const resBots = await getAllBots(user.id);
 
-        if (resBots.success) {
-          const bots = resBots.data as Bot[];
+        if (resBots.success && resBots.data) {
+          const bots = resBots.data;
 
           const datasetById = new Map(
             datasets.map((ds) => [ds.id, ds] as const)
@@ -107,7 +108,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
           const botsWithDataset = bots.map((bot) => ({
             ...bot,
             dataset: datasetById.get(bot.dataSetId) ?? null,
-          }));
+            chatInfo: null,
+          })) as Bot[];
 
           setBots(botsWithDataset);
 
@@ -370,6 +372,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       name: bot.name,
       documentsCount: bot.dataset?.document_count || 0,
       messagesCount: messagesByBot[bot.id]?.length || 0,
+      totalMessages: bot?.totalMessages || 0,
       lastActivity: new Date(bot.updatedAt),
     }));
   };

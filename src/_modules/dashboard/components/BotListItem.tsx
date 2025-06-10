@@ -7,6 +7,7 @@ interface BotSummary {
   name: string;
   documentsCount: number;
   messagesCount: number;
+  totalMessages?: number;
   lastActivity: Date;
 }
 
@@ -70,7 +71,7 @@ const BotListItem: React.FC<BotListItemProps> = ({ bot, onClick }) => {
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400 mr-4">
             <MessageSquare className="h-3.5 w-3.5" />
-            <span>{bot.messagesCount}</span>
+            <span>{bot.totalMessages || 0}</span>
           </div>
           <ArrowRight className="h-4 w-4 text-gray-400" />
         </div>
