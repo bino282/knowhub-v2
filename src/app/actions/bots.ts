@@ -89,13 +89,44 @@ Here is question:`,
 }
 export async function getAllBots(userId: string) {
   try {
-    const bots = await prisma.bot.findMany({
-      orderBy: { createdAt: "desc" },
-      where: { userId: userId },
+    const botsWithUserMessageCount = await prisma.bot.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        sessionChats: {
+          include: {
+            messages: {
+              where: {
+                role: "user",
+              },
+              select: {
+                id: true, // just to count
+              },
+            },
+          },
+        },
+      },
     });
-    return { data: bots, success: true };
+
+    // Tính tổng số message role 'user' cho từng bot
+    const result = botsWithUserMessageCount.map((bot) => {
+      const totalMessages = bot.sessionChats.reduce((sum, session) => {
+        return sum + session.messages.length;
+      }, 0);
+
+      return {
+        ...bot,
+        totalMessages,
+      };
+    });
+
+    return { data: result, success: true };
   } catch (error) {
-    return { success: false, error: "Failed to fetch bots" };
+    return { success: false, error: "Failed to fetch bots and messages" };
   }
 }
 export async function getBotById(id: string) {
@@ -175,6 +206,7 @@ export async function settingPrompt(
     prompt: string;
     similarity_threshold: number;
     top_n: number;
+    empty_response: string;
   }
 ) {
   const session = await getServerSession(authOptions);

@@ -1,12 +1,18 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  use,
+} from "react";
 import { useSession } from "next-auth/react";
 import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
 import { createDataset, getAllDatasets } from "@/app/actions/datasets";
-import { useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
 type Document = Database["public"]["Tables"]["documents"]["Row"];
@@ -19,6 +25,7 @@ interface BotSummary {
   documentsCount: number;
   messagesCount: number;
   lastActivity: Date;
+  totalMessages?: number; // Optional, if not available
 }
 
 interface BotsContextType {
@@ -60,6 +67,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const router = useRouter();
+  const params = useParams();
+  const pathname = usePathname();
   const [bots, setBots] = useState<Bot[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
@@ -76,11 +85,9 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   // Load bots, documents, and messages
   useEffect(() => {
     if (!user) return;
-
     const loadData = async () => {
       try {
         const resDataset = await getAllDatasets();
-
         if (!resDataset.success) {
           toast.error(resDataset.message || "Failed to fetch datasets");
           return;
@@ -91,8 +98,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         // Load bots
         const resBots = await getAllBots(user.id);
 
-        if (resBots.success) {
-          const bots = resBots.data as Bot[];
+        if (resBots.success && resBots.data) {
+          const bots = resBots.data;
 
           const datasetById = new Map(
             datasets.map((ds) => [ds.id, ds] as const)
@@ -101,7 +108,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
           const botsWithDataset = bots.map((bot) => ({
             ...bot,
             dataset: datasetById.get(bot.dataSetId) ?? null,
-          }));
+            chatInfo: null,
+          })) as Bot[];
 
           setBots(botsWithDataset);
 
@@ -216,7 +224,6 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     const dataset = datasets.find((d) => d.id === id) || null;
     setSelectedDataset(dataset);
   };
-
   // const uploadDocument = async (botId: string, file: File) => {
   //   if (!user) throw new Error("User not authenticated");
 
@@ -365,6 +372,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       name: bot.name,
       documentsCount: bot.dataset?.document_count || 0,
       messagesCount: messagesByBot[bot.id]?.length || 0,
+      totalMessages: bot?.totalMessages || 0,
       lastActivity: new Date(bot.updatedAt),
     }));
   };

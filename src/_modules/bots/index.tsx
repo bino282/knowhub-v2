@@ -46,7 +46,6 @@ import { useTheme } from "../contexts/ThemeContext";
 import { Database } from "@/types/database.type";
 import { DeleteBotModal } from "../components/ModalDeleteBot";
 
-type Bot = {};
 const BotsPage: React.FC = () => {
   const router = useRouter();
   const { theme } = useTheme();
@@ -255,7 +254,7 @@ const BotsPage: React.FC = () => {
                     </span>
                   </p>
                   <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
-                    0
+                    {bot.totalMessages || 0}
                   </p>
                 </div>
                 <div className="ftext-start flex flex-col gap-1">

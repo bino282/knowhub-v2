@@ -106,7 +106,9 @@ export function ModalUploadFile({
           router.refresh();
           if (selected) {
             setFolders((prev) => {
-              const index = prev.findIndex((item) => item.name === selected);
+              const index = prev.findIndex(
+                (item) => item.name === selected.toLowerCase()
+              );
               if (index !== -1) {
                 // Đã tồn tại → tăng count
                 const updated = [...prev];
@@ -181,7 +183,7 @@ export function ModalUploadFile({
           <Popover open={openPopover} onOpenChange={setOpenPopover}>
             <PopoverTrigger asChild className="w-full">
               <Button variant="outline" className="w-full justify-between">
-                {capitalize(selected || "") || "Enter or select..."}
+                {selected || "Enter or select..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
               </Button>
             </PopoverTrigger>

@@ -44,6 +44,9 @@ export default function TabSetting({ bot }: Props) {
   const [topN, setTopN] = React.useState<number>(
     bot.chatInfo[0]?.prompt?.top_n || 5
   );
+  const [emptyResponse, setEmptyResponse] = React.useState<string>(
+    bot.chatInfo[0]?.prompt?.empty_response || ""
+  );
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
@@ -105,6 +108,7 @@ export default function TabSetting({ bot }: Props) {
         prompt: prompt,
         similarity_threshold: similarityThreshold,
         top_n: topN,
+        empty_response: emptyResponse,
       });
       if (!res.success) {
         toast.error(res.message);
@@ -218,6 +222,21 @@ export default function TabSetting({ bot }: Props) {
             step={1}
           />
         </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Emty Response</p>
+          <Textarea
+            value={emptyResponse}
+            onChange={(e) => setEmptyResponse(e.target.value)}
+            className={`w-full rounded-md ${
+              theme === "dark"
+                ? "bg-gray-700 border-gray-600"
+                : "bg-white border-gray-300"
+            } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+            rows={4}
+            placeholder="Enter your empty response here..."
+          />
+        </div>
+
         <div className="mt-6 flex justify-end">
           <button
             type="submit"
