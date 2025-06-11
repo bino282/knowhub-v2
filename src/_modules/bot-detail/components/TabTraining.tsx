@@ -146,7 +146,11 @@ export default function TabTraining() {
   const handleDeleteFile = async (fileId: string) => {
     try {
       const ids = [fileId];
-      const res = await deteleFileDataset(bot?.dataSetId as string, ids);
+      const res = await deteleFileDataset(
+        bot?.dataSetId as string,
+        ids,
+        bot?.dataset?.name
+      );
       if (!res.success) {
         toast.error(res.message);
         return;

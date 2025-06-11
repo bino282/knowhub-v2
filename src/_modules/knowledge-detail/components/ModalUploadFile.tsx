@@ -24,6 +24,7 @@ import { FolderFile } from "@/types/database.type";
 
 interface Props {
   open: boolean;
+  datasetName?: string;
   close: () => void;
   fetchList?: () => void; // Optional prop to fetch list after upload
   setIsPolling: React.Dispatch<React.SetStateAction<boolean>>;
@@ -35,6 +36,7 @@ type FileType = {
 };
 export function ModalUploadFile({
   open,
+  datasetName,
   close,
   fetchList,
   setIsPolling,
@@ -98,7 +100,7 @@ export function ModalUploadFile({
     setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file);
-    createFileDataset(params.id as string, selected, formData)
+    createFileDataset(params.id as string, selected, formData, datasetName)
       .then((result) => {
         if (result.success) {
           toast.success(result.message);

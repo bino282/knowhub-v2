@@ -22,7 +22,10 @@ const BotSchema = z.object({
 });
 export async function createNewBot(data: any) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, error: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -80,7 +83,14 @@ Here is question:`,
         createdAt: new Date(),
       },
     });
-
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "CREATED",
+        targetType: validated.name,
+        targetName: "CHAT BOT",
+      },
+    });
     revalidatePath("/bots");
     return { data: data, success: true, message: "Bot created successfully" };
   } catch (error) {
@@ -175,12 +185,58 @@ export async function updateChatBot(botId: string, data: any) {
   if (!res) {
     return { success: false, error: "Failed to update bot" };
   }
+  await prisma.activity.create({
+    data: {
+      userId: res.userId,
+      action: "UPDATED",
+      targetType: res.name,
+      targetName: "CHAT BOT",
+    },
+  });
   return { data: res, success: true, message: "Bot updated successfully" };
 }
 export async function deleteChatBot(botId: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return { success: false, error: "User not authenticated" };
+  }
+  const userId = session.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  const bot = await prisma.bot.findUnique({
+    where: { id: botId },
+    select: { name: true, chatId: true },
+  });
+  await prisma.sessionChat.deleteMany({
+    where: { botId: botId },
+  });
+  const res = await apiRequest<ApiResponse>(
+    "DELETE",
+    "api/v1/chats",
+    user.apiKey,
+    {
+      ids: [bot?.chatId],
+    }
+  );
+  if (res.code !== 0) {
+    return { success: false, error: "Failed to delete chat" };
+  }
+  await prisma.activity.create({
+    data: {
+      userId: userId,
+      action: "DELETED",
+      targetType: bot?.name || "",
+      targetName: "CHAT BOT",
+    },
+  });
   await prisma.bot.delete({
     where: { id: botId },
   });
+
   return { success: true, message: "Bot deleted successfully" };
 }
 export async function activeBot(botId: string, active: boolean) {
@@ -210,7 +266,10 @@ export async function settingPrompt(
   }
 ) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, error: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -231,6 +290,14 @@ export async function settingPrompt(
   if (res.code !== 0) {
     return { success: false, error: "Failed to update bot prompt" };
   }
+  await prisma.activity.create({
+    data: {
+      userId: userId,
+      action: "UPDATED",
+      targetType: bot?.name || "",
+      targetName: "BOT PROMPT",
+    },
+  });
   return {
     data: res.data,
     success: true,

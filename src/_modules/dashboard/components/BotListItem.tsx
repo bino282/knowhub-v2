@@ -58,7 +58,7 @@ const BotListItem: React.FC<BotListItemProps> = ({ bot, onClick }) => {
           <div>
             <h3 className="text-sm font-medium">{bot.name}</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Last activity :{" "}
+              Create :{" "}
               {formatDistanceToNow(bot.lastActivity, { addSuffix: true })}
             </p>
           </div>

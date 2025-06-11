@@ -12,6 +12,7 @@ import { useBots } from "../contexts/BotsContext";
 import ModalCreateBot from "../components/ModalCreateBot";
 import BotListItem from "./components/BotListItem";
 import ActivityItem from "./components/ActivityItem";
+import { Activity } from "@/types/database.type";
 
 interface Props {
   listMessage: {
@@ -22,8 +23,9 @@ interface Props {
     sessionChatId: string;
     reference: any;
   }[];
+  listActivity?: Activity[];
 }
-const DashboardPage = ({ listMessage }: Props) => {
+const DashboardPage = ({ listMessage, listActivity }: Props) => {
   const listMessageUser =
     listMessage.length > 0
       ? listMessage.filter((msg) => msg.role === "user")
@@ -122,42 +124,44 @@ const DashboardPage = ({ listMessage }: Props) => {
         </motion.div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
         <motion.div variants={itemVariants} className="lg:col-span-2">
-          <div className="card">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold">Your Bots</h2>
-              <Button
-                className="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md"
-                onClick={() => setOpenModalCreateBot(true)}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Create Bot
-              </Button>
-            </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {botSummaries.length > 0 ? (
-                botSummaries.map((bot) => (
-                  <BotListItem
-                    key={bot.id}
-                    bot={bot}
-                    onClick={() => handleBotClick(bot.id)}
-                  />
-                ))
-              ) : (
-                <div className="p-6 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No bots created yet
-                  </p>
-                  <Button
-                    className="text-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 p-2 mt-4"
-                    onClick={() => setOpenModalCreateBot(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Create your first bot
-                  </Button>
-                </div>
-              )}
+          <div className="card flex flex-col max-h-[500px] overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold">Your Bots</h2>
+                <Button
+                  className="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md"
+                  onClick={() => setOpenModalCreateBot(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create Bot
+                </Button>
+              </div>
+              <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-auto">
+                {botSummaries.length > 0 ? (
+                  botSummaries.map((bot) => (
+                    <BotListItem
+                      key={bot.id}
+                      bot={bot}
+                      onClick={() => handleBotClick(bot.id)}
+                    />
+                  ))
+                ) : (
+                  <div className="p-6 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No bots created yet
+                    </p>
+                    <Button
+                      className="text-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 p-2 mt-4"
+                      onClick={() => setOpenModalCreateBot(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Create your first bot
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {botSummaries.length > 0 && (
@@ -176,13 +180,13 @@ const DashboardPage = ({ listMessage }: Props) => {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <div className="card h-full">
+          <div className="card h-full max-h-[500px] overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-semibold">Recent Activity</h2>
             </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-auto">
+              {listActivity && listActivity.length > 0 ? (
+                listActivity.map((activity) => (
                   <ActivityItem key={activity.id} activity={activity} />
                 ))
               ) : (

@@ -150,7 +150,11 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
     }
     try {
       const ids = [fileId];
-      const res = await deteleFileDataset(params.id as string, ids);
+      const res = await deteleFileDataset(
+        params.id as string,
+        ids,
+        selectedDataset?.name
+      );
       if (!res.success) {
         toast.error(res.message);
         return;
@@ -633,6 +637,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
           fetchList={fetchList}
           setIsPolling={setIsPolling}
           setFolders={setFolders}
+          datasetName={selectedDataset?.name}
         />
       )}
       <DeleteFileModal

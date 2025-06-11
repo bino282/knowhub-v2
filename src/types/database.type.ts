@@ -1,3 +1,5 @@
+import { $Enums } from "@/generated/prisma";
+
 export type Json =
   | string
   | number
@@ -223,4 +225,15 @@ export type Reference = {
 export type FolderFile = {
   name: string | null;
   count: number;
+};
+export type Activity = {
+  id: string;
+  userId: string;
+  createdAt: Date;
+  action: $Enums.ActivityType;
+  targetType: string;
+  targetName: string;
+  user: {
+    name: string | null;
+  };
 };
