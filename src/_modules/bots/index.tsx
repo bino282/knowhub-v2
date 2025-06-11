@@ -93,7 +93,7 @@ const BotsPage: React.FC = () => {
   };
   return (
     <div className="h-full">
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between mb-6">
         <div className="w-full">
           <div className="flex items-center justify-between w-full gap-4">
             <h2 className="font-semibold text-xl">Chatbots</h2>
@@ -107,7 +107,7 @@ const BotsPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          <div className="mt-6 flex items-center justify-between gap-4">
+          <div className="mt-5 flex items-center justify-between gap-4">
             <div className="relative max-w-md w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 " />
               <Input
@@ -230,7 +230,7 @@ const BotsPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className=" mt-6">
+                <div className=" mt-4">
                   <h3 className="text-lg font-semibold truncate">{bot.name}</h3>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 truncate-2-lines">
                     {bot.description}
@@ -245,7 +245,7 @@ const BotsPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="px-5 pt-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4">
+              <div className="mx-5 pt-5 border-t border-gray-300 dark:border-gray-600 grid grid-cols-2 gap-x-4">
                 <div className="text-start flex flex-col gap-1">
                   <p className="flex items-center">
                     <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400 " />
@@ -269,8 +269,8 @@ const BotsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 px-5 pb-5 flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="mt-2 px-5 pb-5 flex items-center justify-between gap-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Updated {formatDateTime(bot.updatedAt)}
                 </p>
                 <button
