@@ -3,21 +3,24 @@ import { Search, Bell, Sun, Moon, Menu, HelpCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "../contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-const Header: React.FC = () => {
+const Header: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   // Get the current page title based on the route
   const getPageTitle = () => {
-    if (pathname.includes("/dashboard")) return "Dashboard";
+    if (pathname.includes("/dashboard")) return dictionary.common.dashboard;
 
-    if (pathname.includes("/bots")) return "Chatbots";
-    if (pathname.includes("/knowledge")) return "KnowLedge Bases";
+    if (pathname.includes("/bots")) return dictionary.common.chatbots;
+    if (pathname.includes("/knowledge")) return dictionary.common.knowledge;
 
     if (pathname.includes("/files")) return "Manage Files";
     if (pathname.includes("/workspace")) return "Workspace";
-    if (pathname.includes("/settings")) return "Settings";
+    if (pathname.includes("/settings")) return dictionary.common.settings;
 
     return "KnowHub";
   };

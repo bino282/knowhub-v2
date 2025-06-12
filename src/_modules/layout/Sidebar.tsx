@@ -12,47 +12,55 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { signOut, useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "../contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { i18n } from "@/i18n";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 const COLLAPSED_WIDTH = 64; // px (Tailwind w-16)
 const EXPANDED_WIDTH = 256; // px (Tailwind w-64)
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const pathname = usePathname();
   const router = useRouter();
   const session = useSession();
-
+  const { lang } = useParams();
   const [collapsed, setCollapsed] = useState(false);
   const { theme } = useTheme();
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push("/login");
   };
 
   const navItems = [
     {
-      to: "/dashboard",
+      to: `/${lang}/dashboard`,
       icon: <LayoutDashboard className="h-5 w-5" />,
-      label: "Dashboard",
+      label: dictionary.common.dashboard,
     },
     {
-      to: "/knowledge",
+      to: `/${lang}/knowledge`,
       icon: <DatabaseIcon className="h-5 w-5" />,
-      label: "Knowledge",
+      label: dictionary.common.knowledge,
     },
-    { to: "/bots", icon: <Bot className="h-5 w-5" />, label: "Chatbots" },
+    {
+      to: `/${lang}/bots`,
+      icon: <Bot className="h-5 w-5" />,
+      label: dictionary.common.chatbots,
+    },
     // {
     //   to: "/user-management",
     //   icon: <UsersIcon className="h-5 w-5" />,
     //   label: "User Management",
     // },
     {
-      to: "/settings",
+      to: `/${lang}/settings`,
       icon: <Settings className="h-5 w-5" />,
-      label: "Settings",
+      label: dictionary.common.settings,
     },
   ];
   const baseClasses =

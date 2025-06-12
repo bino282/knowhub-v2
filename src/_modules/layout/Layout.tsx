@@ -4,15 +4,22 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({
+  children,
+  dictionary,
+}: {
+  children: React.ReactNode;
+  dictionary: DataTypeFromLocaleFunction;
+}) {
   const pathname = usePathname();
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <Sidebar dictionary={dictionary} />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Header />
+        <Header dictionary={dictionary} />
         <main className="flex-1 overflow-y-auto p-6">
           <AnimatePresence mode="wait">
             <motion.div
