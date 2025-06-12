@@ -36,8 +36,12 @@ import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import { SettingFIleModal } from "./ModalSettingFile";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-export default function TabTraining() {
+interface Props {
+  dictionary: DataTypeFromLocaleFunction;
+}
+export default function TabTraining({ dictionary }: Props) {
   const params = useParams();
   const router = useRouter();
   const { theme } = useTheme();
@@ -193,7 +197,9 @@ export default function TabTraining() {
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
-        <h3 className="font-semibold mb-4">Knowledge Base Training</h3>
+        <h3 className="font-semibold mb-4">
+          {dictionary.chatbots.knowledgeBaseTraining}
+        </h3>
 
         {bot?.dataset ? (
           <div className="flex items-start space-x-3 mb-6">
@@ -208,15 +214,16 @@ export default function TabTraining() {
             <div>
               <h4 className="font-medium">{bot?.dataset?.name}</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {bot?.dataset?.document_count} documents • Update{" "}
+                {bot?.dataset?.document_count} {dictionary.chatbots.documents} •{" "}
+                {dictionary.chatbots.update}{" "}
                 {formatGmtDate(bot?.dataset?.update_date as string)}
               </p>
 
               <Link
-                href={`/knowledge/${bot?.dataSetId}`}
+                href={`/${params.lang}/knowledge/${bot?.dataSetId}`}
                 className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
               >
-                View Knowledge Base
+                {dictionary.chatbots.viewKnowledgeBase}
               </Link>
             </div>
           </div>
@@ -249,7 +256,9 @@ export default function TabTraining() {
             {/* File List Table */}
             <div className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-medium">Document List</h4>
+                <h4 className="font-medium">
+                  {dictionary.chatbots.documnetList}
+                </h4>
                 <div className="flex space-x-2">
                   <button
                     className={`p-2 rounded-md ${
@@ -277,22 +286,22 @@ export default function TabTraining() {
                   <thead>
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Name
+                        {dictionary.chatbots.name}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Chunk Number
+                        {dictionary.chatbots.chunkNumber}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Upload Date
+                        {dictionary.chatbots.uploadDate}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Chunk Method
+                        {dictionary.chatbots.chunkMethod}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                        Parsing Status
+                        {dictionary.chatbots.parsingStatus}
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
-                        Action
+                        {dictionary.chatbots.action}
                       </th>
                     </tr>
                   </thead>
@@ -455,7 +464,7 @@ export default function TabTraining() {
                 onClick={() => handleParseFile("all")}
               >
                 <Play size={16} className="mr-2" />
-                Start Training
+                {dictionary.chatbots.startTraining}
               </button>
               <p className="text-xs text-gray-500 mt-2">
                 Estimated time: 5-10 minutes
@@ -549,6 +558,7 @@ export default function TabTraining() {
             setFileDelete(null);
           }
         }}
+        dictionary={dictionary}
       />
       {fileChunkMethod && (
         <SettingFIleModal

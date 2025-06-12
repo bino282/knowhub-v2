@@ -13,11 +13,13 @@ import React from "react";
 import { toast } from "sonner";
 import { DeleteKnowledgeModal } from "./ModalDeleteKnowleadge";
 import { useBots } from "@/_modules/contexts/BotsContext";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   data: DatasetInfo;
+  dictionary: DataTypeFromLocaleFunction;
 }
-export default function KnowledgeItem({ data }: Props) {
+export default function KnowledgeItem({ data, dictionary }: Props) {
   const { setDatasets } = useBots();
   const [datasetDelete, setDatasetDelete] = React.useState<DatasetInfo | null>(
     null
@@ -98,6 +100,7 @@ export default function KnowledgeItem({ data }: Props) {
           close={() => setDatasetDelete(null)}
           knowledgeId={datasetDelete.id || ""}
           onDeleteKnowLeadge={handleDelete}
+          dictionary={dictionary}
         />
       )}
     </div>

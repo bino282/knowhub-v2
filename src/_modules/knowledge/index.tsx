@@ -22,8 +22,13 @@ import { useTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
 import { formatDate } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-export default function PageKnowledges() {
+export default function PageKnowledges({
+  dictionary,
+}: {
+  dictionary: DataTypeFromLocaleFunction;
+}) {
   const { theme } = useTheme();
   const params = useParams();
   const { datasets, selectKnowledge } = useBots();
@@ -41,7 +46,7 @@ export default function PageKnowledges() {
       : [];
   const handleClick = (id: string) => {
     selectKnowledge(id);
-    router.push(`/knowledge/${id}`);
+    router.push(`/${params.lang}/knowledge/${id}`);
   };
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -65,7 +70,9 @@ export default function PageKnowledges() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-2xl font-bold">Knowledge Bases</h2>
+        <h2 className="text-2xl font-bold">
+          {dictionary.knowledge.knowledgeBases}
+        </h2>
 
         <Button
           onClick={() => setIsCreateModalOpen(true)}
@@ -76,7 +83,7 @@ export default function PageKnowledges() {
           } text-white transition-colors`}
         >
           <Plus size={18} className="mr-2" />
-          Create New Knowledge Base
+          {dictionary.knowledge.createKnowledgeBase}
         </Button>
       </div>
 
@@ -90,7 +97,7 @@ export default function PageKnowledges() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search knowledge bases..."
+            placeholder={dictionary.knowledge.searchKnowledgeBase}
             className={`w-full pl-10 pr-4 py-2 rounded-md ${
               theme === "dark"
                 ? "bg-gray-700 border-gray-600"
@@ -235,7 +242,7 @@ export default function PageKnowledges() {
                     onClick={() => handleClick(dataset.id)}
                     className="h-full"
                   >
-                    <KnowledgeItem data={dataset} />
+                    <KnowledgeItem data={dataset} dictionary={dictionary} />
                   </div>
                 </motion.div>
               ))
@@ -243,15 +250,18 @@ export default function PageKnowledges() {
               <div className="col-span-full text-center py-12">
                 <BotIcon className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
-                  No datasets found
+                  {dictionary.knowledge.noKnowledgeBases}
                 </h3>
                 {searchQuery ? (
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    No datasets match your search
+                    {dictionary.knowledge.noDatasetsMatchYourSearch}
                   </p>
                 ) : (
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Get started by creating your first dataset
+                    {
+                      dictionary.knowledge
+                        .getStartedByCreatingYourFirstKnowledgeBase
+                    }
                   </p>
                 )}
                 <Button
@@ -259,7 +269,7 @@ export default function PageKnowledges() {
                   onClick={() => setIsCreateModalOpen(true)}
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Create dataset
+                  {dictionary.knowledge.createKnowledgeBase}
                 </Button>
               </div>
             )}
@@ -342,6 +352,7 @@ export default function PageKnowledges() {
       <ModalCreateDataset
         open={isCreateModalOpen}
         close={() => setIsCreateModalOpen(false)}
+        dictionary={dictionary}
       />
     </div>
   );

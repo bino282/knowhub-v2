@@ -1,6 +1,7 @@
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, FileText, MessageSquare } from "lucide-react";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface BotSummary {
   id: string;
@@ -14,6 +15,7 @@ interface BotSummary {
 interface BotListItemProps {
   bot: BotSummary;
   onClick: () => void;
+  dictionary: DataTypeFromLocaleFunction;
 }
 const colorMap = [
   "bg-red-100 text-red-600",
@@ -35,7 +37,11 @@ const colorMap = [
   "bg-rose-100 text-rose-600",
 ];
 
-const BotListItem: React.FC<BotListItemProps> = ({ bot, onClick }) => {
+const BotListItem: React.FC<BotListItemProps> = ({
+  bot,
+  onClick,
+  dictionary,
+}) => {
   const initial = bot.name.charAt(0).toUpperCase();
   const index = initial.charCodeAt(0) % colorMap.length;
   const colorClass = colorMap[index];
@@ -58,7 +64,7 @@ const BotListItem: React.FC<BotListItemProps> = ({ bot, onClick }) => {
           <div>
             <h3 className="text-sm font-medium">{bot.name}</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Create :{" "}
+              {dictionary.common.create} :{" "}
               {formatDistanceToNow(bot.lastActivity, { addSuffix: true })}
             </p>
           </div>

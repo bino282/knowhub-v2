@@ -1,3 +1,5 @@
+import { dictionaries } from "@/i18n";
+
 export interface IResponse {
   success: boolean;
   message: string;
@@ -11,6 +13,10 @@ export interface IQueryParam {
 
 type DataTypeFromFunction<F extends (...args: any[]) => Promise<any>> =
   F extends (...args: any[]) => Promise<infer T> ? T : never;
+
+export type DataTypeFromLocaleFunction = DataTypeFromFunction<
+  typeof dictionaries.en
+>;
 
 export type ChatbotResponse = {
   success: boolean;

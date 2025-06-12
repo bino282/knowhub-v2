@@ -7,6 +7,7 @@ import { activeBot, settingPrompt, updateChatBot } from "@/app/actions/bots";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DataTypeFromLocaleFunction } from "@/types";
 import { Database } from "@/types/database.type";
 import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -16,13 +17,14 @@ import { toast } from "sonner";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
+  dictionary: DataTypeFromLocaleFunction;
 }
 type FormValues = {
   name: string;
   description: string;
   dataSetId: string;
 };
-export default function TabSetting({ bot }: Props) {
+export default function TabSetting({ bot, dictionary }: Props) {
   const { theme } = useTheme();
   const { datasets, setBots } = useBots();
   const params = useParams();
@@ -126,12 +128,14 @@ export default function TabSetting({ bot }: Props) {
   return (
     <div className="space-y-6">
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
-        <h3 className="font-semibold mb-4">Chatbot Settings</h3>
+        <h3 className="font-semibold mb-4">
+          {dictionary.chatbots.chatbotSettings}
+        </h3>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label className="block text-sm font-medium mb-1">
-              Chatbot Name
+              {dictionary.chatbots.chatbotName}
             </Label>
             <Input
               type="text"
@@ -145,7 +149,7 @@ export default function TabSetting({ bot }: Props) {
 
           <div>
             <Label className="block text-sm font-medium mb-1">
-              Description
+              {dictionary.common.description}
             </Label>
             <textarea
               {...register("description")}
@@ -156,7 +160,7 @@ export default function TabSetting({ bot }: Props) {
 
           <div>
             <Label className="block text-sm font-medium mb-1">
-              Linked Knowledge Base
+              {dictionary.chatbots.linkedKnowledgeBase}
             </Label>
             <select {...register("dataSetId")} className={inputStyle}>
               {listOptionDatasets.map((dataset) => (
@@ -181,15 +185,19 @@ export default function TabSetting({ bot }: Props) {
               ) : (
                 <Save size={16} className="mr-2" />
               )}
-              Save Changes
+              {dictionary.common.saveChanges}
             </button>
           </div>
         </form>
       </div>
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
-        <h3 className="font-semibold mb-4">Setting Prompt</h3>
+        <h3 className="font-semibold mb-4">
+          {dictionary.chatbots.settingsPrompt}
+        </h3>
         <div>
-          <p className="text-sm font-semibold mb-1.5">Prompt</p>
+          <p className="text-sm font-semibold mb-1.5">
+            {dictionary.chatbots.prompt}
+          </p>
           <Textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -203,7 +211,9 @@ export default function TabSetting({ bot }: Props) {
           />
         </div>
         <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Similarity threshold</p>
+          <p className="font-medium text-sm mb-3">
+            {dictionary.chatbots.similarityThreshold}
+          </p>
           <CustomSlider
             value={[similarityThreshold]}
             onChange={(value) => setSimilarityThreshold(value[0])}
@@ -223,7 +233,9 @@ export default function TabSetting({ bot }: Props) {
           />
         </div>
         <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Emty Response</p>
+          <p className="font-medium text-sm mb-3">
+            {dictionary.chatbots.emptyResponse}
+          </p>
           <Textarea
             value={emptyResponse}
             onChange={(e) => setEmptyResponse(e.target.value)}
@@ -248,14 +260,14 @@ export default function TabSetting({ bot }: Props) {
             onClick={handleSettingPrompt}
           >
             {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
-            Save Prompt
+            {dictionary.common.saveChanges}
           </button>
         </div>
       </div>
 
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
         <h3 className="font-semibold text-red-600 dark:text-red-400 mb-4">
-          Danger Zone
+          {dictionary.chatbots.dangerZone}
         </h3>
 
         <div className="space-y-4">
@@ -263,7 +275,7 @@ export default function TabSetting({ bot }: Props) {
             <div>
               <h4 className="font-medium">Deactivate Chatbot</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Temporarily disable this chatbot
+                {dictionary.chatbots.temporarilyDisableThisChatbot}
               </p>
             </div>
             <button
@@ -284,15 +296,19 @@ export default function TabSetting({ bot }: Props) {
               ) : (
                 <CheckCircle size={16} className="mr-2" />
               )}
-              {bot.isActive === true ? "Deactivate" : "Activate"}
+              {bot.isActive === true
+                ? dictionary.chatbots.deactivate
+                : dictionary.chatbots.active}
             </button>
           </div>
 
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div>
-              <h4 className="font-medium">Delete Chatbot</h4>
+              <h4 className="font-medium">
+                {dictionary.chatbots.deleteChatbot}
+              </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Permanently delete this chatbot and all its data
+                {dictionary.chatbots.permanentlyDeleteThisChatbotAndAllItsData}
               </p>
             </div>
             <button
@@ -300,7 +316,7 @@ export default function TabSetting({ bot }: Props) {
               className="px-4 py-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors flex items-center"
             >
               <Trash2 size={16} className="mr-2" />
-              Delete
+              {dictionary.common.delete}
             </button>
           </div>
         </div>

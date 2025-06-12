@@ -327,6 +327,11 @@ export async function updateFileDataset(
 export async function getTypeFile() {
   // get all type from table file
   const types = await prisma.file.findMany({
+    where: {
+      type: {
+        not: null,
+      },
+    },
     select: {
       type: true,
     },
@@ -344,6 +349,11 @@ export async function getFileTypeCounts(datasetId: string) {
   try {
     // Step 1: lấy tất cả các type hiện có
     const allTypes = await prisma.file.findMany({
+      where: {
+        type: {
+          not: null,
+        },
+      },
       distinct: ["type"],
       select: {
         type: true,
@@ -353,7 +363,7 @@ export async function getFileTypeCounts(datasetId: string) {
     // Step 2: đếm số lượng theo datasetId được truyền vào
     const counts = await prisma.file.groupBy({
       by: ["type"],
-      where: { datasetId },
+      where: { datasetId, type: { not: null } },
       _count: { type: true },
     });
 

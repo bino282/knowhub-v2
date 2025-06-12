@@ -22,7 +22,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useBots } from "../contexts/BotsContext";
 import ModalCreateBot from "../components/ModalCreateBot";
 import { Button } from "@/components/ui/button";
@@ -45,10 +45,14 @@ import { formatDateTime } from "@/lib/format-date";
 import { useTheme } from "../contexts/ThemeContext";
 import { Database } from "@/types/database.type";
 import { DeleteBotModal } from "../components/ModalDeleteBot";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-const BotsPage: React.FC = () => {
+const BotsPage: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const router = useRouter();
   const { theme } = useTheme();
+  const { lang } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [category, setCategory] = React.useState<string>("");
@@ -64,7 +68,7 @@ const BotsPage: React.FC = () => {
   );
   const handleBotClick = (botId: string) => {
     selectBot(botId);
-    router.push(`/bots/${botId}`);
+    router.push(`/${lang}/bots/${botId}`);
   };
 
   const handleCreateBot = () => {
@@ -96,14 +100,16 @@ const BotsPage: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="w-full">
           <div className="flex items-center justify-between w-full gap-4">
-            <h2 className="font-semibold text-xl">Chatbots</h2>
+            <h2 className="font-semibold text-xl">
+              {dictionary.chatbots.chatbots}
+            </h2>
             <div className="flex items-center gap-7">
               <Button
                 className="text-gray-70  px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 "
                 onClick={handleCreateBot}
               >
                 <Plus className="h-5 w-5 mr-1" />
-                Create New Chatbot
+                {dictionary.chatbots.createNewChatbot}
               </Button>
             </div>
           </div>
@@ -114,7 +120,7 @@ const BotsPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 type="text"
-                placeholder="Search chatbots..."
+                placeholder={dictionary.chatbots.searchChatbots}
                 className="w-full pl-10 pr-4 py-2 rounded-md dark:bg-gray-700 bg-white border-gray-100 dark:border-gray-600 border focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -239,7 +245,7 @@ const BotsPage: React.FC = () => {
                     <div className="mt-3 flex items-center gap-2 text-gray-800 dark:text-gray-400">
                       <DatabaseIcon className="size-4" />
                       <p className="text-sm flex-1 truncate">
-                        Linked to: {bot.dataset.name}
+                        {dictionary.chatbots.linkedTo}: {bot.dataset.name}
                       </p>
                     </div>
                   )}
@@ -250,7 +256,7 @@ const BotsPage: React.FC = () => {
                   <p className="flex items-center">
                     <MessageSquareIcon className="size-4 text-gray-800 dark:text-gray-400 " />
                     <span className="ml-1 text-base text-gray-800 dark:text-gray-400 flex-1">
-                      Interactions
+                      {dictionary.chatbots.questions}
                     </span>
                   </p>
                   <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
@@ -261,7 +267,7 @@ const BotsPage: React.FC = () => {
                   <p className="flex items-center">
                     <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
                     <span className="ml-1 text-base text-gray-800 dark:text-gray-400">
-                      Users
+                      {dictionary.chatbots.users}
                     </span>
                   </p>
                   <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
@@ -295,15 +301,15 @@ const BotsPage: React.FC = () => {
           <div className="col-span-full text-center py-12">
             <BotIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
-              No bots found
+              {dictionary.chatbots.noBots}
             </h3>
             {searchQuery ? (
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                No bots match your search criteria
+                {dictionary.chatbots.noBotsMatchYourSearchCriteria}
               </p>
             ) : (
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Get started by creating your first bot
+                {dictionary.chatbots.getStartedByCreatingYourFirstBot}
               </p>
             )}
             <Button
@@ -311,7 +317,7 @@ const BotsPage: React.FC = () => {
               onClick={handleCreateBot}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Create Bot
+              {dictionary.chatbots.createNewChatbot}
             </Button>
           </div>
         )}
@@ -321,6 +327,7 @@ const BotsPage: React.FC = () => {
         open={isCreateModalOpen}
         setOpen={() => setIsCreateModalOpen(false)}
         onCreate={createBot}
+        dictionary={dictionary}
       />
       <DeleteBotModal
         open={!!botDelete}

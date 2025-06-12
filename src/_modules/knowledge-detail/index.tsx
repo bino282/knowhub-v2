@@ -44,9 +44,11 @@ import { bytesToMB } from "@/lib/formatFile";
 import { useSession } from "next-auth/react";
 import { DeleteFileModal } from "../components/ModalDeleteFile";
 import { formatGmtDate } from "@/lib/format-date";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   initialListFile: FileInfo[];
+  dictionary: DataTypeFromLocaleFunction;
 }
 
 // const documentTypes = [
@@ -58,7 +60,10 @@ interface Props {
 //   "Other",
 // ];
 
-export default function KnowledgeDetailPage({ initialListFile }: Props) {
+export default function KnowledgeDetailPage({
+  initialListFile,
+  dictionary,
+}: Props) {
   const session = useSession();
   const router = useRouter();
   const [selectedDataset, setSelectedDataset] = useState<DatasetInfo | null>(
@@ -75,6 +80,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
   const [folders, setFolders] = useState<FolderFile[]>([]);
+  console.log("folders", folders);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -197,10 +203,11 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
     <div className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
         <Link
-          href="/knowledge"
+          href={`/${params.lang}/knowledge`}
           className="hover:text-blue-600 flex items-center"
         >
-          <ArrowLeft size={16} className="mr-1" /> Knowledge Bases
+          <ArrowLeft size={16} className="mr-1" />{" "}
+          {dictionary.knowledge.knowledgeBases}
         </Link>
         <span>/</span>
         <span className="text-gray-900 dark:text-gray-100">
@@ -237,7 +244,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
             } text-white transition-colors`}
           >
             <Upload size={16} className="mr-2" />
-            Upload
+            {dictionary.knowledge.upload}
           </Button>
         </div>
       </div>
@@ -273,7 +280,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                       selectedFolder === null ? "font-medium" : ""
                     }`}
                   >
-                    All Documents
+                    {dictionary.knowledge.allDocuments}
                   </span>
                   <span className="ml-auto text-gray-500 dark:text-gray-400">
                     {initialListFile.length}
@@ -404,7 +411,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 type="text"
-                placeholder="Search documents..."
+                placeholder={dictionary.knowledge.searchDocuments}
                 className={`w-full pl-10 pr-4 py-2 rounded-md ${
                   theme === "dark"
                     ? "bg-gray-700 border-gray-600"
@@ -638,6 +645,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
           setIsPolling={setIsPolling}
           setFolders={setFolders}
           datasetName={selectedDataset?.name}
+          dictionary={dictionary}
         />
       )}
       <DeleteFileModal
@@ -651,6 +659,7 @@ export default function KnowledgeDetailPage({ initialListFile }: Props) {
             setFileDelete(null);
           }
         }}
+        dictionary={dictionary}
       />
     </div>
   );
