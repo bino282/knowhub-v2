@@ -8,10 +8,14 @@ import { authOptions } from "@/lib/authOption";
 export async function createFileDataset(
   datasetId: string,
   fileType: string | null,
-  formData: FormData
+  formData: FormData,
+  datasetName?: string
 ) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -39,6 +43,14 @@ export async function createFileDataset(
       },
     });
     await parseFileDocumentWithDataset(data[0].dataset_id, [data[0].id]);
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "UPLOADED",
+        targetType: data[0].name,
+        targetName: datasetName || "",
+      },
+    });
 
     return {
       data,
@@ -198,10 +210,14 @@ export async function stopParseFileDocument(
 }
 export async function deteleFileDataset(
   datasetId: string,
-  documentIds: string[]
+  documentIds: string[],
+  datasetName?: string
 ) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -227,43 +243,51 @@ export async function deteleFileDataset(
         datasetId: datasetId,
       },
     });
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "DELETED",
+        targetType: "FILE",
+        targetName: datasetName || "",
+      },
+    });
     return { success: true, message: "File dataset deleted successfully" };
   } catch (error) {
     console.error("Error deleting file dataset:", error);
     return { success: false, message: "Failed to delete file dataset" };
   }
 }
-export async function dowloadFileDataset(botId: string, documentId: string) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-  if (!user || !user.apiKey) {
-    return { success: false, message: "User not found or API key missing" };
-  }
-  const botDatasetId = await prisma.bot.findUnique({
-    where: { id: botId },
-    select: { dataSetId: true },
-  });
-  if (!botDatasetId || !botDatasetId.dataSetId) {
-    return { success: false, message: "Bot dataset ID not found" };
-  }
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/api/v1/datasets/${botDatasetId.dataSetId}/documents/${documentId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${user.apiKey}`,
-        },
-      }
-    );
-  } catch (error) {
-    console.error("Error downloading file dataset:", error);
-    return { success: false, message: "Failed to download file dataset" };
-  }
-}
+// export async function dowloadFileDataset(botId: string, documentId: string) {
+//   const session = await getServerSession(authOptions);
+//   const userId = session?.user?.id;
+//   const user = await prisma.user.findUnique({
+//     where: { id: userId },
+//   });
+//   if (!user || !user.apiKey) {
+//     return { success: false, message: "User not found or API key missing" };
+//   }
+//   const botDatasetId = await prisma.bot.findUnique({
+//     where: { id: botId },
+//     select: { dataSetId: true },
+//   });
+//   if (!botDatasetId || !botDatasetId.dataSetId) {
+//     return { success: false, message: "Bot dataset ID not found" };
+//   }
+//   try {
+//     const response = await fetch(
+//       `${process.env.NEXT_PUBLIC_URL_RAGFLOW}/api/v1/datasets/${botDatasetId.dataSetId}/documents/${documentId}`,
+//       {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${user.apiKey}`,
+//         },
+//       }
+//     );
+//   } catch (error) {
+//     console.error("Error downloading file dataset:", error);
+//     return { success: false, message: "Failed to download file dataset" };
+//   }
+// }
 export async function updateFileDataset(
   datasetId: string,
   documentId: string,
@@ -290,7 +314,6 @@ export async function updateFileDataset(
       user.apiKey,
       data
     );
-    console.log("Response from updateFileDataset:", response);
     if (response.code !== 0) {
       console.error("Failed to update file dataset:");
       throw new Error("Failed to update file dataset");
@@ -304,6 +327,11 @@ export async function updateFileDataset(
 export async function getTypeFile() {
   // get all type from table file
   const types = await prisma.file.findMany({
+    where: {
+      type: {
+        not: null,
+      },
+    },
     select: {
       type: true,
     },
@@ -321,6 +349,11 @@ export async function getFileTypeCounts(datasetId: string) {
   try {
     // Step 1: lấy tất cả các type hiện có
     const allTypes = await prisma.file.findMany({
+      where: {
+        type: {
+          not: null,
+        },
+      },
       distinct: ["type"],
       select: {
         type: true,
@@ -330,7 +363,7 @@ export async function getFileTypeCounts(datasetId: string) {
     // Step 2: đếm số lượng theo datasetId được truyền vào
     const counts = await prisma.file.groupBy({
       by: ["type"],
-      where: { datasetId },
+      where: { datasetId, type: { not: null } },
       _count: { type: true },
     });
 

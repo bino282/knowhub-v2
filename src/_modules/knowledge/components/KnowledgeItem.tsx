@@ -13,26 +13,28 @@ import React from "react";
 import { toast } from "sonner";
 import { DeleteKnowledgeModal } from "./ModalDeleteKnowleadge";
 import { useBots } from "@/_modules/contexts/BotsContext";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   data: DatasetInfo;
+  dictionary: DataTypeFromLocaleFunction;
 }
-export default function KnowledgeItem({ data }: Props) {
+export default function KnowledgeItem({ data, dictionary }: Props) {
   const { setDatasets } = useBots();
-  const [datasetDeleteId, setDatasetDeleteId] = React.useState<string | null>(
+  const [datasetDelete, setDatasetDelete] = React.useState<DatasetInfo | null>(
     null
   );
   const handleDelete = async () => {
-    if (!datasetDeleteId) return;
-    const res = await deleteDataset(datasetDeleteId);
+    if (!datasetDelete) return;
+    const res = await deleteDataset(datasetDelete.id, datasetDelete.name);
     if (!res.success) {
       console.error("Failed to delete dataset:", res.message);
       toast.error(res.message);
       return;
     }
-    setDatasets((prev) => prev.filter((item) => item.id !== datasetDeleteId));
+    setDatasets((prev) => prev.filter((item) => item.id !== datasetDelete.id));
     toast.success(res.message);
-    setDatasetDeleteId(null);
+    setDatasetDelete(null);
   };
 
   return (
@@ -55,7 +57,7 @@ export default function KnowledgeItem({ data }: Props) {
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  setDatasetDeleteId(data.id);
+                  setDatasetDelete(data);
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -92,12 +94,15 @@ export default function KnowledgeItem({ data }: Props) {
           </p>
         </div>
       </div>
-      <DeleteKnowledgeModal
-        open={!!datasetDeleteId}
-        close={() => setDatasetDeleteId(null)}
-        knowledgeId={datasetDeleteId || ""}
-        onDeleteKnowLeadge={handleDelete}
-      />
+      {datasetDelete && (
+        <DeleteKnowledgeModal
+          open={!!datasetDelete.id}
+          close={() => setDatasetDelete(null)}
+          knowledgeId={datasetDelete.id || ""}
+          onDeleteKnowLeadge={handleDelete}
+          dictionary={dictionary}
+        />
+      )}
     </div>
   );
 }

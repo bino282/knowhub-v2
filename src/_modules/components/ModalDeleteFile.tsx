@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DataTypeFromLocaleFunction } from "@/types";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -19,12 +20,14 @@ interface DeleteFileModalProps {
   botId?: string;
   onClose: () => void;
   onDelete: () => void;
+  dictionary: DataTypeFromLocaleFunction;
 }
 
 export function DeleteFileModal({
   fileName,
   onClose,
   onDelete,
+  dictionary,
 }: DeleteFileModalProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -50,15 +53,14 @@ export function DeleteFileModal({
     <Dialog open={!!fileName} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete File</DialogTitle>
+          <DialogTitle>{dictionary.knowledge.deleteFile}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <span>{fileName}</span>? This action
-            cannot be undone.
+            {dictionary.common.deleteConfirm}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {dictionary.common.cancel}
           </Button>
           <Button
             variant="destructive"
@@ -67,7 +69,7 @@ export function DeleteFileModal({
             disabled={isLoading}
             isLoading={isLoading}
           >
-            Delete
+            {dictionary.common.delete}
           </Button>
         </DialogFooter>
       </DialogContent>

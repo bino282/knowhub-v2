@@ -42,6 +42,7 @@ import { set } from "date-fns";
 import { DeleteChatHistoryModal } from "./components/ModalDeleteChatHistory";
 import { MarkdownWithReferences } from "./renderMesssage";
 import { Reference } from "@/types/database.type";
+import { DataTypeFromLocaleFunction } from "@/types";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -56,7 +57,9 @@ interface ChatHistory {
   updatedAt: string;
   botId: string;
 }
-const TestChatbot: React.FC = () => {
+const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const { theme } = useTheme();
   const params = useParams();
   const router = useRouter();
@@ -382,10 +385,11 @@ const TestChatbot: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
           <button
-            onClick={() => router.push(`/bots/${params.id}`)}
+            onClick={() => router.push(`/${params.lang}/bots/${params.id}`)}
             className="hover:text-blue-600 flex items-center text-base"
           >
-            <ArrowLeft size={16} className="mr-1" /> Back to Chatbots
+            <ArrowLeft size={16} className="mr-1" />{" "}
+            {dictionary.chatbots.backToChatbots}
           </button>
         </div>
 
@@ -395,7 +399,7 @@ const TestChatbot: React.FC = () => {
             onClick={handleNewConversation}
           >
             <Plus size={16} className="mr-1" />
-            New Chat
+            {dictionary.chatbots.newChat}
           </Button>
           <button
             onClick={() => setShowSettings(true)}
@@ -422,7 +426,7 @@ const TestChatbot: React.FC = () => {
           <div className="flex items-center justify-between p-4">
             <h3 className="font-semibold flex items-center">
               <Clock size={16} className="mr-2" />
-              Chat History
+              {dictionary.chatbots.chatHistory}
             </h3>
             <Button
               onClick={() => setShowHistory(!showHistory)}

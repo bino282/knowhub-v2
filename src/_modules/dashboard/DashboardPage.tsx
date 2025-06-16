@@ -5,13 +5,15 @@ import { Bot, FileText, MessageSquare, Plus, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import StatsCard from "./components/StatsCard";
 import { useBots } from "../contexts/BotsContext";
 import ModalCreateBot from "../components/ModalCreateBot";
 import BotListItem from "./components/BotListItem";
 import ActivityItem from "./components/ActivityItem";
+import { Activity } from "@/types/database.type";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   listMessage: {
@@ -22,14 +24,17 @@ interface Props {
     sessionChatId: string;
     reference: any;
   }[];
+  listActivity?: Activity[];
+  dictionary: DataTypeFromLocaleFunction;
 }
-const DashboardPage = ({ listMessage }: Props) => {
+const DashboardPage = ({ listMessage, listActivity, dictionary }: Props) => {
   const listMessageUser =
     listMessage.length > 0
       ? listMessage.filter((msg) => msg.role === "user")
       : [];
   const session = useSession();
   const router = useRouter();
+  const { lang } = useParams();
   const [opneModalCreateBot, setOpenModalCreateBot] =
     React.useState<boolean>(false);
   const {
@@ -69,7 +74,7 @@ const DashboardPage = ({ listMessage }: Props) => {
     <div className="h-full">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Welcome back, {session.data?.user.name || "User"}
+          {dictionary.common.welcomeBack}, {session.data?.user.name || "User"}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -84,7 +89,7 @@ const DashboardPage = ({ listMessage }: Props) => {
       >
         <motion.div variants={itemVariants}>
           <StatsCard
-            title="Total Bots"
+            title={dictionary.dashboard.totalBots}
             value={bots.length || 0}
             icon={
               <div className="p-3 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400">
@@ -97,7 +102,7 @@ const DashboardPage = ({ listMessage }: Props) => {
 
         <motion.div variants={itemVariants}>
           <StatsCard
-            title="Total Documents"
+            title={dictionary.dashboard.totalDocuments}
             value={totalDocuments}
             icon={
               <div className="p-3 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400">
@@ -110,7 +115,7 @@ const DashboardPage = ({ listMessage }: Props) => {
 
         <motion.div variants={itemVariants}>
           <StatsCard
-            title="Total Messages"
+            title={dictionary.dashboard.totalMessages}
             value={listMessageUser.length}
             icon={
               <div className="p-3 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
@@ -122,42 +127,47 @@ const DashboardPage = ({ listMessage }: Props) => {
         </motion.div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
         <motion.div variants={itemVariants} className="lg:col-span-2">
-          <div className="card">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold">Your Bots</h2>
-              <Button
-                className="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md"
-                onClick={() => setOpenModalCreateBot(true)}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Create Bot
-              </Button>
-            </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {botSummaries.length > 0 ? (
-                botSummaries.map((bot) => (
-                  <BotListItem
-                    key={bot.id}
-                    bot={bot}
-                    onClick={() => handleBotClick(bot.id)}
-                  />
-                ))
-              ) : (
-                <div className="p-6 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No bots created yet
-                  </p>
-                  <Button
-                    className="text-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 p-2 mt-4"
-                    onClick={() => setOpenModalCreateBot(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Create your first bot
-                  </Button>
-                </div>
-              )}
+          <div className="card flex flex-col max-h-[500px] overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold">
+                  {dictionary.dashboard.yourBots}
+                </h2>
+                <Button
+                  className="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-md"
+                  onClick={() => setOpenModalCreateBot(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  {dictionary.dashboard.createBot}
+                </Button>
+              </div>
+              <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-auto">
+                {botSummaries.length > 0 ? (
+                  botSummaries.map((bot) => (
+                    <BotListItem
+                      key={bot.id}
+                      bot={bot}
+                      onClick={() => handleBotClick(bot.id)}
+                      dictionary={dictionary}
+                    />
+                  ))
+                ) : (
+                  <div className="p-6 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {dictionary.dashboard.noBots}
+                    </p>
+                    <Button
+                      className="text-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 p-2 mt-4"
+                      onClick={() => setOpenModalCreateBot(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      {dictionary.dashboard.createYourFirstBot}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {botSummaries.length > 0 && (
@@ -165,9 +175,9 @@ const DashboardPage = ({ listMessage }: Props) => {
                 <Button
                   className="text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
                   variant={"default"}
-                  onClick={() => router.push("/bots")}
+                  onClick={() => router.push(`/${lang}/bots`)}
                 >
-                  View all bots
+                  {dictionary.dashboard.viewAllBots}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -176,19 +186,21 @@ const DashboardPage = ({ listMessage }: Props) => {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <div className="card h-full">
+          <div className="card h-full max-h-[500px] overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold">Recent Activity</h2>
+              <h2 className="text-lg font-semibold">
+                {dictionary.dashboard.recentActivity}
+              </h2>
             </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-auto">
+              {listActivity && listActivity.length > 0 ? (
+                listActivity.map((activity) => (
                   <ActivityItem key={activity.id} activity={activity} />
                 ))
               ) : (
                 <div className="p-6 text-center">
                   <p className="text-gray-500 dark:text-gray-400">
-                    No recent activity
+                    {dictionary.dashboard.noActivity}
                   </p>
                 </div>
               )}
@@ -200,6 +212,7 @@ const DashboardPage = ({ listMessage }: Props) => {
         open={opneModalCreateBot}
         setOpen={() => setOpenModalCreateBot(false)}
         onCreate={createBot}
+        dictionary={dictionary}
       />
     </div>
   );

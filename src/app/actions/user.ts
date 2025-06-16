@@ -8,12 +8,6 @@ export async function updateUserProfile(
   { profileData }: { profileData: { password?: string } }
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    console.log(
-      "Updating user profile for userId:",
-      userId,
-      "with data:",
-      profileData
-    );
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -32,7 +26,14 @@ export async function updateUserProfile(
       where: { id: userId },
       data: updateData,
     });
-
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "UPDATED",
+        targetType: "PASSWORD",
+        targetName: "SETTINGS",
+      },
+    });
     return {
       success: true,
       message: "Profile updated successfully",

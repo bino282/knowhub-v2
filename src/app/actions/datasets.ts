@@ -8,7 +8,10 @@ import { authOptions } from "@/lib/authOption";
 
 export async function createDataset(name: string, description?: string) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -29,7 +32,14 @@ export async function createDataset(name: string, description?: string) {
     if (response.code !== 0) {
       throw new Error("Failed to create dataset");
     }
-
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "CREATED",
+        targetType: name,
+        targetName: "DATASET",
+      },
+    });
     const data = await response.data;
     return { data, success: true, message: "Dataset created successfully" };
   } catch (error) {
@@ -65,9 +75,12 @@ export async function getAllDatasets() {
     return { success: false, message: "Failed to fetch datasets" };
   }
 }
-export async function deleteDataset(datasetId: string) {
+export async function deleteDataset(datasetId: string, datasetName: string) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -96,7 +109,14 @@ export async function deleteDataset(datasetId: string) {
         dataSetId: undefined,
       },
     });
-
+    await prisma.activity.create({
+      data: {
+        userId: userId,
+        action: "DELETED",
+        targetType: datasetName,
+        targetName: "DATASET",
+      },
+    });
     return { success: true, message: "Dataset deleted successfully" };
   } catch (error) {
     console.error("Error deleting dataset:", error);

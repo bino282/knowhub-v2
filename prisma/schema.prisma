@@ -20,6 +20,7 @@ model User {
   sessions      Session[]
   bots          Bot[]
   documents     Document[]
+  activities    Activity[]
 
   @@index([id], map: "ix_Users_id")
   @@map("Users")
@@ -124,4 +125,23 @@ model File {
   datasetId String?
   type      String?
   createdAt DateTime @default(now()) @map("created_at")
+}
+
+enum ActivityType {
+  CREATED
+  UPDATED
+  DELETED
+  EDITED
+  SHARED
+  UPLOADED
+}
+
+model Activity {
+  id         String       @id @default(uuid())
+  userId     String       @map("user_id")
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     ActivityType
+  targetType String       @map("target_type")
+  targetName String       @map("target_name")
+  createdAt  DateTime     @default(now()) @map("created_at")
 }

@@ -11,57 +11,76 @@ import {
   ChevronLeftIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { signOut } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTheme } from "../contexts/ThemeContext";
+import { Button } from "@/components/ui/button";
+import { i18n } from "@/i18n";
+import { DataTypeFromLocaleFunction } from "@/types";
 
-const COLLAPSED_WIDTH = 80; // px (Tailwind w-20)
+const COLLAPSED_WIDTH = 64; // px (Tailwind w-16)
 const EXPANDED_WIDTH = 256; // px (Tailwind w-64)
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const pathname = usePathname();
   const router = useRouter();
+  const session = useSession();
+  const { lang } = useParams();
   const [collapsed, setCollapsed] = useState(false);
-
-  const handleLogout = () => {
-    signOut();
+  const { theme } = useTheme();
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push("/login");
   };
 
   const navItems = [
     {
-      to: "/dashboard",
+      to: `/${lang}/dashboard`,
       icon: <LayoutDashboard className="h-5 w-5" />,
-      label: "Dashboard",
+      label: dictionary.common.dashboard,
     },
     {
-      to: "/knowledge",
+      to: `/${lang}/knowledge`,
       icon: <DatabaseIcon className="h-5 w-5" />,
-      label: "Knowledge",
+      label: dictionary.common.knowledge,
     },
-    { to: "/bots", icon: <Bot className="h-5 w-5" />, label: "Chatbots" },
+    {
+      to: `/${lang}/bots`,
+      icon: <Bot className="h-5 w-5" />,
+      label: dictionary.common.chatbots,
+    },
     // {
     //   to: "/user-management",
     //   icon: <UsersIcon className="h-5 w-5" />,
     //   label: "User Management",
     // },
     {
-      to: "/settings",
+      to: `/${lang}/settings`,
       icon: <Settings className="h-5 w-5" />,
-      label: "Settings",
+      label: dictionary.common.settings,
     },
   ];
-
+  const baseClasses =
+    theme === "dark"
+      ? "bg-gray-900 border-gray-700 text-gray-200"
+      : "bg-white border-gray-200 text-gray-800";
   return (
     <motion.aside
       // Disable the initial animation flash
       initial={false}
       animate={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
-      className="flex flex-col h-full bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+      className={`flex flex-col h-full ${baseClasses} border-r`}
     >
       {/* Header */}
-      <div className="p-4 flex items-center justify-between">
+      <div
+        className={`p-4 border-b ${
+          theme === "dark" ? "border-gray-700" : "border-gray-200"
+        } flex items-center justify-between`}
+      >
         {!collapsed && (
           <h1 className="text-xl font-bold whitespace-nowrap">
             <span className="text-blue-600">Know</span>
@@ -84,22 +103,30 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-2 space-y-1">
+      <nav className="flex-1 py-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.to;
           return (
             <Link
               key={item.to}
               href={item.to}
-              className={`relative flex items-center gap-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors          ${
+              className={`relative flex items-center gap-x-3 px-4 py-3 rounded-lg text-base font-normal transition-colors mx-2 ${
                 isActive
-                  ? "bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  ? `${
+                      theme === "dark"
+                        ? "bg-gray-800 text-blue-400"
+                        : "bg-blue-50 text-blue-700"
+                    }`
+                  : `${
+                      theme === "dark"
+                        ? "text-gray-400 hover:bg-gray-800"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`
               }
               ${collapsed ? "justify-center" : ""}`}
               title={collapsed ? item.label : undefined}
             >
-              {item.icon}
+              <span className="flex-shrink-0">{item.icon}</span>
               {!collapsed && <span>{item.label}</span>}
 
               {isActive && (
@@ -114,30 +141,37 @@ const Sidebar: React.FC = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-        <button
-          className={`flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50 ${
-            collapsed ? "justify-center" : "gap-x-3"
-          }`}
-          onClick={() => {
-            /* Help function */
-          }}
-          title={collapsed ? "Help & Support" : undefined}
-        >
-          <HelpCircle className="h-5 w-5" />
-          {!collapsed && <span>Help & Support</span>}
-        </button>
-
-        <button
-          className={`flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50 ${
-            collapsed ? "justify-center" : "gap-x-3"
-          }`}
-          onClick={handleLogout}
-          title={collapsed ? "Logout" : undefined}
-        >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span>Logout</span>}
-        </button>
+      <div
+        className={`p-4 ${
+          theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+        } mt-auto`}
+      >
+        {!collapsed ? (
+          <div className=" flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-gray-700  dark:text-gray-200 cursor-default">
+              <div className="size-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">
+                {session.data?.user?.name?.[0].toUpperCase()}
+              </div>
+              <span className="hidden md:block text-sm font-medium">
+                {session?.data?.user?.name || "User"}
+              </span>
+            </div>
+            <Button
+              variant={"default"}
+              onClick={handleLogout}
+              className="hover:cursor-pointer text-gray-800 dark:text-white hover:text-gray-500"
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
+        ) : (
+          <div
+            className="size-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs hover:cursor-pointer"
+            onClick={handleLogout}
+          >
+            {session.data?.user?.name?.[0].toUpperCase()}
+          </div>
+        )}
       </div>
     </motion.aside>
   );
