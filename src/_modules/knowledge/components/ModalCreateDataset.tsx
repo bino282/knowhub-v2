@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DataTypeFromLocaleFunction } from "@/types";
 import { Label } from "@radix-ui/react-label";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -19,9 +20,11 @@ import { toast } from "sonner";
 export default function ModalCreateDataset({
   open,
   close,
+  dictionary,
 }: {
   open: boolean;
   close: () => void;
+  dictionary: DataTypeFromLocaleFunction;
 }) {
   const router = useRouter();
   const { createDatasetFunction } = useBots();
@@ -55,16 +58,16 @@ export default function ModalCreateDataset({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="">
         <DialogHeader>
-          <DialogTitle>Create Dataset</DialogTitle>
+          <DialogTitle>{dictionary.knowledge.createDataset}</DialogTitle>
         </DialogHeader>
         <div className="mt-5">
           <div>
             <Label className="font-medium text-sm" htmlFor="datasetName">
               <span className="text-red-400 mr-1">*</span>
-              Dataset Name :
+              {dictionary.knowledge.datasetName} :
             </Label>
             <Input
-              placeholder="Dataset Name"
+              placeholder={dictionary.knowledge.datasetName}
               className="px-4 py-2.5 flex-1 mt-1.5"
               autoFocus
               type="text"
@@ -76,10 +79,10 @@ export default function ModalCreateDataset({
           </div>
           <div className="mt-4">
             <Label className="font-medium text-sm" htmlFor="description">
-              Description :
+              {dictionary.common.description} :
             </Label>
             <Input
-              placeholder="Description"
+              placeholder={dictionary.common.description}
               className="px-4 py-2.5 flex-1 mt-1.5"
               autoFocus
               type="text"
@@ -95,7 +98,7 @@ export default function ModalCreateDataset({
             variant={"default"}
             className="border-gray-300 dark:border-gray-700 border rounded-md px-4 py-2.5 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
           >
-            Cancel
+            {dictionary.common.cancel}
           </Button>
           <Button
             variant={"default"}
@@ -104,7 +107,7 @@ export default function ModalCreateDataset({
             disabled={loading || !datasetName.trim()}
             isLoading={loading}
           >
-            Save changes
+            {dictionary.common.saveChanges}
           </Button>
         </DialogFooter>
       </DialogContent>

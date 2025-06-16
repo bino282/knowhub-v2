@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { FolderFile } from "@/types/database.type";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   open: boolean;
@@ -29,6 +30,7 @@ interface Props {
   fetchList?: () => void; // Optional prop to fetch list after upload
   setIsPolling: React.Dispatch<React.SetStateAction<boolean>>;
   setFolders: React.Dispatch<React.SetStateAction<FolderFile[]>>;
+  dictionary: DataTypeFromLocaleFunction;
 }
 type FileType = {
   label: string | null;
@@ -41,6 +43,7 @@ export function ModalUploadFile({
   fetchList,
   setIsPolling,
   setFolders,
+  dictionary,
 }: Props) {
   const params = useParams();
   const router = useRouter();
@@ -145,11 +148,12 @@ export function ModalUploadFile({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Upload File</DialogTitle>
+          <DialogTitle>{dictionary.knowledge.uploadFile}</DialogTitle>
         </DialogHeader>
         <div className="mt-5">
           <p className="font-medium text-base mb-1.5 text-gray-700 dark:text-gray-200">
-            File <span className="text-red-400 ml-0.5">*</span>
+            {dictionary.knowledge.file}{" "}
+            <span className="text-red-400 ml-0.5">*</span>
           </p>
           <div
             onClick={() => ref.current?.click()}
@@ -157,9 +161,7 @@ export function ModalUploadFile({
           >
             <UploadIcon />
 
-            <p className="mt-4">
-              Choose a file to upload. Supported formats: PDF, TXT, CSV...
-            </p>
+            <p className="mt-4">{dictionary.knowledge.chooseFileToUpload}</p>
           </div>
           <Input
             type="file"
@@ -180,19 +182,19 @@ export function ModalUploadFile({
 
         <div className="mt-4">
           <p className="font-medium text-base mb-1.5 text-gray-800 dark:text-gray-200">
-            Select or enter file type
+            {dictionary.knowledge.selectOrEnterFileType}
           </p>
           <Popover open={openPopover} onOpenChange={setOpenPopover}>
             <PopoverTrigger asChild className="w-full">
               <Button variant="outline" className="w-full justify-between">
-                {selected || "Enter or select..."}
+                {selected || dictionary.knowledge.enterOrSelect}
                 <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
               </Button>
             </PopoverTrigger>
 
             <PopoverContent className="p-2 space-y-2" align="start">
               <Input
-                placeholder="Enter or select..."
+                placeholder={dictionary.knowledge.enterOrSelect}
                 value={inputValue}
                 onChange={(e) => {
                   setInputValue(e.target.value);
@@ -230,7 +232,7 @@ export function ModalUploadFile({
 
         <DialogFooter className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
           <Button variant="outline" onClick={handleClose} className="w-full">
-            Cancel
+            {dictionary.common.cancel}
           </Button>
           <Button
             variant={"destructive"}
@@ -239,7 +241,7 @@ export function ModalUploadFile({
             disabled={!file || isLoading}
             isLoading={isLoading}
           >
-            Upload
+            {dictionary.knowledge.upload}
           </Button>
         </DialogFooter>
       </DialogContent>

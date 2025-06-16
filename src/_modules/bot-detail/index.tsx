@@ -15,30 +15,37 @@ import {
   Share2,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import ModalEmbeded from "./components/ModalEmbeded";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import ModalShare from "./components/ModalShare";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
+  dictionary: DataTypeFromLocaleFunction;
 }
-export default function PageBotDetail({ bot }: Props) {
+export default function PageBotDetail({ bot, dictionary }: Props) {
   const url = process.env.NEXT_PUBLIC_URL;
+  const params = useParams();
   const { theme } = useTheme();
   const router = useRouter();
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const handleOpenPageTestChatbot = async () => {
-    router.push(`/bots/${bot.id}/test`);
+    router.push(`/${params.lang}/bots/${bot.id}/test`);
   };
   return (
     <main className="p-6 space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
-        <Link href="/bots" className="hover:text-blue-600 flex items-center">
-          <ArrowLeft size={16} className="mr-1" /> Chatbots
+        <Link
+          href={`/${params.lang}/bots`}
+          className="hover:text-blue-600 flex items-center"
+        >
+          <ArrowLeft size={16} className="mr-1" />{" "}
+          {dictionary.chatbots.chatbots}
         </Link>
         <span>/</span>
         <span className="text-gray-900 dark:text-gray-100">{bot.name}</span>
@@ -51,12 +58,12 @@ export default function PageBotDetail({ bot }: Props) {
               {bot.isActive === true ? (
                 <Badge variant={"success"}>
                   <CheckCircle2 size={12} />
-                  Active
+                  {dictionary.chatbots.active}
                 </Badge>
               ) : (
                 <Badge variant={"warning"}>
                   <CircleOff size={12} />
-                  Deactive
+                  {dictionary.chatbots.deactivate}
                 </Badge>
               )}
             </div>
@@ -76,7 +83,7 @@ export default function PageBotDetail({ bot }: Props) {
             } transition-colors`}
           >
             <Share2 size={16} className="mr-2" />
-            Share
+            {dictionary.chatbots.share}
           </Button>
 
           <Button
@@ -88,7 +95,7 @@ export default function PageBotDetail({ bot }: Props) {
             } transition-colors`}
           >
             <HelpCircle size={16} className="mr-2" />
-            Test Chatbot
+            {dictionary.chatbots.testChatbot}
           </Button>
 
           <Button
@@ -100,7 +107,7 @@ export default function PageBotDetail({ bot }: Props) {
             } text-white transition-colors`}
           >
             <PanelLeft size={16} className="mr-2" />
-            Embed
+            {dictionary.chatbots.embed}
           </Button>
         </div>
       </div>
@@ -122,7 +129,7 @@ export default function PageBotDetail({ bot }: Props) {
     data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent
     shadow-none"
           >
-            Settings
+            {dictionary.chatbots.settings}
           </TabsTrigger>
           <TabsTrigger
             value="training"
@@ -138,7 +145,7 @@ export default function PageBotDetail({ bot }: Props) {
     data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent
     shadow-none"
           >
-            Training
+            {dictionary.chatbots.training}
           </TabsTrigger>
         </TabsList>
 
@@ -146,10 +153,10 @@ export default function PageBotDetail({ bot }: Props) {
           <TabOverview />
         </TabsContent> */}
         <TabsContent value="settings">
-          <TabSetting bot={bot} />
+          <TabSetting bot={bot} dictionary={dictionary} />
         </TabsContent>
         <TabsContent value="training">
-          <TabTraining />
+          <TabTraining dictionary={dictionary} />
         </TabsContent>
       </Tabs>
       {showEmbedModal && (

@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useBots } from "../contexts/BotsContext";
-import Loading from "./loading";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 interface Props {
   open: boolean;
@@ -44,6 +44,7 @@ interface Props {
     settings: Record<string, any>,
     dataSetId: string
   ) => Promise<void>;
+  dictionary: DataTypeFromLocaleFunction;
 }
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -54,7 +55,12 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
+export default function ModalCreateBot({
+  open,
+  setOpen,
+  onCreate,
+  dictionary,
+}: Props) {
   const { datasets } = useBots();
   const [isLoading, setIsLoading] = React.useState(false);
   const listOptionDatasets = datasets.map((dataset) => ({
@@ -98,7 +104,7 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-lg dark:bg-gray-900">
         <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-5">
-          <DialogTitle>Create a new bot</DialogTitle>
+          <DialogTitle>{dictionary.chatbots.createNewChatbot}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -109,10 +115,12 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="mb-0.5">Name</FormLabel>
+                  <FormLabel className="mb-0.5">
+                    {dictionary.chatbots.chatbotName}
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Bot name..."
+                      placeholder={dictionary.chatbots.chatbotName}
                       {...field}
                       className="px-3.5 py-2.5"
                     />
@@ -128,7 +136,9 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="mb-0.5">Description</FormLabel>
+                  <FormLabel className="mb-0.5">
+                    {dictionary.common.description}
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Short summary of the bot’s purpose"
@@ -182,7 +192,9 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
                 name="dataSetId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="mb-2.5">Dataset</FormLabel>
+                    <FormLabel className="mb-2.5">
+                      {dictionary.knowledge.datasetName}
+                    </FormLabel>
                     <FormControl>
                       <Select
                         onValueChange={field.onChange}
@@ -216,7 +228,7 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
                   setOpen(false);
                 }}
               >
-                Cancel
+                {dictionary.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -224,7 +236,7 @@ export default function ModalCreateBot({ open, setOpen, onCreate }: Props) {
                 disabled={isLoading}
                 isLoading={isLoading}
               >
-                Create
+                {dictionary.common.create}
               </Button>
             </div>
           </form>

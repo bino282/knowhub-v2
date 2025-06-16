@@ -16,10 +16,17 @@ import { useSession } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { updateUserProfile } from "@/app/actions/user";
+import { DataTypeFromLocaleFunction } from "@/types";
+import { usePathname, useRouter } from "next/navigation";
 
-const SettingsPage: React.FC = () => {
+const SettingsPage: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
+  dictionary,
+}) => {
   const { theme, toggleTheme } = useTheme();
   const session = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selectedLang, setSelectedLang] = useState("en");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [password, setPassword] = useState<string>("");
@@ -51,7 +58,20 @@ const SettingsPage: React.FC = () => {
       toast.error(err?.message || "An unexpected error occurred.");
     }
   };
+  const changeLanguage = (newLang: string) => {
+    const segments = pathname.split("/");
+    segments[1] = newLang; // thay đổi lang ở index 1
+    const newPath = segments.join("/");
+    router.push(newPath);
+  };
 
+  // useEffect: Đồng bộ giá trị select với URL
+  React.useEffect(() => {
+    const segments = pathname.split("/");
+    if (segments.length > 1) {
+      setSelectedLang(segments[1]); // gán lang từ URL
+    }
+  }, [pathname]);
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700 text-gray-100"
@@ -59,19 +79,23 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Settings</h2>
+      <h2 className="text-2xl font-bold">
+        {dictionary.settings.accountSettings}
+      </h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Appearance */}
         <div className={`${baseCardClasses} border rounded-lg p-6`}>
           <h3 className="font-semibold mb-4 flex items-center">
             <Globe size={18} className="mr-2" />
-            Appearance
+            {dictionary.settings.appearance}
           </h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Theme</label>
+              <label className="block text-sm font-medium mb-1">
+                {dictionary.settings.theme}
+              </label>
               <button
                 onClick={toggleTheme}
                 className={`w-full flex items-center justify-between px-4 py-2 rounded-md ${
@@ -101,8 +125,12 @@ const SettingsPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Language</label>
+              <label className="block text-sm font-medium mb-1">
+                {dictionary.settings.language}
+              </label>
               <select
+                value={selectedLang}
+                onChange={(e) => changeLanguage(e.target.value)}
                 className={`w-full rounded-md ${
                   theme === "dark"
                     ? "bg-gray-700 border-gray-600 text-gray-200"
@@ -110,15 +138,14 @@ const SettingsPage: React.FC = () => {
                 } border px-3 py-2`}
               >
                 <option value="en">English</option>
-                <option value="es">Japan</option>
-                <option value="fr">Korean</option>
-                <option value="vn">VietNam</option>
+                <option value="ja">Japan</option>
+                <option value="kr">Korean</option>
+                <option value="vi">VietNam</option>
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-1">
-                Time Zone
+                {dictionary.settings.timeZone}
               </label>
               <select
                 className={`w-full rounded-md ${
@@ -276,10 +303,14 @@ const SettingsPage: React.FC = () => {
 
       {/* Account Settings */}
       <div className={`${baseCardClasses} border rounded-lg p-6`}>
-        <h3 className="font-semibold mb-4">Account Settings</h3>
+        <h3 className="font-semibold mb-4">
+          {dictionary.settings.accountSettings}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <label className="block text-sm font-medium mb-1">
+              {dictionary.settings.fullName}
+            </label>
             <Input
               type="text"
               defaultValue={session.data?.user?.name || ""}
@@ -295,7 +326,7 @@ const SettingsPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Email Address
+              {dictionary.settings.emailAddress}
             </label>
             <Input
               type="email"
@@ -312,7 +343,7 @@ const SettingsPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              New Password
+              {dictionary.settings.password}
             </label>
             <input
               type="password"
@@ -328,7 +359,7 @@ const SettingsPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Confirm Password
+              {dictionary.settings.confirmPassword}
             </label>
             <input
               type="password"
@@ -357,7 +388,7 @@ const SettingsPage: React.FC = () => {
             disabled={!password || password !== confirmPassword}
           >
             <Save size={16} className="mr-2" />
-            Save Changes
+            {dictionary.common.saveChanges}
           </button>
         </div>
       </div>
