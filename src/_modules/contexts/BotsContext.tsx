@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react";
 import { Database, DatasetInfo } from "@/types/database.type";
 import { createNewBot, getAllBots } from "@/app/actions/bots";
 import { toast } from "sonner";
-import { createDataset, getAllDatasets } from "@/app/actions/datasets";
+import { createDataset, getDatasets } from "@/app/actions/datasets";
 import { useParams, usePathname, useRouter } from "next/navigation";
 
 type Bot = Database["public"]["Tables"]["bots"]["Row"];
@@ -39,7 +39,8 @@ interface BotsContextType {
     name: string,
     description: string,
     settings: Record<string, any>,
-    dataSetId: string
+    dataSetId: string,
+    createdById: string | undefined
   ) => Promise<void>;
   setSelectedBot: React.Dispatch<React.SetStateAction<Bot | null>>;
   setBots: React.Dispatch<React.SetStateAction<Bot[]>>;
@@ -87,7 +88,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!user) return;
     const loadData = async () => {
       try {
-        const resDataset = await getAllDatasets();
+        const resDataset = await getDatasets();
         if (!resDataset.success) {
           toast.error(resDataset.message || "Failed to fetch datasets");
           return;
@@ -178,12 +179,12 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     //     botsSubscription.unsubscribe();
     //   };
   }, [user]);
-
   const createBot = async (
     name: string,
     description: string,
     settings: Record<string, any>,
-    dataSetId: string
+    dataSetId: string,
+    createdById: string | undefined
   ) => {
     if (!user) throw new Error("User not authenticated");
 
@@ -194,6 +195,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       avatar_url: "",
       settings: settings,
       data_set_id: dataSetId,
+      created_by_id: createdById,
     };
     const res = await createNewBot(data);
 

@@ -22,23 +22,59 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import ModalShare from "./components/ModalShare";
 import { DataTypeFromLocaleFunction } from "@/types";
+import { getBotById } from "@/app/actions/bots";
+import { SkeletonText3Lines } from "../components/skeleton";
+import { useBots } from "../contexts/BotsContext";
 
 interface Props {
-  bot: Database["public"]["Tables"]["bots"]["Row"];
   dictionary: DataTypeFromLocaleFunction;
+  id: string;
 }
-export default function PageBotDetail({ bot, dictionary }: Props) {
-  const url = process.env.NEXT_PUBLIC_URL;
+export default function PageBotDetail({ dictionary, id }: Props) {
   const params = useParams();
+
+  const [botDetail, setBotDetail] =
+    React.useState<Database["public"]["Tables"]["bots"]["Row"]>();
+  const { bots } = useBots();
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [prompt, setPrompt] = React.useState<string>("");
+  const [similarityThreshold, setSimilarityThreshold] =
+    React.useState<number>(0.7);
+  const [topN, setTopN] = React.useState<number>(5);
+  const [emptyResponse, setEmptyResponse] = React.useState<string>("");
+  React.useEffect(() => {
+    if (bots.length === 0) return;
+    const createdById = bots.find((bot) => bot.id === params.id)?.dataset
+      ?.createdById;
+    const fetchBotDetail = async () => {
+      const response = await getBotById(id, createdById);
+      if (response.success && response.data) {
+        setBotDetail(
+          response.data as Database["public"]["Tables"]["bots"]["Row"]
+        );
+        setPrompt(response.data.chatInfo[0].prompt.prompt);
+        setSimilarityThreshold(
+          response.data.chatInfo[0].prompt.similarity_threshold
+        );
+        setTopN(response.data.chatInfo[0].prompt.top_n);
+        setEmptyResponse(response.data.chatInfo[0].prompt.empty_response);
+        setIsLoading(false);
+      }
+    };
+    fetchBotDetail();
+  }, [id, bots]);
   const { theme } = useTheme();
   const router = useRouter();
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
   const [showShareModal, setShowShareModal] = React.useState(false);
-  const handleOpenPageTestChatbot = async () => {
-    router.push(`/${params.lang}/bots/${bot.id}/test`);
-  };
+  if (isLoading) {
+    return <SkeletonText3Lines />;
+  }
+  if (!botDetail) {
+    return <div>Bot not found</div>;
+  }
   return (
-    <main className="p-6 space-y-6">
+    <main className="space-y-6">
       <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
         <Link
           href={`/${params.lang}/bots`}
@@ -48,14 +84,16 @@ export default function PageBotDetail({ bot, dictionary }: Props) {
           {dictionary.chatbots.chatbots}
         </Link>
         <span>/</span>
-        <span className="text-gray-900 dark:text-gray-100">{bot.name}</span>
+        <span className="text-gray-900 dark:text-gray-100">
+          {botDetail.name}
+        </span>
       </div>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <div className="flex items-center">
-            <h2 className="text-2xl font-bold">{bot.name}</h2>
+            <h2 className="text-2xl font-bold">{botDetail.name}</h2>
             <div className="ml-3 ">
-              {bot.isActive === true ? (
+              {botDetail?.isActive === true ? (
                 <Badge variant={"success"}>
                   <CheckCircle2 size={12} />
                   {dictionary.chatbots.active}
@@ -69,7 +107,7 @@ export default function PageBotDetail({ bot, dictionary }: Props) {
             </div>
           </div>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {bot.description}
+            {botDetail.description}
           </p>
         </div>
 
@@ -87,7 +125,9 @@ export default function PageBotDetail({ bot, dictionary }: Props) {
           </Button>
 
           <Button
-            onClick={handleOpenPageTestChatbot}
+            onClick={() => {
+              router.push(`/${params.lang}/bots/${botDetail.id}/test`);
+            }}
             className={`flex items-center px-4 py-2 rounded-md ${
               theme === "dark"
                 ? "bg-gray-700 hover:bg-gray-600 text-white"
@@ -153,7 +193,20 @@ export default function PageBotDetail({ bot, dictionary }: Props) {
           <TabOverview />
         </TabsContent> */}
         <TabsContent value="settings">
-          <TabSetting bot={bot} dictionary={dictionary} />
+          {botDetail && (
+            <TabSetting
+              bot={botDetail}
+              dictionary={dictionary}
+              prompt={prompt}
+              similarityThreshold={similarityThreshold}
+              topN={topN}
+              emptyResponse={emptyResponse}
+              setPrompt={setPrompt}
+              setSimilarityThreshold={setSimilarityThreshold}
+              setTopN={setTopN}
+              setEmptyResponse={setEmptyResponse}
+            />
+          )}
         </TabsContent>
         <TabsContent value="training">
           <TabTraining dictionary={dictionary} />
@@ -161,14 +214,14 @@ export default function PageBotDetail({ bot, dictionary }: Props) {
       </Tabs>
       {showEmbedModal && (
         <ModalEmbeded
-          bot={bot}
+          bot={botDetail}
           showEmbedModal={showEmbedModal}
           setShowEmbedModal={() => setShowEmbedModal(false)}
         />
       )}
       {showShareModal && (
         <ModalShare
-          dataBotId={bot.id}
+          dataBotId={botDetail.id}
           open={showShareModal}
           setOpen={setShowShareModal}
         />

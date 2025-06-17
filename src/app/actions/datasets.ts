@@ -123,3 +123,129 @@ export async function deleteDataset(datasetId: string, datasetName: string) {
     return { success: false, message: "Failed to delete dataset" };
   }
 }
+export async function updateDataset(
+  datasetId: string,
+  name: string,
+  description: string,
+  permission: "team" | "me"
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
+  try {
+    const response = await apiRequest<ApiResponse>(
+      "PUT",
+      `api/v1/datasets/${datasetId}`,
+      user.apiKey,
+      {
+        name: name,
+        description: description,
+        permission: permission,
+      }
+    );
+    if (response.code !== 0) {
+      return {
+        success: false,
+        message: response.message,
+      };
+    }
+    return {
+      success: true,
+      message: "Dataset updated successfully",
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error updating dataset:", error);
+    return { success: false, message: "Failed to update dataset" };
+  }
+}
+export async function getDatasets() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = session.user.id;
+  // Tìm các admin đã mời user vào team
+  const teamInvites = await prisma.inviteTeam.findMany({
+    where: {
+      memberId: userId,
+      status: "ACCEPTED",
+    },
+    select: {
+      adminId: true,
+    },
+  });
+  const adminIds = teamInvites.map((item) => item.adminId);
+
+  // Lấy API key tương ứng với userId và các adminIds
+  const allUserIds = [userId, ...adminIds];
+  //GET API RAGFLOW FOR TABLE USERS
+  const users = await prisma.user.findMany({
+    where: {
+      id: {
+        in: allUserIds,
+      },
+    },
+    select: {
+      id: true,
+      apiKey: true,
+      name: true,
+    },
+  });
+  const datasets = await Promise.allSettled(
+    users.map(async ({ id, apiKey, name }) => {
+      if (!apiKey) return null;
+
+      try {
+        const res = await apiRequest<ApiResponse>(
+          "GET",
+          "api/v1/datasets",
+          apiKey
+        );
+
+        if (res.code !== 0) {
+          throw new Error(`Failed with status ${res.code}`);
+        }
+
+        let data = res.data;
+
+        // Nếu là user chính → lấy toàn bộ
+        if (id === userId) {
+          return data;
+        }
+
+        // Nếu là admin khác → lọc theo permission === 'team'
+        const teamDatasets = data
+          .filter((dataset: any) => dataset.permission === "team")
+          .map((dataset: any) => ({
+            ...dataset,
+            createdBy: name,
+            createdById: id,
+          }));
+
+        return teamDatasets;
+      } catch (error) {
+        console.error("Error fetching dataset for API key:", apiKey, error);
+        return null;
+      }
+    })
+  );
+
+  const successfulDatasets = datasets
+    .filter((res) => res.status === "fulfilled" && res.value)
+    .map((res) => (res as PromiseFulfilledResult<any>).value)
+    .flat();
+
+  return {
+    success: true,
+    data: successfulDatasets,
+  };
+}

@@ -54,12 +54,14 @@ export default function TabTraining({ dictionary }: Props) {
   );
   const [fileList, setFileList] = React.useState<FileInfo[]>([]);
   const bot = bots.find((bot) => bot.id === params.id);
+  const createdById = bot?.dataset?.createdById;
   React.useEffect(() => {
     if (!bot?.dataSetId) {
       return;
     }
     getAllFileDatasets({
       datasetId: bot?.dataSetId as string,
+      createdById: bot?.dataset?.createdById,
     })
       .then((respon) => {
         if (respon.success && respon.data.total > 0) {
@@ -79,6 +81,7 @@ export default function TabTraining({ dictionary }: Props) {
     const getList = async () => {
       const res = await getAllFileDatasets({
         datasetId: bot?.dataSetId as string,
+        createdById: createdById,
       });
       if (res.success && res.data.total > 0) {
         setFileList(res.data.docs as FileInfo[]);
@@ -103,7 +106,11 @@ export default function TabTraining({ dictionary }: Props) {
       if (fileId === "all") {
         const ids = fileList.map((file) => file.id);
 
-        const res = await parseFileDocument(params.id as string, ids);
+        const res = await parseFileDocument(
+          params.id as string,
+          ids,
+          createdById
+        );
         if (!res.success) {
           toast.error(res.message);
           return;
@@ -114,7 +121,11 @@ export default function TabTraining({ dictionary }: Props) {
         return;
       }
 
-      const res = await parseFileDocument(params.id as string, [fileId]);
+      const res = await parseFileDocument(
+        params.id as string,
+        [fileId],
+        createdById
+      );
       if (!res.success) {
         toast.error(res.message);
         return;
@@ -129,7 +140,11 @@ export default function TabTraining({ dictionary }: Props) {
   };
   const handleStopParseFile = async (fileId: string) => {
     try {
-      const res = await stopParseFileDocument(params.id as string, [fileId]);
+      const res = await stopParseFileDocument(
+        params.id as string,
+        [fileId],
+        createdById
+      );
       if (!res.success) {
         toast.error(res.message);
         return;
@@ -137,6 +152,7 @@ export default function TabTraining({ dictionary }: Props) {
       toast.success(res.message);
       const updatedList = await getAllFileDatasets({
         datasetId: bot?.dataSetId as string,
+        createdById: createdById,
       });
       if (updatedList.success && updatedList.data.total > 0) {
         setFileList(updatedList.data.docs as FileInfo[]);
@@ -150,6 +166,10 @@ export default function TabTraining({ dictionary }: Props) {
   const handleDeleteFile = async (fileId: string) => {
     try {
       const ids = [fileId];
+      if (bot && bot.dataset?.createdById) {
+        toast.error("You are not authorized to delete this file");
+        return;
+      }
       const res = await deteleFileDataset(
         bot?.dataSetId as string,
         ids,
@@ -175,7 +195,7 @@ export default function TabTraining({ dictionary }: Props) {
       return;
     }
     const res = await fetch(
-      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}&created_by_id=${createdById}`
     );
     if (!res.ok) {
       console.error("Failed to download file");
@@ -374,7 +394,8 @@ export default function TabTraining({ dictionary }: Props) {
                               )}
 
                               {(file.run === "DONE" ||
-                                file.run === "CANCEL") && (
+                                file.run === "CANCEL" ||
+                                file.run === "FAIL") && (
                                 <Popover
                                   open={activeFile === file.id}
                                   onOpenChange={(open) =>
@@ -569,6 +590,7 @@ export default function TabTraining({ dictionary }: Props) {
           }}
           file={fileChunkMethod}
           setFile={setFileList}
+          createdById={bot?.dataset?.createdById}
         />
       )}
     </div>

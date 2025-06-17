@@ -8,11 +8,15 @@ interface Data extends Record<string, unknown> {
 }
 export async function POST(req: Request) {
   const data: Partial<Data> = (await req.json()) || {};
+  const url = new URL(req.url);
+  const createdById = url.searchParams.get("created_by_id");
   const bot = await prisma.bot.findUnique({
     where: { id: data.bot_id as string },
   });
+  const userId =
+    createdById && createdById !== "undefined" ? createdById : bot?.userId;
   const user = await prisma.user.findUnique({
-    where: { id: bot?.userId },
+    where: { id: userId },
   });
   if (!user || !user.apiKey) {
     return new Response(

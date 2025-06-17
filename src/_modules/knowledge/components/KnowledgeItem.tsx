@@ -4,6 +4,7 @@ import { formatGmtDate } from "@/lib/format-date";
 import { DatasetInfo } from "@/types/database.type";
 import {
   DatabaseIcon,
+  EllipsisVertical,
   FileTextIcon,
   MoreVertical,
   Trash2,
@@ -14,6 +15,8 @@ import { toast } from "sonner";
 import { DeleteKnowledgeModal } from "./ModalDeleteKnowleadge";
 import { useBots } from "@/_modules/contexts/BotsContext";
 import { DataTypeFromLocaleFunction } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { useSession } from "next-auth/react";
 
 interface Props {
   data: DatasetInfo;
@@ -21,11 +24,16 @@ interface Props {
 }
 export default function KnowledgeItem({ data, dictionary }: Props) {
   const { setDatasets } = useBots();
+  const session = useSession();
   const [datasetDelete, setDatasetDelete] = React.useState<DatasetInfo | null>(
     null
   );
   const handleDelete = async () => {
     if (!datasetDelete) return;
+    if (datasetDelete.createdById) {
+      toast.error("You are not allowed to delete this knowledge");
+      return;
+    }
     const res = await deleteDataset(datasetDelete.id, datasetDelete.name);
     if (!res.success) {
       console.error("Failed to delete dataset:", res.message);
@@ -43,26 +51,34 @@ export default function KnowledgeItem({ data, dictionary }: Props) {
         <div className="p-4 rounded-md bg-blue-500/10">
           <DatabaseIcon className="size-5 text-blue-500" />
         </div>
-        <div className="relative group">
-          <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-            <MoreVertical className="h-5 w-5 text-gray-500" />
-          </Button>
-          <div className="absolute right-0 z-10 pt-2 w-48 origin-top-right hidden group-hover:block">
-            <div
-              className="mt-1 p-2 rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-500 focus:outline-none "
-              role="none"
-            >
-              <Button
-                className="flex w-full justify-baseline rounded-md px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setDatasetDelete(data);
-                }}
+        <div className="flex items-center gap-2">
+          {data.createdBy && data.permission === "team" && (
+            <Badge variant={"success"}>{data.createdBy}</Badge>
+          )}
+          {!data.createdBy && data.permission === "team" && (
+            <Badge variant={"info"}>{session.data?.user?.name}</Badge>
+          )}
+          <div className="relative group">
+            <Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+              <EllipsisVertical className="h-5 w-5 text-gray-500" />
+            </Button>
+            <div className="absolute right-0 z-10 pt-2 w-48 origin-top-right hidden group-hover:block">
+              <div
+                className="mt-1 p-2 rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-500 focus:outline-none "
+                role="none"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+                <Button
+                  className="flex w-full justify-baseline rounded-md px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setDatasetDelete(data);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             </div>
           </div>
         </div>

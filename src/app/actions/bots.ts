@@ -25,7 +25,7 @@ export async function createNewBot(data: any) {
   if (!session || !session.user) {
     return { success: false, error: "User not authenticated" };
   }
-  const userId = session.user.id;
+  const userId = data.created_by_id ? data.created_by_id : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -139,7 +139,8 @@ export async function getAllBots(userId: string) {
     return { success: false, error: "Failed to fetch bots and messages" };
   }
 }
-export async function getBotById(id: string) {
+export async function getBotById(id: string, createdById: string | undefined) {
+  console.log("createdById", createdById);
   try {
     const bot = await prisma.bot.findUnique({
       where: { id },
@@ -149,7 +150,10 @@ export async function getBotById(id: string) {
     }
     // get chat info
     const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
+    if (!session || !session.user) {
+      return { success: false, error: "User not authenticated" };
+    }
+    const userId = createdById ? createdById : session.user.id;
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -161,6 +165,7 @@ export async function getBotById(id: string) {
       `api/v1/chats?id=${bot.chatId}`,
       user.apiKey
     );
+    console.log("res", res);
     const chatInfo = res.data;
     const data = {
       ...bot,
@@ -195,7 +200,10 @@ export async function updateChatBot(botId: string, data: any) {
   });
   return { data: res, success: true, message: "Bot updated successfully" };
 }
-export async function deleteChatBot(botId: string) {
+export async function deleteChatBot(
+  botId: string,
+  createdById: string | undefined
+) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return { success: false, error: "User not authenticated" };
@@ -214,10 +222,17 @@ export async function deleteChatBot(botId: string) {
   await prisma.sessionChat.deleteMany({
     where: { botId: botId },
   });
+  const userApiKeyId = createdById ? createdById : userId;
+  const userApiKey = await prisma.user.findUnique({
+    where: { id: userApiKeyId },
+  });
+  if (!userApiKey || !userApiKey.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
   const res = await apiRequest<ApiResponse>(
     "DELETE",
     "api/v1/chats",
-    user.apiKey,
+    userApiKey.apiKey,
     {
       ids: [bot?.chatId],
     }
@@ -263,13 +278,14 @@ export async function settingPrompt(
     similarity_threshold: number;
     top_n: number;
     empty_response: string;
-  }
+  },
+  createdById: string | undefined
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return { success: false, error: "User not authenticated" };
   }
-  const userId = session.user.id;
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
