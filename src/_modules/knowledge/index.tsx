@@ -34,7 +34,6 @@ export default function PageKnowledges({
   const { datasets, selectKnowledge } = useBots();
   const router = useRouter();
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
-  const [filterOpen, setFilterOpen] = React.useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
   const [searchQuery, setSearchQuery] = React.useState<string>("");

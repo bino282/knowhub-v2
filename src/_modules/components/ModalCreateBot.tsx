@@ -42,7 +42,8 @@ interface Props {
     name: string,
     description: string,
     settings: Record<string, any>,
-    dataSetId: string
+    dataSetId: string,
+    createdById: string | undefined
   ) => Promise<void>;
   dictionary: DataTypeFromLocaleFunction;
 }
@@ -84,12 +85,16 @@ export default function ModalCreateBot({
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
+    const createdById = datasets.find(
+      (dataset) => dataset.id === data.dataSetId
+    )?.createdById;
     try {
       await onCreate(
         data.name,
         data.description,
         { model: data.model },
-        data.dataSetId
+        data.dataSetId,
+        createdById
       );
       form.reset();
       setOpen(false);

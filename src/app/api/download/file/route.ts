@@ -6,17 +6,24 @@ import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const datasetId = url.searchParams.get("dataset_id");
+  const fileId = url.searchParams.get("file_id");
+  const createdById = url.searchParams.get("created_by_id");
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return new Response(JSON.stringify({ error: "User not authenticated" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const userId =
+    createdById && createdById !== "undefined" ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
   try {
-    const url = new URL(req.url);
-    const datasetId = url.searchParams.get("dataset_id");
-    const fileId = url.searchParams.get("file_id");
-    console.log("datasetId:", datasetId);
-    console.log("fileId:", fileId);
     if (!datasetId || !fileId) {
       return new Response(JSON.stringify({ error: "Missing key parameter" }), {
         status: 400,

@@ -23,6 +23,7 @@ import remarkGfm from "remark-gfm";
 import { MarkdownWithReferences } from "../chat/renderMesssage";
 import { ReferenceDocuments } from "./renderDocs";
 import Loading from "../components/loading";
+import { useBots } from "../contexts/BotsContext";
 
 type Message = {
   id: number;
@@ -32,6 +33,7 @@ type Message = {
 
 export default function Chat() {
   const params = useParams();
+  const { bots } = useBots();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [messages, setMessages] = React.useState<
@@ -72,6 +74,9 @@ export default function Chat() {
     getMessage(sessionId, content);
   };
   async function getMessage(sessionId: string, content: string): Promise<void> {
+    if (bots.length === 0) return;
+    const createdById = bots.find((bot) => bot.id === params.id)?.dataset
+      ?.createdById;
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
@@ -89,19 +94,22 @@ export default function Chat() {
       // Optional artificial delay
       await new Promise((res) => setTimeout(res, 1_000));
 
-      const response = await fetch("/api/chat-stream", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: content,
-          stream: true,
-          bot_id: params.id,
-          session_id: sessionId,
-        }),
-      });
+      const response = await fetch(
+        `/api/chat-stream?created_by_id=${createdById}`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: content,
+            stream: true,
+            bot_id: params.id,
+            session_id: sessionId,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -199,10 +207,14 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   useEffect(() => {
+    if (bots.length === 0) return;
+    const createdById = bots.find((bot) => bot.id === params.id)?.dataset
+      ?.createdById;
     const fetchSessionId = async () => {
       const response = await createSessionIdWithBotID(
         params.id as string,
-        "Session " + new Date().toLocaleString()
+        "Session " + new Date().toLocaleString(),
+        createdById
       );
       if (response.success) {
         setSessionId(response.data.id);
@@ -212,8 +224,7 @@ export default function Chat() {
     };
 
     fetchSessionId();
-  }, [params.id]);
-
+  }, [params.id, bots]);
   return (
     <div className="flex flex-col h-screen w-full mx-auto p-6 overflow-hidden">
       <div className="flex flex-col space-y-2 flex-1 overflow-auto">

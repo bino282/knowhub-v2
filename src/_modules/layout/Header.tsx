@@ -17,7 +17,7 @@ const Header: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
 
     if (pathname.includes("/bots")) return dictionary.common.chatbots;
     if (pathname.includes("/knowledge")) return dictionary.common.knowledge;
-
+    if (pathname.includes("/team")) return dictionary.common.team;
     if (pathname.includes("/files")) return "Manage Files";
     if (pathname.includes("/workspace")) return "Workspace";
     if (pathname.includes("/settings")) return dictionary.common.settings;

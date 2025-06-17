@@ -18,13 +18,32 @@ import { toast } from "sonner";
 interface Props {
   bot: Database["public"]["Tables"]["bots"]["Row"];
   dictionary: DataTypeFromLocaleFunction;
+  prompt: string;
+  similarityThreshold: number;
+  topN: number;
+  emptyResponse: string;
+  setPrompt: (prompt: string) => void;
+  setSimilarityThreshold: (similarityThreshold: number) => void;
+  setTopN: (topN: number) => void;
+  setEmptyResponse: (emptyResponse: string) => void;
 }
 type FormValues = {
   name: string;
   description: string;
   dataSetId: string;
 };
-export default function TabSetting({ bot, dictionary }: Props) {
+export default function TabSetting({
+  bot,
+  dictionary,
+  prompt,
+  similarityThreshold,
+  topN,
+  emptyResponse,
+  setPrompt,
+  setSimilarityThreshold,
+  setTopN,
+  setEmptyResponse,
+}: Props) {
   const { theme } = useTheme();
   const { datasets, setBots } = useBots();
   const params = useParams();
@@ -37,18 +56,6 @@ export default function TabSetting({ bot, dictionary }: Props) {
     label: dataset.name,
   }));
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
-  const [prompt, setPrompt] = React.useState<string>(
-    bot.chatInfo[0]?.prompt?.prompt || ""
-  );
-  const [similarityThreshold, setSimilarityThreshold] = React.useState<number>(
-    bot.chatInfo[0]?.prompt?.similarity_threshold || 0.7
-  );
-  const [topN, setTopN] = React.useState<number>(
-    bot.chatInfo[0]?.prompt?.top_n || 5
-  );
-  const [emptyResponse, setEmptyResponse] = React.useState<string>(
-    bot.chatInfo[0]?.prompt?.empty_response || ""
-  );
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
@@ -105,13 +112,20 @@ export default function TabSetting({ bot, dictionary }: Props) {
   };
   const handleSettingPrompt = async () => {
     setIsSavePrompt(true);
+    const createdById = datasets.find(
+      (dataset) => dataset.id === bot.dataSetId
+    )?.createdById;
     try {
-      const res = await settingPrompt(params.id as string, {
-        prompt: prompt,
-        similarity_threshold: similarityThreshold,
-        top_n: topN,
-        empty_response: emptyResponse,
-      });
+      const res = await settingPrompt(
+        params.id as string,
+        {
+          prompt: prompt,
+          similarity_threshold: similarityThreshold,
+          top_n: topN,
+          empty_response: emptyResponse,
+        },
+        createdById
+      );
       if (!res.success) {
         toast.error(res.message);
       } else {

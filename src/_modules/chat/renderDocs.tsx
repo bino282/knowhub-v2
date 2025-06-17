@@ -25,13 +25,14 @@ export const ReferenceDocuments = ({ reference }: ReferenceDocumentsProps) => {
   if (!Array.isArray(docs) || docs.length === 0) return null;
   const handleDowloadFile = async (docId: string) => {
     const datasetId = bot?.dataSetId;
+    const createdById = bot?.dataset?.createdById;
 
     if (!datasetId || !docId) {
       console.error("Dataset ID or Document ID is missing");
       return;
     }
     const res = await fetch(
-      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}&created_by_id=${createdById}`
     );
     if (!res.ok) {
       console.error("Failed to download file");

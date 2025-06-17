@@ -1,13 +1,13 @@
-import KnowledgeDetailPage from "@/_modules/knowledge-detail";
+import TeamManagementPage from "@/_modules/team";
 import { getDictionary, Locale } from "@/i18n";
+import React from "react";
 
 export default async function Page({
   params,
 }: {
-  params: Promise<{ lang: Locale }>; // dynamic route params
+  params: Promise<{ lang: Locale }>;
 }) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
-
-  return <KnowledgeDetailPage dictionary={dictionary} />;
+  return <TeamManagementPage dictionary={dictionary} />;
 }

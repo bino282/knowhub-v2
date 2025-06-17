@@ -43,6 +43,7 @@ import { DeleteChatHistoryModal } from "./components/ModalDeleteChatHistory";
 import { MarkdownWithReferences } from "./renderMesssage";
 import { Reference } from "@/types/database.type";
 import { DataTypeFromLocaleFunction } from "@/types";
+import { useBots } from "../contexts/BotsContext";
 interface Message {
   id: number;
   role: "user" | "assistant";
@@ -61,6 +62,8 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
   dictionary,
 }) => {
   const { theme } = useTheme();
+  const { bots } = useBots();
+
   const params = useParams();
   const router = useRouter();
   const baseCardClasses =
@@ -161,19 +164,28 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
     setSelectedChatHistory(newChat);
   };
   const handleSend = async () => {
-    if (!content.trim()) return;
-
+    if (chatHistory.length === 0) {
+      toast.error("Please create a new conversation");
+      return;
+    }
+    if (!content.trim() || bots.length === 0) return;
+    const createdById = bots.find((bot) => bot.id === params.id)?.dataset
+      ?.createdById;
     const hasUserMessage = messages.some((msg) => msg.role === "user");
 
     if (
       hasUserMessage ||
       (selectedChatHistory && selectedChatHistory.id !== "")
     ) {
-      getMessage(selectedChatHistory?.id || "", content);
+      getMessage(selectedChatHistory?.id || "", content, createdById);
     } else {
       setIsSending(true);
       try {
-        const res = await createSessionId(params.id as string, content);
+        const res = await createSessionId(
+          params.id as string,
+          content,
+          createdById
+        );
 
         if (!res.success) {
           toast.error(res.message || "Failed to create session");
@@ -199,7 +211,7 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
         );
         setSelectedChatHistory(updatedSession);
 
-        await getMessage(res.data.id || "", content);
+        await getMessage(res.data.id || "", content, createdById);
       } catch (error) {
         toast.error("Error sending message");
       } finally {
@@ -224,7 +236,11 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
       toast.error("An error occurred while deleting chat history");
     }
   };
-  async function getMessage(sessionId: string, content: string): Promise<void> {
+  async function getMessage(
+    sessionId: string,
+    content: string,
+    createdById: string | undefined
+  ): Promise<void> {
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
@@ -242,19 +258,22 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
       // Optional artificial delay
       await new Promise((res) => setTimeout(res, 1_000));
 
-      const response = await fetch("/api/chat-stream", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: content,
-          stream: true,
-          bot_id: params.id,
-          session_id: sessionId,
-        }),
-      });
+      const response = await fetch(
+        `/api/chat-stream?created_by_id=${createdById}`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: content,
+            stream: true,
+            bot_id: params.id,
+            session_id: sessionId,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(

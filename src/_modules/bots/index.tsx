@@ -337,6 +337,7 @@ const BotsPage: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
         }}
         botName={botDelete?.name || ""}
         botId={botDelete?.id}
+        createdById={botDelete?.dataset?.createdById}
       />
     </div>
   );
