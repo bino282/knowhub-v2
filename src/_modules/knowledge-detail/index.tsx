@@ -85,6 +85,7 @@ export default function KnowledgeDetailPage({
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
   const [folders, setFolders] = useState<FolderFile[]>([]);
+  console.log("folders", folders);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState<string>("");
