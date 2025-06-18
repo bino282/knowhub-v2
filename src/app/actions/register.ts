@@ -18,7 +18,6 @@ export async function registerUser(
     // Register ragflow
     const res = await registerRagflowUser(email, name);
     if (res.success) {
-      const apiKey = res.data as string;
       // Hash password
       const hashedPassword = hashPassword(password);
       await prisma.user.create({
@@ -26,7 +25,8 @@ export async function registerUser(
           name,
           email,
           password: hashedPassword,
-          apiKey: apiKey,
+          apiKey: res.data?.apiKey,
+          ragflowUserId: res.data?.ragflowUserId,
         },
       });
     }
@@ -47,7 +47,10 @@ export async function registerRagflowUser(
   message: string;
   error?: string;
   success: boolean;
-  data?: string;
+  data?: {
+    apiKey: string;
+    ragflowUserId: string;
+  };
 }> {
   const passwordRagflow = process.env.PASSWORD_RAGFLOW_ENCODE ?? "";
 
@@ -87,6 +90,7 @@ export async function registerRagflowUser(
         const errorData = await response.json();
         return { message: "", error: errorData.message, success: false };
       }
+      const data = await response.json();
       const setCookie = response.headers.get("set-cookie");
       const authorization = response.headers.get("authorization");
       if (setCookie && authorization) {
@@ -94,7 +98,10 @@ export async function registerRagflowUser(
         return {
           message: "Ragflow user registered successfully",
           success: true,
-          data: apiKey,
+          data: {
+            apiKey,
+            ragflowUserId: data.data.id,
+          },
         };
       }
     }
@@ -112,7 +119,10 @@ export async function registerRagflowUser(
       return {
         message: "Ragflow user registered successfully",
         success: true,
-        data: apiKey,
+        data: {
+          apiKey,
+          ragflowUserId: data.data.id,
+        },
       };
     }
 

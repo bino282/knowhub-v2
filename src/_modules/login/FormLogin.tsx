@@ -3,7 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { BrainCircuit, LogIn } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
+  const params = useParams();
   const [isLoading, setIsLoading] = React.useState(false);
   const [form, setForm] = React.useState({ email: "", password: "" });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +169,7 @@ export default function LoginForm() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
               <Link
-                href="/register"
+                href={`/${params.lang}/register`}
                 className="font-medium text-[#2563EB] hover:text-[#3B82F6] dark:text-[#60A5FA]"
               >
                 Sign up

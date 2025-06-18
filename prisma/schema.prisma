@@ -16,6 +16,7 @@ model User {
   password      String?    @db.VarChar
   emailVerified DateTime?  @map("email_verified")
   apiKey        String?    @unique @map("api_key")
+  ragflowUserId String?    @unique @map("ragflow_user_id")
   accounts      Account[]
   sessions      Session[]
   bots          Bot[]

@@ -101,7 +101,7 @@ export default function KnowledgeItem({ data, dictionary }: Props) {
             <div className="flex items-center gap-2">
               <UsersIcon className="size-4 text-gray-800 dark:text-gray-400" />
               <p className="text-sm text-gray-800 dark:text-gray-400 font-normal">
-                1
+                {data.totalMembers || 0}
               </p>
             </div>
           </div>

@@ -56,6 +56,7 @@ interface BotsContextType {
   getTotalDocuments: () => number;
   getTotalMessages: () => number;
   getRecentActivity: () => Message[];
+  refetchData: () => Promise<void>;
   createDatasetFunction: (
     name: string,
     description?: string
@@ -83,101 +84,49 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
   const session = useSession();
   const user = session.data?.user;
 
+  const refetchData = async () => {
+    if (!user) return;
+    try {
+      const resDataset = await getDatasets();
+      if (!resDataset.success) {
+        toast.error(resDataset.message || "Failed to fetch datasets");
+        return;
+      }
+      const datasets = resDataset.data as Dataset[];
+      setDatasets(datasets);
+      // Load bots
+      const resBots = await getAllBots(user.id);
+
+      if (resBots.success && resBots.data) {
+        const bots = resBots.data;
+
+        const datasetById = new Map(datasets.map((ds) => [ds.id, ds] as const));
+
+        const botsWithDataset = bots.map((bot) => ({
+          ...bot,
+          dataset: datasetById.get(bot.dataSetId) ?? null,
+          chatInfo: null,
+        })) as Bot[];
+
+        setBots(botsWithDataset);
+
+        // Load documents and messages for each bot
+        const docsMap: Record<string, Document[]> = {};
+        const msgsMap: Record<string, Message[]> = {};
+        for (const bot of bots || []) {
+        }
+        setDocumentsByBot(docsMap);
+        setMessagesByBot(msgsMap);
+      } else {
+        toast.error(resBots.error);
+      }
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
   // Load bots, documents, and messages
   useEffect(() => {
-    if (!user) return;
-    const loadData = async () => {
-      try {
-        const resDataset = await getDatasets();
-        if (!resDataset.success) {
-          toast.error(resDataset.message || "Failed to fetch datasets");
-          return;
-        }
-
-        const datasets = resDataset.data as Dataset[];
-        setDatasets(datasets);
-        // Load bots
-        const resBots = await getAllBots(user.id);
-
-        if (resBots.success && resBots.data) {
-          const bots = resBots.data;
-
-          const datasetById = new Map(
-            datasets.map((ds) => [ds.id, ds] as const)
-          );
-
-          const botsWithDataset = bots.map((bot) => ({
-            ...bot,
-            dataset: datasetById.get(bot.dataSetId) ?? null,
-            chatInfo: null,
-          })) as Bot[];
-
-          setBots(botsWithDataset);
-
-          // Load documents and messages for each bot
-          const docsMap: Record<string, Document[]> = {};
-          const msgsMap: Record<string, Message[]> = {};
-          for (const bot of bots || []) {
-            // Load documents
-            // const { data: documents, error: docsError } = await supabase
-            //   .from("documents")
-            //   .select("*")
-            //   .eq("bot_id", bot.id)
-            //   .order("created_at", { ascending: false });
-            // if (docsError) throw docsError;
-            // docsMap[bot.id] = documents || [];
-            // Load messages
-            // const { data: messages, error: msgsError } = await supabase
-            //   .from("messages")
-            //   .select("*")
-            //   .eq("bot_id", bot.id)
-            //   .order("created_at", { ascending: true });
-            // if (msgsError) throw msgsError;
-            // msgsMap[bot.id] = messages || [];
-          }
-          setDocumentsByBot(docsMap);
-          setMessagesByBot(msgsMap);
-        } else {
-          toast.error(resBots.error);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-
-    loadData();
-
-    // Subscribe to realtime changes
-    //   const botsSubscription = supabase
-    //     .channel("bots_channel")
-    //     .on(
-    //       "postgres_changes",
-    //       { event: "*", schema: "public", table: "bots" },
-    //       (payload) => {
-    //         if (payload.eventType === "INSERT") {
-    //           setBots((prev) => [payload.new as Bot, ...prev]);
-    //         } else if (payload.eventType === "UPDATE") {
-    //           setBots((prev) =>
-    //             prev.map((bot) =>
-    //               bot.id === payload.new.id ? (payload.new as Bot) : bot
-    //             )
-    //           );
-    //           if (selectedBot?.id === payload.new.id) {
-    //             setSelectedBot(payload.new as Bot);
-    //           }
-    //         } else if (payload.eventType === "DELETE") {
-    //           setBots((prev) => prev.filter((bot) => bot.id !== payload.old.id));
-    //           if (selectedBot?.id === payload.old.id) {
-    //             setSelectedBot(null);
-    //           }
-    //         }
-    //       }
-    //     )
-    //     .subscribe();
-
-    //   return () => {
-    //     botsSubscription.unsubscribe();
-    //   };
+    refetchData();
   }, [user]);
   const createBot = async (
     name: string,
@@ -226,133 +175,6 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     const dataset = datasets.find((d) => d.id === id) || null;
     setSelectedDataset(dataset);
   };
-  // const uploadDocument = async (botId: string, file: File) => {
-  //   if (!user) throw new Error("User not authenticated");
-
-  //   try {
-  //     // Upload file to storage
-  //     const fileExt = file.name.split(".").pop();
-  //     const filePath = `${user.id}/${botId}/${Date.now()}.${fileExt}`;
-
-  //     const { error: uploadError, data } = await supabase.storage
-  //       .from("documents")
-  //       .upload(filePath, file);
-
-  //     if (uploadError) throw uploadError;
-
-  //     // Create document record
-  //     const { data: document, error: dbError } = await supabase
-  //       .from("documents")
-  //       .insert([
-  //         {
-  //           name: file.name,
-  //           type: file.type,
-  //           size: file.size,
-  //           url: data.path,
-  //           bot_id: botId,
-  //           user_id: user.id,
-  //           status: "processing",
-  //         },
-  //       ])
-  //       .select()
-  //       .single();
-
-  //     if (dbError) throw dbError;
-
-  //     setDocumentsByBot((prev) => ({
-  //       ...prev,
-  //       [botId]: [document, ...(prev[botId] || [])],
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error uploading document:", error);
-  //     throw error;
-  //   }
-  // };
-
-  // const deleteDocument = async (botId: string, documentId: string) => {
-  //   const document = documentsByBot[botId]?.find((d) => d.id === documentId);
-  //   if (!document) return;
-
-  //   try {
-  //     // Delete file from storage
-  //     const { error: storageError } = await supabase.storage
-  //       .from("documents")
-  //       .remove([document.url]);
-
-  //     if (storageError) throw storageError;
-
-  //     // Delete document record
-  //     const { error: dbError } = await supabase
-  //       .from("documents")
-  //       .delete()
-  //       .eq("id", documentId);
-
-  //     if (dbError) throw dbError;
-
-  //     setDocumentsByBot((prev) => ({
-  //       ...prev,
-  //       [botId]: prev[botId].filter((d) => d.id !== documentId),
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error deleting document:", error);
-  //     throw error;
-  //   }
-  // };
-
-  // const sendMessage = async (botId: string, content: string) => {
-  //   if (!user) throw new Error("User not authenticated");
-
-  //   try {
-  //     // Add user message
-  //     const { data: userMessage, error: userMsgError } = await supabase
-  //       .from("messages")
-  //       .insert([
-  //         {
-  //           role: "user",
-  //           content,
-  //           bot_id: botId,
-  //           user_id: user.id,
-  //         },
-  //       ])
-  //       .select()
-  //       .single();
-
-  //     if (userMsgError) throw userMsgError;
-
-  //     setMessagesByBot((prev) => ({
-  //       ...prev,
-  //       [botId]: [...(prev[botId] || []), userMessage],
-  //     }));
-
-  //     // TODO: Process message with AI and get response
-  //     const botResponse =
-  //       "I've received your message and am processing it based on the available documents.";
-
-  //     // Add bot response
-  //     const { data: botMessage, error: botMsgError } = await supabase
-  //       .from("messages")
-  //       .insert([
-  //         {
-  //           role: "bot",
-  //           content: botResponse,
-  //           bot_id: botId,
-  //           user_id: user.id,
-  //         },
-  //       ])
-  //       .select()
-  //       .single();
-
-  //     if (botMsgError) throw botMsgError;
-
-  //     setMessagesByBot((prev) => ({
-  //       ...prev,
-  //       [botId]: [...(prev[botId] || []), botMessage],
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //     throw error;
-  //   }
-  // };
   const createDatasetFunction = async (name: string, description?: string) => {
     const res = await createDataset(name, description);
     if (res.success) {
@@ -430,18 +252,14 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
         setDatasets,
         createBot,
         setSelectedBot,
-        // updateBot,
-        // deleteBot,
         selectBot,
         selectKnowledge,
-        // uploadDocument,
-        // deleteDocument,
-        // sendMessage,
         getBotSummaries,
         getTotalDocuments,
         getTotalMessages,
         getRecentActivity,
         createDatasetFunction,
+        refetchData,
       }}
     >
       {children}
