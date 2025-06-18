@@ -11,9 +11,16 @@ interface MessageInput {
   reference?: Record<string, any> | null;
 }
 
-export async function createSessionId(botId: string, nameSession: string) {
+export async function createSessionId(
+  botId: string,
+  nameSession: string,
+  createdById: string | undefined
+) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -128,14 +135,16 @@ export async function deleteChatHistory(sessionId: string) {
 }
 export async function createSessionIdWithBotID(
   botId: string,
-  nameSession: string
+  nameSession: string,
+  createdById: string | undefined
 ) {
   const userBot = await prisma.bot.findUnique({
     where: { id: botId },
     select: { userId: true, chatId: true },
   });
+  const userId = createdById ? createdById : userBot?.userId;
   const user = await prisma.user.findUnique({
-    where: { id: userBot?.userId },
+    where: { id: userId },
   });
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };

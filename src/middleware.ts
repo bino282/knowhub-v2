@@ -50,18 +50,8 @@ export async function middleware(request: NextRequest) {
   const pathnameIsMissingLocale = i18n.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
-
-  // Truy cập chia sẻ bot chưa đăng nhập → chỉ thêm locale
-  if (!token && pathname.startsWith("/bot/share/")) {
-    const redirectUrl = new URL(
-      `/${locale}${pathname}${request.nextUrl.search}`,
-      request.url
-    );
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Chưa đăng nhập và vào trang không public → chuyển hướng tới login
-  if (!token && !isPublicPath) {
+  if ((!token && !isPublicPath) || (!token && pathnameIsMissingLocale)) {
+    // Chưa đăng nhập và truy cập vào trang không public → chuyển hướng đến trang login
     const redirectUrl = new URL(
       `/${locale}/login${request.nextUrl.search}`,
       request.url
@@ -69,15 +59,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Đã đăng nhập mà vào trang public → chuyển hướng tới locale+pathname
-  if (token && isPublicPath) {
+  // Đã đăng nhập và truy cập vào path `/` (trang gốc) → chuyển hướng tới dashboard
+  if (token && pathname === "/") {
     const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Thiếu locale → redirect thêm locale vào
-  if (pathnameIsMissingLocale) {
-    console.log("he2");
+  // Đã đăng nhập và truy cập trang public → chuyển hướng đến dashboard
+  if (token && isPublicPath && !pathnameIsMissingLocale) {
+    const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Đã đăng nhập và thiếu locale trong pathname hoặc vào trang public chưa có locale
+  if (token && (isPublicPath || pathnameIsMissingLocale)) {
     const redirectUrl = new URL(
       `/${locale}${pathname}${request.nextUrl.search}`,
       request.url
@@ -85,8 +80,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Không cần redirect
-  return NextResponse.next();
+  // Thiếu locale trong pathname (có thể chưa đăng nhập) → thêm locale
+  if (pathnameIsMissingLocale && !isPublicPath) {
+    const redirectUrl = new URL(
+      `/${locale}${pathname}${request.nextUrl.search}`,
+      request.url
+    );
+    return NextResponse.redirect(redirectUrl);
+  }
 }
 
 export const config = {

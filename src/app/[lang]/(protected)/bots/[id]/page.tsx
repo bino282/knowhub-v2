@@ -11,14 +11,5 @@ export default async function Page({
 }) {
   const { id, lang } = await params;
   const dictionary = await getDictionary(lang);
-  const dataBot = await getBotById(id);
-  if (!dataBot.success) {
-    return;
-  }
-  return (
-    <PageBotDetail
-      bot={dataBot.data as Database["public"]["Tables"]["bots"]["Row"]}
-      dictionary={dictionary}
-    />
-  );
+  return <PageBotDetail id={id} dictionary={dictionary} />;
 }

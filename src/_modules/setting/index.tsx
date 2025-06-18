@@ -138,9 +138,9 @@ const SettingsPage: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
                 } border px-3 py-2`}
               >
                 <option value="en">English</option>
-                <option value="ja">Japan</option>
+                <option value="ja">Japanese</option>
                 <option value="kr">Korean</option>
-                <option value="vi">VietNam</option>
+                <option value="vi">VietNamese</option>
               </select>
             </div>
             <div>

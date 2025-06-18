@@ -15,7 +15,6 @@ type Action =
   | "SHARED"
   | "UPLOADED";
 const ActivityItem = ({ activity }: ActivityItemProps) => {
-  console.log("Activity Item:", activity);
   return (
     <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center">
       {getIcon(activity.action, activity.targetName)}

@@ -31,6 +31,7 @@ interface Props {
   setIsPolling: React.Dispatch<React.SetStateAction<boolean>>;
   setFolders: React.Dispatch<React.SetStateAction<FolderFile[]>>;
   dictionary: DataTypeFromLocaleFunction;
+  createdById: string | undefined;
 }
 type FileType = {
   label: string | null;
@@ -44,6 +45,7 @@ export function ModalUploadFile({
   setIsPolling,
   setFolders,
   dictionary,
+  createdById,
 }: Props) {
   const params = useParams();
   const router = useRouter();
@@ -103,7 +105,13 @@ export function ModalUploadFile({
     setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file);
-    createFileDataset(params.id as string, selected, formData, datasetName)
+    createFileDataset(
+      params.id as string,
+      selected,
+      formData,
+      datasetName,
+      createdById
+    )
       .then((result) => {
         if (result.success) {
           toast.success(result.message);

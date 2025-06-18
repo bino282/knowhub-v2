@@ -157,6 +157,8 @@ export interface DatasetInfo {
   create_date: string;
   create_time: number;
   created_by: string;
+  createdBy: string;
+  createdById: string;
   description: string | null;
   document_count: number;
   embedding_model: string;
@@ -237,3 +239,29 @@ export type Activity = {
     name: string | null;
   };
 };
+export interface TeamMember {
+  id: string;
+  adminId: string;
+  memberId: string;
+  member: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: $Enums.InviteTeamStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface TeamJoined {
+  id: string;
+  adminId: string;
+  memberId: string;
+  admin: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: $Enums.InviteTeamStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}

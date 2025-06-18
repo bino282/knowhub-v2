@@ -32,11 +32,13 @@ export function SettingFIleModal({
   close,
   file,
   setFile,
+  createdById,
 }: {
   open: boolean;
   close: () => void;
   file: FileInfo;
   setFile: React.Dispatch<React.SetStateAction<FileInfo[]>>;
+  createdById: string | undefined;
 }) {
   const chunkingMethods = [
     { value: "naive", label: "General" },
@@ -70,7 +72,10 @@ export function SettingFIleModal({
     const res = await updateFileDataset(file.dataset_id, file.id, data);
     if (res.success) {
       close();
-      const resFile = await getAllFileDatasets({ datasetId: file.dataset_id });
+      const resFile = await getAllFileDatasets({
+        datasetId: file.dataset_id,
+        createdById: createdById,
+      });
       if (resFile.success && resFile.data.total > 0) {
         setFile(resFile.data.docs);
       }

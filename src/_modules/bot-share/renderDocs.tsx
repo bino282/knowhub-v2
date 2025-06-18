@@ -5,9 +5,9 @@ import IconFileTxt from "../components/icons/IconFileTxt";
 import IconFilePDF from "../components/icons/IconFilePDF";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
-import { useParams } from "next/navigation";
 import { Reference } from "@/types/database.type";
 import Link from "next/link";
+import { useBots } from "../contexts/BotsContext";
 
 type ReferenceDocumentsProps = {
   reference?: Reference;
@@ -17,20 +17,23 @@ export const ReferenceDocuments = ({
   reference,
   datasetId,
 }: ReferenceDocumentsProps) => {
-  const params = useParams();
   const ref =
     typeof reference === "object" && reference !== null
       ? reference
       : JSON.parse(reference || "{}");
+  const { datasets } = useBots();
   const docs = ref?.doc_aggs;
   if (!Array.isArray(docs) || docs.length === 0) return null;
   const handleDowloadFile = async (docId: string) => {
-    if (!datasetId || !docId) {
+    if (!datasetId || !docId || datasets.length === 0) {
       console.error("Dataset ID or Document ID is missing");
       return;
     }
+    const createdById = datasets.find(
+      (dataset) => dataset.id === datasetId
+    )?.createdById;
     const res = await fetch(
-      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}&created_by_id=${createdById}`
     );
     if (!res.ok) {
       console.error("Failed to download file");

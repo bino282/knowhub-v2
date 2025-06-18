@@ -46,18 +46,18 @@ export default function ModalShare({
                     "inline-flex max-w-2xl flex-col items-center justify-center gap-4 md:justify-start"
                   }
                 >
-                  <QRCodeSVG value={`${origin}/bot/share/${dataBotId}`} />
+                  <QRCodeSVG value={`${origin}/bot/${dataBotId}/share`} />
                   <div className="inline-flex w-fit items-center rounded-sm border border-blue-300 bg-blue-100 px-2.5 py-2  text-blue-500">
                     <div className="flex items-center gap-1 flex-1">
                       <LinkIcon size={14} className="mr-2 cursor-pointer" />
                       <Link
                         target="_blank"
-                        href={`${origin}/bot/share/${dataBotId}`}
+                        href={`${origin}/bot/${dataBotId}/share`}
                         className="hover:underline"
-                      >{`${origin}/bot/share/${dataBotId}`}</Link>
+                      >{`${origin}/bot/${dataBotId}/share`}</Link>
                     </div>
                     <CopyCodeButton
-                      content={`${origin}/bot/share/${dataBotId}`}
+                      content={`${origin}/bot/${dataBotId}/share`}
                     ></CopyCodeButton>
                   </div>
                 </div>

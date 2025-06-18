@@ -24,6 +24,7 @@ import {
   Edit,
   Trash2,
   FileType,
+  SettingsIcon,
 } from "lucide-react";
 import { ModalUploadFile } from "./components/ModalUploadFile";
 import { DatasetInfo, FileInfo, FolderFile } from "@/types/database.type";
@@ -45,9 +46,10 @@ import { useSession } from "next-auth/react";
 import { DeleteFileModal } from "../components/ModalDeleteFile";
 import { formatGmtDate } from "@/lib/format-date";
 import { DataTypeFromLocaleFunction } from "@/types";
+import ModalUpdateKnowledge from "./components/ModalUpdateKnowledge";
 
 interface Props {
-  initialListFile: FileInfo[];
+  // initialListFile: FileInfo[];
   dictionary: DataTypeFromLocaleFunction;
 }
 
@@ -61,16 +63,19 @@ interface Props {
 // ];
 
 export default function KnowledgeDetailPage({
-  initialListFile,
+  // initialListFile,
   dictionary,
 }: Props) {
   const session = useSession();
   const router = useRouter();
+  const [isUpdateKnowledgeOpen, setIsUpdateKnowledgeOpen] =
+    React.useState<boolean>(false);
   const [selectedDataset, setSelectedDataset] = useState<DatasetInfo | null>(
     null
   );
   const { datasets } = useBots();
-  const [listFile, setListFile] = useState<FileInfo[]>(initialListFile);
+  const [listFile, setListFile] = useState<FileInfo[]>([]);
+  const [initialListFile, setInitialListFile] = useState<FileInfo[]>([]);
   const { theme } = useTheme();
   const params = useParams();
   const baseCardClasses =
@@ -86,9 +91,11 @@ export default function KnowledgeDetailPage({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isPolling, setIsPolling] = useState(false);
   const fetchList = React.useCallback(async () => {
+    if (!selectedDataset) return;
     const res = await getAllFileDatasets({
       datasetId: params.id as string,
       type: selectedFolder || undefined,
+      createdById: selectedDataset?.createdById || undefined,
     });
     if (!res.success) {
       toast.error(res.message);
@@ -96,16 +103,20 @@ export default function KnowledgeDetailPage({
     }
 
     setListFile(res.data.docs);
+    if (!selectedFolder) {
+      setInitialListFile(res.data.docs);
+    }
     const hasRunning = res.data.docs.some(
       (item: FileInfo) => item.run === "RUNNING"
     );
     if (!hasRunning) {
       setIsPolling(false);
     }
-  }, [params.id, selectedFolder]);
+  }, [params.id, selectedFolder, selectedDataset]);
   React.useEffect(() => {
+    if (!selectedDataset) return;
     fetchList();
-  }, [selectedFolder]);
+  }, [selectedFolder, selectedDataset]);
   React.useEffect(() => {
     if (searchQuery.trim() === "") {
       fetchList();
@@ -154,6 +165,10 @@ export default function KnowledgeDetailPage({
       toast.error("File ID is required for deletion.");
       return;
     }
+    if (selectedDataset?.createdById) {
+      toast.error("You are not allowed to delete this file");
+      return;
+    }
     try {
       const ids = [fileId];
       const res = await deteleFileDataset(
@@ -181,7 +196,7 @@ export default function KnowledgeDetailPage({
       return;
     }
     const res = await fetch(
-      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}`
+      `/api/download/file?dataset_id=${datasetId}&file_id=${docId}&created_by_id=${selectedDataset?.createdById}`
     );
     if (!res.ok) {
       console.error("Failed to download file");
@@ -224,16 +239,17 @@ export default function KnowledgeDetailPage({
         </div>
 
         <div className="flex space-x-3">
-          {/* <button
-            className={`flex items-center px-4 py-2 rounded-md ${
+          <button
+            onClick={() => setIsUpdateKnowledgeOpen(true)}
+            className={`flex items-center px-4 py-2 rounded-md hover:cursor-pointer ${
               theme === "dark"
                 ? "bg-gray-700 hover:bg-gray-600"
                 : "bg-gray-100 hover:bg-gray-200"
             } transition-colors`}
           >
-            <UsersIcon size={16} className="mr-2" />
-            Manage Access
-          </button> */}
+            <SettingsIcon size={16} className="mr-2" />
+            Update Knowledge
+          </button>
 
           <Button
             onClick={() => setIsCreateModalOpen(true)}
@@ -477,12 +493,14 @@ export default function KnowledgeDetailPage({
                   className={`${baseCardClasses} border rounded-lg p-4 hover:shadow-md transition-shadow group overflow-hidden`}
                 >
                   <div className="flex justify-between items-start">
-                    <div
-                      className={`p-3 rounded-md ${
-                        theme === "dark" ? "bg-gray-700" : "bg-gray-100"
-                      }`}
-                    >
-                      {getFileIcon(document.location)}
+                    <div>
+                      <div
+                        className={`p-3 rounded-md ${
+                          theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                        }`}
+                      >
+                        {getFileIcon(document.location)}
+                      </div>
                     </div>
 
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -637,7 +655,7 @@ export default function KnowledgeDetailPage({
       </div>
 
       {/* Upload Modal */}
-      {isCreateModalOpen && (
+      {isCreateModalOpen && selectedDataset && (
         <ModalUploadFile
           open={isCreateModalOpen}
           close={() => setIsCreateModalOpen(false)}
@@ -646,6 +664,7 @@ export default function KnowledgeDetailPage({
           setFolders={setFolders}
           datasetName={selectedDataset?.name}
           dictionary={dictionary}
+          createdById={selectedDataset?.createdById}
         />
       )}
       <DeleteFileModal
@@ -661,6 +680,13 @@ export default function KnowledgeDetailPage({
         }}
         dictionary={dictionary}
       />
+      {selectedDataset && (
+        <ModalUpdateKnowledge
+          open={isUpdateKnowledgeOpen}
+          close={() => setIsUpdateKnowledgeOpen(false)}
+          knowledge={selectedDataset}
+        />
+      )}
     </div>
   );
 }

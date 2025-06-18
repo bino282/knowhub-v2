@@ -19,6 +19,7 @@ type DeleteBotModalProps = {
   close: () => void;
   botName: string;
   botId?: string;
+  createdById?: string;
 };
 
 export function DeleteBotModal({
@@ -26,6 +27,7 @@ export function DeleteBotModal({
   close,
   botName,
   botId,
+  createdById,
 }: DeleteBotModalProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -39,7 +41,7 @@ export function DeleteBotModal({
     }
     setIsLoading(true);
     try {
-      const res = await deleteChatBot(botId);
+      const res = await deleteChatBot(botId, createdById);
       if (!res.success) {
         toast.error(res.message);
       }

@@ -9,13 +9,14 @@ export async function createFileDataset(
   datasetId: string,
   fileType: string | null,
   formData: FormData,
-  datasetName?: string
+  datasetName?: string,
+  createdById?: string
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return { success: false, message: "User not authenticated" };
   }
-  const userId = session.user.id;
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -42,7 +43,11 @@ export async function createFileDataset(
         datasetId: data[0].dataset_id,
       },
     });
-    await parseFileDocumentWithDataset(data[0].dataset_id, [data[0].id]);
+    await parseFileDocumentWithDataset(
+      data[0].dataset_id,
+      [data[0].id],
+      userId
+    );
     await prisma.activity.create({
       data: {
         userId: userId,
@@ -65,14 +70,16 @@ export async function createFileDataset(
 export async function getAllFileDatasets({
   datasetId,
   type,
+  createdById,
 }: {
   datasetId: string;
   type?: string;
+  createdById?: string;
 }) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: createdById ? createdById : userId },
   });
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };
@@ -118,9 +125,16 @@ export async function getAllFileDatasets({
     return { success: false, message: "Failed to fetch file datasets" };
   }
 }
-export async function parseFileDocument(botId: string, documentIds: string[]) {
+export async function parseFileDocument(
+  botId: string,
+  documentIds: string[],
+  createdById: string | undefined
+) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -151,10 +165,14 @@ export async function parseFileDocument(botId: string, documentIds: string[]) {
 
 export async function parseFileDocumentWithDataset(
   datasetId: string,
-  documentIds: string[]
+  documentIds: string[],
+  userCreatedById: string | undefined
 ) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = userCreatedById ? userCreatedById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -177,10 +195,14 @@ export async function parseFileDocumentWithDataset(
 }
 export async function stopParseFileDocument(
   botId: string,
-  documentIds: string[]
+  documentIds: string[],
+  createdById: string | undefined
 ) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });

@@ -26,6 +26,7 @@ const Sidebar: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
   dictionary,
 }) => {
   const pathname = usePathname();
+  const params = useParams();
   const router = useRouter();
   const session = useSession();
   const { lang } = useParams();
@@ -33,7 +34,7 @@ const Sidebar: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
   const { theme } = useTheme();
   const handleLogout = async () => {
     await signOut({ redirect: false });
-    router.push("/login");
+    router.push(`/${params.lang}/login`);
   };
 
   const navItems = [
@@ -52,11 +53,11 @@ const Sidebar: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
       icon: <Bot className="h-5 w-5" />,
       label: dictionary.common.chatbots,
     },
-    // {
-    //   to: "/user-management",
-    //   icon: <UsersIcon className="h-5 w-5" />,
-    //   label: "User Management",
-    // },
+    {
+      to: `/${lang}/team`,
+      icon: <UsersIcon className="h-5 w-5" />,
+      label: dictionary.common.team,
+    },
     {
       to: `/${lang}/settings`,
       icon: <Settings className="h-5 w-5" />,
