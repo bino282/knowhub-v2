@@ -61,11 +61,11 @@ export default function TabTraining({ dictionary }: Props) {
     }
     getAllFileDatasets({
       datasetId: bot?.dataSetId as string,
-      createdById: bot?.dataset?.createdById,
+      createdById: createdById,
     })
       .then((respon) => {
-        if (respon.success && respon.data.total > 0) {
-          setFileList(respon.data.docs as FileInfo[]);
+        if (respon.success && respon.data?.count > 0) {
+          setFileList(respon.data?.docs as FileInfo[]);
         }
       })
       .catch((error) => {
@@ -83,9 +83,9 @@ export default function TabTraining({ dictionary }: Props) {
         datasetId: bot?.dataSetId as string,
         createdById: createdById,
       });
-      if (res.success && res.data.total > 0) {
-        setFileList(res.data.docs as FileInfo[]);
-        return res.data.docs as FileInfo[];
+      if (res.success && res.data?.count > 0) {
+        setFileList(res.data?.docs as FileInfo[]);
+        return res.data?.docs as FileInfo[];
       }
       return [];
     };
@@ -154,8 +154,8 @@ export default function TabTraining({ dictionary }: Props) {
         datasetId: bot?.dataSetId as string,
         createdById: createdById,
       });
-      if (updatedList.success && updatedList.data.total > 0) {
-        setFileList(updatedList.data.docs as FileInfo[]);
+      if (updatedList.success && updatedList.data?.count > 0) {
+        setFileList(updatedList.data?.docs as FileInfo[]);
       }
       router.refresh();
     } catch (err) {

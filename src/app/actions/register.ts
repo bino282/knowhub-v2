@@ -25,8 +25,7 @@ export async function registerUser(
           name,
           email,
           password: hashedPassword,
-          apiKey: res.data?.apiKey,
-          ragflowUserId: res.data?.ragflowUserId,
+          apiKey: res.data,
         },
       });
     }
@@ -47,10 +46,7 @@ export async function registerRagflowUser(
   message: string;
   error?: string;
   success: boolean;
-  data?: {
-    apiKey: string;
-    ragflowUserId: string;
-  };
+  data?: string;
 }> {
   const passwordRagflow = process.env.PASSWORD_RAGFLOW_ENCODE ?? "";
 
@@ -90,7 +86,6 @@ export async function registerRagflowUser(
         const errorData = await response.json();
         return { message: "", error: errorData.message, success: false };
       }
-      const data = await response.json();
       const setCookie = response.headers.get("set-cookie");
       const authorization = response.headers.get("authorization");
       if (setCookie && authorization) {
@@ -98,10 +93,7 @@ export async function registerRagflowUser(
         return {
           message: "Ragflow user registered successfully",
           success: true,
-          data: {
-            apiKey,
-            ragflowUserId: data.data.id,
-          },
+          data: apiKey,
         };
       }
     }
@@ -119,10 +111,7 @@ export async function registerRagflowUser(
       return {
         message: "Ragflow user registered successfully",
         success: true,
-        data: {
-          apiKey,
-          ragflowUserId: data.data.id,
-        },
+        data: apiKey,
       };
     }
 
