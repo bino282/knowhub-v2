@@ -239,7 +239,7 @@ export type Activity = {
   targetName: string;
   user: {
     name: string | null;
-  };
+  } | null;
 };
 export interface TeamMember {
   id: string;

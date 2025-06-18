@@ -76,8 +76,8 @@ export function SettingFIleModal({
         datasetId: file.dataset_id,
         createdById: createdById,
       });
-      if (resFile.success && resFile.data.total > 0) {
-        setFile(resFile.data.docs);
+      if (resFile.success && resFile.data?.count > 0) {
+        setFile(resFile.data?.docs as FileInfo[]);
       }
       toast.success(res.message);
       router.refresh();
