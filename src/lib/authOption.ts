@@ -75,15 +75,19 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
         if (!existingUser) {
-          const apiKey = await registerRagflowUser(profile.email, profile.name);
+          const data = await registerRagflowUser(profile.email, profile.name);
           await prisma.user.upsert({
             where: { email: profile.email },
             create: {
               email: profile.email,
               name: profile.name,
-              apiKey: apiKey.data,
+              apiKey: data.data?.apiKey,
+              ragflowUserId: data.data?.ragflowUserId,
             },
-            update: { apiKey: apiKey.data },
+            update: {
+              apiKey: data.data?.apiKey,
+              ragflowUserId: data.data?.ragflowUserId,
+            },
           });
         }
       }

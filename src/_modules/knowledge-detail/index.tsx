@@ -85,7 +85,6 @@ export default function KnowledgeDetailPage({
   const [isCreateModalOpen, setIsCreateModalOpen] =
     React.useState<boolean>(false);
   const [folders, setFolders] = useState<FolderFile[]>([]);
-  console.log("folders", folders);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -102,11 +101,11 @@ export default function KnowledgeDetailPage({
       return;
     }
 
-    setListFile(res.data.docs);
+    setListFile(res.data?.docs);
     if (!selectedFolder) {
-      setInitialListFile(res.data.docs);
+      setInitialListFile(res.data?.docs);
     }
-    const hasRunning = res.data.docs.some(
+    const hasRunning = res.data?.docs.some(
       (item: FileInfo) => item.run === "RUNNING"
     );
     if (!hasRunning) {
@@ -553,10 +552,10 @@ export default function KnowledgeDetailPage({
                   <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center w-full overflow-hidden">
                     <div className="flex items-center  flex-1">
                       <div className="h-6 w-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs">
-                        {session.data?.user?.name?.[0].toUpperCase()}
+                        {document.createdByName[0].toUpperCase()}
                       </div>
                       <span className="ml-2 text-xs truncate flex-1">
-                        {session.data?.user?.name}
+                        {document.createdByName}
                       </span>
                     </div>
                     <button

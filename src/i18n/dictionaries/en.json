@@ -102,5 +102,26 @@
     "emailAddress": "Email Address",
     "password": "Password",
     "confirmPassword": "Confirm Password"
+  },
+  "team": {
+    "teamManagement": "Team Management",
+    "teamMember": "Team Member",
+    "teamInvites": "Team Invites",
+    "inviteUser": "Invite User",
+    "noTeamMemberNotFound": "No team member found",
+    "noTeamInvitesNotFound": "No team invites found",
+    "name": "Name",
+    "email": "Email",
+    "status": "Status",
+    "action": "Action",
+    "updatedAt": "Updated At",
+    "leaveTeam": "Leave",
+    "acceptInvite": "Accept",
+    "reject": "Reject",
+    "invite": "Invite",
+    "addTeamMember": "Add Team Member",
+    "inviteTeamMember": "Invite Team Member",
+    "deleteMember": "Delete Member",
+    "deleteMemberConfirm": "Are you sure you want to delete this team member? This action cannot be undone."
   }
 }

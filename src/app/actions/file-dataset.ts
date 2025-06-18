@@ -4,6 +4,7 @@ import { ApiResponse } from "@/types";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/authOption";
+import { getTeamJoined, getTeamMembers } from "./team";
 
 export async function createFileDataset(
   datasetId: string,
@@ -67,6 +68,64 @@ export async function createFileDataset(
     return { success: false, message: "Failed to create file dataset" };
   }
 }
+// export async function getAllFileDatasets({
+//   datasetId,
+//   type,
+//   createdById,
+// }: {
+//   datasetId: string;
+//   type?: string;
+//   createdById?: string;
+// }) {
+//   const session = await getServerSession(authOptions);
+//   const userId = session?.user?.id;
+//   const user = await prisma.user.findUnique({
+//     where: { id: createdById ? createdById : userId },
+//   });
+//   if (!user || !user.apiKey) {
+//     return { success: false, message: "User not found or API key missing" };
+//   }
+//   try {
+//     let fileIdsByType: string[] = [];
+//     if (type) {
+//       const files = await prisma.file.findMany({
+//         where: { type },
+//         select: { id: true },
+//       });
+//       fileIdsByType = files.map((file) => file.id);
+//     }
+//     const response = await apiRequest<ApiResponse>(
+//       "GET",
+//       `api/v1/datasets/${datasetId}/documents`,
+//       user.apiKey,
+//       {
+//         desc: "desc",
+//       }
+//     );
+
+//     if (response.code !== 0) {
+//       console.error("Failed to fetch file datasets:");
+//       throw new Error("Failed to fetch file datasets");
+//     }
+//     const data = await response.data;
+
+//     const filteredData = type
+//       ? {
+//           docs: data.docs.filter((item: any) =>
+//             fileIdsByType.includes(item.id)
+//           ),
+//           count: data.docs.filter((item: any) =>
+//             fileIdsByType.includes(item.id)
+//           ).length,
+//         }
+//       : data;
+
+//     return { data: filteredData, success: true };
+//   } catch (error) {
+//     console.error("Error fetching file datasets:", error);
+//     return { success: false, message: "Failed to fetch file datasets" };
+//   }
+// }
 export async function getAllFileDatasets({
   datasetId,
   type,
@@ -77,13 +136,18 @@ export async function getAllFileDatasets({
   createdById?: string;
 }) {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  if (!session || !session.user) {
+    return { success: false, message: "User not authenticated" };
+  }
+  const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
-    where: { id: createdById ? createdById : userId },
+    where: { id: userId },
   });
+
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };
   }
+
   try {
     let fileIdsByType: string[] = [];
     if (type) {
@@ -93,33 +157,56 @@ export async function getAllFileDatasets({
       });
       fileIdsByType = files.map((file) => file.id);
     }
+
     const response = await apiRequest<ApiResponse>(
       "GET",
       `api/v1/datasets/${datasetId}/documents`,
       user.apiKey,
-      {
-        desc: "desc",
-      }
+      { desc: "desc" }
     );
 
     if (response.code !== 0) {
-      console.error("Failed to fetch file datasets:");
+      console.error("Failed to fetch file datasets");
       throw new Error("Failed to fetch file datasets");
     }
+
     const data = await response.data;
+    // Tạo danh sách tất cả các createdBy userId (ragflowUserId)
+    const allCreatorIds = Array.from(
+      new Set(data.docs.map((doc: any) => doc.created_by).filter(Boolean))
+    );
+    // Truy vấn tất cả users có ragflowUserId trong danh sách trên
+    const creators = await prisma.user.findMany({
+      where: {
+        ragflowUserId: {
+          in: allCreatorIds as string[],
+        },
+      },
+      select: {
+        ragflowUserId: true,
+        name: true,
+      },
+    });
+    // Tạo map từ ragflowUserId -> name
+    const creatorMap = new Map(creators.map((u) => [u.ragflowUserId, u.name]));
 
-    const filteredData = type
-      ? {
-          docs: data.docs.filter((item: any) =>
-            fileIdsByType.includes(item.id)
-          ),
-          count: data.docs.filter((item: any) =>
-            fileIdsByType.includes(item.id)
-          ).length,
-        }
-      : data;
+    // Filter và attach createdByName
+    const docs = (
+      type
+        ? data.docs.filter((item: any) => fileIdsByType.includes(item.id))
+        : data.docs
+    ).map((doc: any) => ({
+      ...doc,
+      createdByName: creatorMap.get(doc.created_by) || "Unknown",
+    }));
 
-    return { data: filteredData, success: true };
+    return {
+      data: {
+        docs,
+        count: docs.length,
+      },
+      success: true,
+    };
   } catch (error) {
     console.error("Error fetching file datasets:", error);
     return { success: false, message: "Failed to fetch file datasets" };

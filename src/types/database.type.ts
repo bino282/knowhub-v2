@@ -181,6 +181,7 @@ export interface DatasetInfo {
   update_date: string;
   update_time: number;
   vector_similarity_weight: number;
+  totalMembers: number;
 }
 export interface FileInfo {
   chunk_count: number;
@@ -213,6 +214,7 @@ export interface FileInfo {
   type: string;
   update_date: string;
   update_time: number;
+  createdByName: string;
 }
 export type Reference = {
   chunks: {

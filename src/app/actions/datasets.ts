@@ -184,7 +184,6 @@ export async function getDatasets() {
     },
   });
   const adminIds = teamInvites.map((item) => item.adminId);
-
   // Lấy API key tương ứng với userId và các adminIds
   const allUserIds = [userId, ...adminIds];
   //GET API RAGFLOW FOR TABLE USERS
@@ -216,10 +215,24 @@ export async function getDatasets() {
         }
 
         let data = res.data;
+        const totalMembers = await prisma.inviteTeam.count({
+          where: {
+            adminId: id,
+            status: "ACCEPTED",
+          },
+        });
 
         // Nếu là user chính → lấy toàn bộ
         if (id === userId) {
-          return data;
+          return data.map((dataset: any) => {
+            if (dataset.permission === "team") {
+              return {
+                ...dataset,
+                totalMembers,
+              };
+            }
+            return dataset;
+          });
         }
 
         // Nếu là admin khác → lọc theo permission === 'team'
@@ -229,6 +242,7 @@ export async function getDatasets() {
             ...dataset,
             createdBy: name,
             createdById: id,
+            totalMembers,
           }));
 
         return teamDatasets;

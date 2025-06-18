@@ -102,5 +102,26 @@
     "emailAddress": "이메일 주소",
     "password": "비밀번호",
     "confirmPassword": "비밀번호 확인"
+  },
+  "team": {
+    "teamManagement": "팀 관리",
+    "teamMember": "팀 멤버",
+    "teamInvites": "팀 초대",
+    "inviteUser": "사용자 초대",
+    "noTeamMemberNotFound": "팀 멤버가 없습니다",
+    "noTeamInvitesNotFound": "팀 초대가 없습니다",
+    "name": "이름",
+    "email": "이메일",
+    "status": "상태",
+    "action": "액션",
+    "updatedAt": "업데이트 날짜",
+    "leaveTeam": "탈퇴",
+    "acceptInvite": "수락",
+    "reject": "거절",
+    "invite": "초대",
+    "addTeamMember": "팀 멤버 추가",
+    "inviteTeamMember": "팀 멤버 초대",
+    "deleteMember": "팀 멤버 삭제",
+    "deleteMemberConfirm": "정말 팀 멤버를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
   }
 }

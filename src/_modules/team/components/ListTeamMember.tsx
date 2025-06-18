@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ModalInviteTeam from "./ModalInviteTeam";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import { getTeamMembers } from "@/app/actions/team";
 import { TeamMember } from "@/types/database.type";
 import ModalDeleteMember from "./ModalDeleteMember";
 import { formatDateTime } from "@/lib/format-date";
+import { DataTypeFromLocaleFunction } from "@/types";
 
 enum InviteTeamStatus {
   PENDING = "PENDING",
@@ -16,13 +16,17 @@ enum InviteTeamStatus {
   REJECTED = "REJECTED",
 }
 export default function ListTeamMember({
+  listMembers,
   adminId,
+  dictionary,
 }: {
+  listMembers: TeamMember[];
   adminId: string | undefined;
+  dictionary: DataTypeFromLocaleFunction;
 }) {
   const { theme } = useTheme();
   const [showInviteModal, setShowInviteModal] = React.useState(false);
-  const [users, setUsers] = React.useState<TeamMember[]>([]);
+  const [users, setUsers] = React.useState<TeamMember[]>(listMembers);
   const [memberIdDelete, setMemberIdDelete] = React.useState<string | null>(
     null
   );
@@ -48,17 +52,6 @@ export default function ListTeamMember({
     ACCEPTED: "success",
     REJECTED: "destructive",
   };
-  React.useEffect(() => {
-    if (!adminId) return;
-    const fetchUsers = async () => {
-      const response = await getTeamMembers(adminId);
-      if (response.success) {
-        setUsers(response.data as unknown as TeamMember[]);
-      }
-    };
-    fetchUsers();
-  }, [adminId]);
-
   return (
     <>
       <Card className={baseCardClasses}>
@@ -66,7 +59,9 @@ export default function ListTeamMember({
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-1">
               <UserIcon size={22} className="text-blue-400" />
-              <h2 className="text-xl font-semibold">Team Members</h2>
+              <h2 className="text-xl font-semibold">
+                {dictionary.team.teamMember}
+              </h2>
             </div>
             <Button
               onClick={() => setShowInviteModal(true)}
@@ -77,7 +72,7 @@ export default function ListTeamMember({
               } text-white transition-colors`}
             >
               <Plus size={18} className="mr-2" />
-              Invite User
+              {dictionary.team.inviteUser}
             </Button>
           </div>
           <div
@@ -92,31 +87,31 @@ export default function ListTeamMember({
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
-                    Name
+                    {dictionary.team.name}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
-                    Email
+                    {dictionary.team.email}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider hidden sm:table-cell"
                   >
-                    Status
+                    {dictionary.team.status}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider hidden lg:table-cell"
                   >
-                    Updated At
+                    {dictionary.team.updatedAt}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                   >
-                    Action
+                    {dictionary.team.action}
                   </th>
                 </tr>
               </thead>
@@ -173,7 +168,9 @@ export default function ListTeamMember({
                 ) : (
                   <tr>
                     <td colSpan={5} className="text-center">
-                      <p className="text-gray-500 p-6">No team members found</p>
+                      <p className="text-gray-500 p-6">
+                        {dictionary.team.noTeamMemberNotFound}
+                      </p>
                     </td>
                   </tr>
                 )}
@@ -188,6 +185,7 @@ export default function ListTeamMember({
         adminId={adminId}
         users={users}
         setUsers={setUsers}
+        dictionary={dictionary}
       />
       <ModalDeleteMember
         open={!!memberIdDelete}
@@ -196,6 +194,7 @@ export default function ListTeamMember({
         adminId={adminId}
         users={users}
         setUsers={setUsers}
+        dictionary={dictionary}
       />
     </>
   );

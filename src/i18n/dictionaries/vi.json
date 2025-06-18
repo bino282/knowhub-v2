@@ -102,5 +102,26 @@
     "emailAddress": "Địa chỉ email",
     "password": "Mật khẩu",
     "confirmPassword": "Xác nhận mật khẩu"
+  },
+  "team": {
+    "teamManagement": "Quản lý nhóm",
+    "teamMember": "Thành viên nhóm",
+    "teamInvites": "Lời mời nhóm",
+    "inviteUser": "Mời thành viên",
+    "noTeamMemberNotFound": "Không tìm thấy thành viên nhóm",
+    "noTeamInvitesNotFound": "Không tìm thấy lời mời nhóm",
+    "name": "Tên",
+    "email": "Email",
+    "status": "Trạng thái",
+    "action": "Hành động",
+    "updatedAt": "Ngày cập nhật",
+    "leaveTeam": "Rời nhóm",
+    "acceptInvite": "Chấp nhận",
+    "reject": "Từ chối",
+    "invite": "Mời",
+    "addTeamMember": "Thêm thành viên",
+    "inviteTeamMember": "Mời thành viên",
+    "deleteMember": "Xóa thành viên",
+    "deleteMemberConfirm": "Bạn có chắc chắn muốn xóa thành viên này không? Hành động này không thể hoàn tác."
   }
 }

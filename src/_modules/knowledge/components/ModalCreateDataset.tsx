@@ -46,6 +46,7 @@ export default function ModalCreateDataset({
       toast.success(res.message || "Dataset created successfully");
       close();
       setDatasetName("");
+      setDescription("");
       router.refresh();
     } catch (error) {
       console.error("Error creating dataset:", error);
