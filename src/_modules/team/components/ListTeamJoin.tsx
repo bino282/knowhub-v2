@@ -4,6 +4,7 @@ import { acceptTeam, rejectOrLeaveTeam } from "@/app/actions/team";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format-date";
+import { DataTypeFromLocaleFunction } from "@/types";
 import { TeamJoined } from "@/types/database.type";
 import { UsersIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,8 +14,13 @@ import { toast } from "sonner";
 interface Props {
   memberId: string | undefined;
   listTeams: TeamJoined[];
+  dictionary: DataTypeFromLocaleFunction;
 }
-export default function ListTeamJoin({ listTeams, memberId }: Props) {
+export default function ListTeamJoin({
+  listTeams,
+  memberId,
+  dictionary,
+}: Props) {
   const { theme } = useTheme();
   const router = useRouter();
   const [teamJoined, setTeamJoined] = React.useState<TeamJoined[]>(listTeams);
@@ -58,7 +64,9 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
       <CardContent>
         <div className="flex items-center gap-2">
           <UsersIcon size={22} className="text-blue-400" />
-          <h2 className="text-xl font-semibold">Joined Team</h2>
+          <h2 className="text-xl font-semibold">
+            {dictionary.team.teamInvites}
+          </h2>
         </div>
         <div
           className={`${baseCardClasses} border rounded-lg overflow-hidden mt-6`}
@@ -70,25 +78,25 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
-                  Name
+                  {dictionary.team.name}
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 >
-                  Email Adress
+                  {dictionary.team.email}
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider hidden lg:table-cell"
                 >
-                  Updated At
+                  {dictionary.team.updatedAt}
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                 >
-                  Action
+                  {dictionary.team.action}
                 </th>
               </tr>
             </thead>
@@ -130,7 +138,7 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
                               handleAcceptTeam(team.adminId, team.memberId)
                             }
                           >
-                            Accept
+                            {dictionary.team.acceptInvite}
                           </Button>
                           <Button
                             variant="default"
@@ -142,7 +150,7 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
                               )
                             }
                           >
-                            Reject
+                            {dictionary.team.reject}
                           </Button>
                         </div>
                       ) : (
@@ -153,7 +161,7 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
                             handleRejectOrLeaveTeam(team.adminId, team.memberId)
                           }
                         >
-                          Leave
+                          {dictionary.team.leaveTeam}
                         </Button>
                       )}
                     </td>
@@ -162,7 +170,9 @@ export default function ListTeamJoin({ listTeams, memberId }: Props) {
               ) : (
                 <tr>
                   <td colSpan={5} className="text-center">
-                    <p className="text-gray-500 p-6">No team joined</p>
+                    <p className="text-gray-500 p-6">
+                      {dictionary.team.noTeamInvitesNotFound}
+                    </p>
                   </td>
                 </tr>
               )}
