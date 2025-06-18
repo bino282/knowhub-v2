@@ -9,20 +9,19 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(uuid()) @db.VarChar
-  email         String?    @unique(map: "ix_Users_email") @db.VarChar
-  name          String?    @db.VarChar
-  image         String?    @db.VarChar
-  password      String?    @db.VarChar
-  emailVerified DateTime?  @map("email_verified")
-  apiKey        String?    @unique @map("api_key")
-  ragflowUserId String?    @unique @map("ragflow_user_id")
-  accounts      Account[]
-  sessions      Session[]
-  bots          Bot[]
-  documents     Document[]
-  activities    Activity[]
-
+  id              String       @id @default(uuid()) @db.VarChar
+  email           String?      @unique(map: "ix_Users_email") @db.VarChar
+  name            String?      @db.VarChar
+  image           String?      @db.VarChar
+  password        String?      @db.VarChar
+  emailVerified   DateTime?    @map("email_verified")
+  apiKey          String?      @unique @map("api_key")
+  accounts        Account[]
+  sessions        Session[]
+  bots            Bot[]
+  documents       Document[]
+  activities      Activity[]
+  files           File[]
   invitesSent     InviteTeam[] @relation("AdminInvites")
   invitesReceived InviteTeam[] @relation("MemberInvites")
 
@@ -129,6 +128,8 @@ model File {
   datasetId String?
   type      String?
   createdAt DateTime @default(now()) @map("created_at")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum ActivityType {
@@ -143,7 +144,7 @@ enum ActivityType {
 model Activity {
   id         String       @id @default(uuid())
   userId     String       @map("user_id")
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   action     ActivityType
   targetType String       @map("target_type")
   targetName String       @map("target_name")

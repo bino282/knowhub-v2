@@ -81,12 +81,10 @@ export const authOptions: NextAuthOptions = {
             create: {
               email: profile.email,
               name: profile.name,
-              apiKey: data.data?.apiKey,
-              ragflowUserId: data.data?.ragflowUserId,
+              apiKey: data.data,
             },
             update: {
-              apiKey: data.data?.apiKey,
-              ragflowUserId: data.data?.ragflowUserId,
+              apiKey: data.data,
             },
           });
         }
