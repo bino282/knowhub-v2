@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ModalInviteTeam from "./ModalInviteTeam";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import { getTeamMembers } from "@/app/actions/team";
 import { TeamMember } from "@/types/database.type";
 import ModalDeleteMember from "./ModalDeleteMember";
 import { formatDateTime } from "@/lib/format-date";
@@ -16,13 +15,15 @@ enum InviteTeamStatus {
   REJECTED = "REJECTED",
 }
 export default function ListTeamMember({
+  listMembers,
   adminId,
 }: {
+  listMembers: TeamMember[];
   adminId: string | undefined;
 }) {
   const { theme } = useTheme();
   const [showInviteModal, setShowInviteModal] = React.useState(false);
-  const [users, setUsers] = React.useState<TeamMember[]>([]);
+  const [users, setUsers] = React.useState<TeamMember[]>(listMembers);
   const [memberIdDelete, setMemberIdDelete] = React.useState<string | null>(
     null
   );
@@ -48,16 +49,16 @@ export default function ListTeamMember({
     ACCEPTED: "success",
     REJECTED: "destructive",
   };
-  React.useEffect(() => {
-    if (!adminId) return;
-    const fetchUsers = async () => {
-      const response = await getTeamMembers(adminId);
-      if (response.success) {
-        setUsers(response.data as unknown as TeamMember[]);
-      }
-    };
-    fetchUsers();
-  }, [adminId]);
+  // React.useEffect(() => {
+  //   if (!adminId) return;
+  //   const fetchUsers = async () => {
+  //     const response = await getTeamMembers(adminId);
+  //     if (response.success) {
+  //       setUsers(response.data as unknown as TeamMember[]);
+  //     }
+  //   };
+  //   fetchUsers();
+  // }, [adminId]);
 
   return (
     <>

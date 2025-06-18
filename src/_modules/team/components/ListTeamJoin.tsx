@@ -1,37 +1,28 @@
+import { useBots } from "@/_modules/contexts/BotsContext";
 import { useTheme } from "@/_modules/contexts/ThemeContext";
-import {
-  acceptTeam,
-  getTeamJoined,
-  rejectOrLeaveTeam,
-} from "@/app/actions/team";
+import { acceptTeam, rejectOrLeaveTeam } from "@/app/actions/team";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format-date";
 import { TeamJoined } from "@/types/database.type";
 import { UsersIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
 interface Props {
   memberId: string | undefined;
+  listTeams: TeamJoined[];
 }
-export default function ListTeamJoin({ memberId }: Props) {
+export default function ListTeamJoin({ listTeams, memberId }: Props) {
   const { theme } = useTheme();
-  const [teamJoined, setTeamJoined] = React.useState<TeamJoined[]>([]);
+  const router = useRouter();
+  const [teamJoined, setTeamJoined] = React.useState<TeamJoined[]>(listTeams);
+  const { refetchData } = useBots();
   const baseCardClasses =
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
-  React.useEffect(() => {
-    if (!memberId) return;
-    const fetchUsers = async () => {
-      const response = await getTeamJoined(memberId);
-      if (response.success) {
-        setTeamJoined(response.data as TeamJoined[]);
-      }
-    };
-    fetchUsers();
-  }, [memberId]);
   const handleAcceptTeam = async (adminId: string, memberId: string) => {
     const response = await acceptTeam(adminId, memberId);
     if (response.success) {
@@ -42,6 +33,7 @@ export default function ListTeamJoin({ memberId }: Props) {
           team.adminId === adminId ? { ...team, status: "ACCEPTED" } : team
         )
       );
+      refetchData();
     } else {
       toast.error("Failed to accept team !");
     }
@@ -56,6 +48,7 @@ export default function ListTeamJoin({ memberId }: Props) {
           (team) => team.adminId !== adminId && team.memberId !== memberId
         )
       );
+      refetchData();
     } else {
       toast.error("Failed to reject or leave team !");
     }

@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { FolderFile } from "@/types/database.type";
 import { DataTypeFromLocaleFunction } from "@/types";
+import { useBots } from "@/_modules/contexts/BotsContext";
 
 interface Props {
   open: boolean;
@@ -49,6 +50,7 @@ export function ModalUploadFile({
 }: Props) {
   const params = useParams();
   const router = useRouter();
+  const { refetchData } = useBots();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [openPopover, setOpenPopover] = React.useState<boolean>(false);
@@ -116,7 +118,7 @@ export function ModalUploadFile({
         if (result.success) {
           toast.success(result.message);
           handleClose();
-          router.refresh();
+          refetchData();
           if (selected) {
             setFolders((prev) => {
               const index = prev.findIndex(
