@@ -19,6 +19,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - hct-knowhub-network
 
   app:
     build:
@@ -28,12 +30,18 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nxchat
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hct_knowhub
       - NODE_ENV=production
       - RUN_MIGRATIONS=true
+      - DELETE_DB=true
     depends_on:
       postgres:
         condition: service_healthy
-
+    networks:
+      - hct-knowhub-network
 volumes:
   postgres-data:
+
+networks:
+  hct-knowhub-network:
+    driver: bridge
