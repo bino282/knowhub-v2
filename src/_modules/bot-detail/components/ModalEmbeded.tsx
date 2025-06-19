@@ -26,7 +26,6 @@ export default function ModalEmbeded({
     theme === "dark"
       ? "bg-gray-800 border-gray-700"
       : "bg-white border-gray-200";
-  console.log(theme);
   const getEmbedCode = () => {
     return `<!-- KMSHub Chatbot Widget -->
     <script>

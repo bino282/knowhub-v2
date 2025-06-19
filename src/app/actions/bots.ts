@@ -140,7 +140,6 @@ export async function getAllBots(userId: string) {
   }
 }
 export async function getBotById(id: string, createdById: string | undefined) {
-  console.log("createdById", createdById);
   try {
     const bot = await prisma.bot.findUnique({
       where: { id },
@@ -165,7 +164,6 @@ export async function getBotById(id: string, createdById: string | undefined) {
       `api/v1/chats?id=${bot.chatId}`,
       user.apiKey
     );
-    console.log("res", res);
     const chatInfo = res.data;
     const data = {
       ...bot,

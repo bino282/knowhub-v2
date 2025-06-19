@@ -7,7 +7,6 @@ export default function exactTextFieldString(inputData: string): {
   text: string;
   // answerId: string;
 } {
-  console.log("input", inputData);
   const dataObjects = inputData.split("data:");
   // console.log("dataObjects", JSON.parse(dataObjects[1]));
 
@@ -23,7 +22,6 @@ export default function exactTextFieldString(inputData: string): {
     try {
       if (obj.startsWith('{"answer')) {
         const parsedObject: any = JSON.parse(obj);
-        console.log("parsedObject", parsedObject);
         parsedDataObjects.push(parsedObject);
 
         text += parsedObject?.choices?.[0].delta?.content;
