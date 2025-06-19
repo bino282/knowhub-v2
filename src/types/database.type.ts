@@ -54,6 +54,7 @@ export interface Database {
           isActive: boolean;
           chatInfo: any;
           totalMessages?: number;
+          totalMembers?: number;
         };
         Insert: {
           id: string;
