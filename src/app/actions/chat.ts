@@ -75,7 +75,6 @@ export async function createSessionMessage(
         botId: botId,
       },
     });
-    console.log("createSessionMessage data", data);
     return { success: true, data: data };
   }
 }
