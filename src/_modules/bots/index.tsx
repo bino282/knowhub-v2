@@ -271,7 +271,7 @@ const BotsPage: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
                     </span>
                   </p>
                   <p className="text-base font-normal flex-1 text-gray-800 dark:text-gray-200">
-                    1
+                    {bot.totalMembers || 0}
                   </p>
                 </div>
               </div>
