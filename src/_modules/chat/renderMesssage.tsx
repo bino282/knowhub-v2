@@ -177,7 +177,6 @@ export function MarkdownWithReferences({
   content,
   references,
 }: MarkdownWithReferencesProps) {
-  const [showModal, setShowModal] = React.useState(false);
   const ref =
     typeof references === "object" && references !== null
       ? references
