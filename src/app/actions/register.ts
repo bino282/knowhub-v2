@@ -45,7 +45,10 @@ export async function registerRagflowUser(
   message: string;
   error?: string;
   success: boolean;
-  data?: string;
+  data?: {
+    apiKey: string;
+    ragflowUserId: string;
+  };
 }> {
   const passwordRagflow = process.env.PASSWORD_RAGFLOW_ENCODE ?? "";
 
@@ -85,6 +88,7 @@ export async function registerRagflowUser(
         const errorData = await response.json();
         return { message: "", error: errorData.message, success: false };
       }
+      const data = await response.json();
       const setCookie = response.headers.get("set-cookie");
       const authorization = response.headers.get("authorization");
       if (setCookie && authorization) {
@@ -92,7 +96,10 @@ export async function registerRagflowUser(
         return {
           message: "Ragflow user registered successfully",
           success: true,
-          data: apiKey,
+          data: {
+            apiKey,
+            ragflowUserId: data.data.id,
+          },
         };
       }
     }
@@ -110,7 +117,10 @@ export async function registerRagflowUser(
       return {
         message: "Ragflow user registered successfully",
         success: true,
-        data: apiKey,
+        data: {
+          apiKey,
+          ragflowUserId: data.data.id,
+        },
       };
     }
 

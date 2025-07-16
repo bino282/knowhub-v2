@@ -140,7 +140,6 @@ export async function getAllFileDatasets({
   if (!session || !session.user) {
     return { success: false, message: "User not authenticated" };
   }
-
   const userId = createdById ? createdById : session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -204,7 +203,6 @@ export async function getAllFileDatasets({
       ...doc,
       createdByName: fileUserMap.get(doc.id) || "Unknown",
     }));
-
     return {
       data: {
         docs,
