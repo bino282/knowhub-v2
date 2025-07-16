@@ -77,10 +77,10 @@ export const authOptions: NextAuthOptions = {
             create: {
               email: profile.email,
               name: profile.name,
-              apiKey: data.data,
+              apiKey: data.data?.apiKey,
             },
             update: {
-              apiKey: data.data,
+              apiKey: data.data?.apiKey,
             },
           });
         }
