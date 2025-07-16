@@ -42,6 +42,7 @@ export async function createFileDataset(
         id: data[0].id,
         type: type,
         datasetId: data[0].dataset_id,
+        userId: session.user.id,
       },
     });
     await parseFileDocumentWithDataset(
@@ -171,35 +172,37 @@ export async function getAllFileDatasets({
     }
 
     const data = await response.data;
-    // Tạo danh sách tất cả các createdBy userId (ragflowUserId)
-    const allCreatorIds = Array.from(
-      new Set(data.docs.map((doc: any) => doc.created_by).filter(Boolean))
-    );
-    // Truy vấn tất cả users có ragflowUserId trong danh sách trên
-    const creators = await prisma.user.findMany({
+    const docsRaw = type
+      ? data.docs.filter((item: any) => fileIdsByType.includes(item.id))
+      : data.docs;
+
+    // Lấy tất cả fileId từ docsRaw
+    const fileIds = docsRaw.map((doc: any) => doc.id);
+
+    // Truy vấn bảng file để lấy user_id
+    const files = await prisma.file.findMany({
       where: {
-        ragflowUserId: {
-          in: allCreatorIds as string[],
-        },
+        id: { in: fileIds },
       },
       select: {
-        ragflowUserId: true,
-        name: true,
+        id: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
-    // Tạo map từ ragflowUserId -> name
-    const creatorMap = new Map(creators.map((u) => [u.ragflowUserId, u.name]));
 
-    // Filter và attach createdByName
-    const docs = (
-      type
-        ? data.docs.filter((item: any) => fileIdsByType.includes(item.id))
-        : data.docs
-    ).map((doc: any) => ({
+    // Tạo map từ fileId => user.name
+    const fileUserMap = new Map(
+      files.map((f) => [f.id, f.user?.name ?? "Unknown"])
+    );
+
+    const docs = docsRaw.map((doc: any) => ({
       ...doc,
-      createdByName: creatorMap.get(doc.created_by) || "Unknown",
+      createdByName: fileUserMap.get(doc.id) || "Unknown",
     }));
-
     return {
       data: {
         docs,
@@ -212,6 +215,7 @@ export async function getAllFileDatasets({
     return { success: false, message: "Failed to fetch file datasets" };
   }
 }
+
 export async function parseFileDocument(
   botId: string,
   documentIds: string[],

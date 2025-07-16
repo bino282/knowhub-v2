@@ -21,8 +21,16 @@ export default function TeamManagementPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <ListTeamMember listMembers={listMembers} adminId={userId} />
-      <ListTeamJoin listTeams={listTeams} memberId={userId} />
+      <ListTeamMember
+        listMembers={listMembers}
+        adminId={userId}
+        dictionary={dictionary}
+      />
+      <ListTeamJoin
+        listTeams={listTeams}
+        memberId={userId}
+        dictionary={dictionary}
+      />
     </div>
   );
 }

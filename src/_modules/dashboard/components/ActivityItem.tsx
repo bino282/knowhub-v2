@@ -20,7 +20,7 @@ const ActivityItem = ({ activity }: ActivityItemProps) => {
       {getIcon(activity.action, activity.targetName)}
       <div className="ml-2">
         <p className="font-normal text-sm text-gray-800 dark:text-[#f9fafb]">
-          {capitalizeWords(activity.user.name as string)}
+          {capitalizeWords(activity.user?.name as string)}
           <span className="text-sm text-[#9cabaf] px-1">
             {activity.action.toLowerCase()}
           </span>

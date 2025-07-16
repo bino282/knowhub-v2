@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DataTypeFromLocaleFunction } from "@/types";
 import { TeamMember } from "@/types/database.type";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -18,6 +19,7 @@ interface Props {
   adminId: string | undefined;
   users: TeamMember[];
   setUsers: (users: TeamMember[]) => void;
+  dictionary: DataTypeFromLocaleFunction;
 }
 export default function ModalInviteTeam({
   open,
@@ -25,6 +27,7 @@ export default function ModalInviteTeam({
   adminId,
   users,
   setUsers,
+  dictionary,
 }: Props) {
   const [email, setEmail] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -56,11 +59,12 @@ export default function ModalInviteTeam({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Team Member</DialogTitle>
+          <DialogTitle>{dictionary.team.inviteTeamMember}</DialogTitle>
         </DialogHeader>
         <div className="my-4">
           <p className="text-base font-medium mb-2">
-            Email <span className="text-red-500 ml-0.5">*</span>
+            {dictionary.team.email}{" "}
+            <span className="text-red-500 ml-0.5">*</span>
           </p>
           <Input
             placeholder="Enter email"
@@ -71,7 +75,7 @@ export default function ModalInviteTeam({
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="w-full" onClick={close}>
-            Cancel
+            {dictionary.common.cancel}
           </Button>
           <Button
             className="w-full bg-blue-500 hover:bg-blue-600 text-white"
@@ -80,7 +84,7 @@ export default function ModalInviteTeam({
             disabled={!email.trim() || isLoading}
             isLoading={isLoading}
           >
-            Invite
+            {dictionary.team.invite}
           </Button>
         </div>
       </DialogContent>

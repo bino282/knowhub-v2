@@ -121,16 +121,26 @@ export async function getAllBots(userId: string) {
         },
       },
     });
-
+    const inviteTeams = await prisma.inviteTeam.findMany({
+      where: {
+        adminId: userId,
+        status: "ACCEPTED",
+      },
+    });
     // Tính tổng số message role 'user' cho từng bot
     const result = botsWithUserMessageCount.map((bot) => {
       const totalMessages = bot.sessionChats.reduce((sum, session) => {
         return sum + session.messages.length;
       }, 0);
 
+      const totalMembers = inviteTeams.filter(
+        (invite) => invite.adminId === bot.userId
+      ).length;
+
       return {
         ...bot,
         totalMessages,
+        totalMembers,
       };
     });
 
@@ -140,7 +150,6 @@ export async function getAllBots(userId: string) {
   }
 }
 export async function getBotById(id: string, createdById: string | undefined) {
-  console.log("createdById", createdById);
   try {
     const bot = await prisma.bot.findUnique({
       where: { id },
@@ -165,7 +174,6 @@ export async function getBotById(id: string, createdById: string | undefined) {
       `api/v1/chats?id=${bot.chatId}`,
       user.apiKey
     );
-    console.log("res", res);
     const chatInfo = res.data;
     const data = {
       ...bot,

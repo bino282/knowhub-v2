@@ -54,6 +54,7 @@ export interface Database {
           isActive: boolean;
           chatInfo: any;
           totalMessages?: number;
+          totalMembers?: number;
         };
         Insert: {
           id: string;
@@ -239,7 +240,7 @@ export type Activity = {
   targetName: string;
   user: {
     name: string | null;
-  };
+  } | null;
 };
 export interface TeamMember {
   id: string;

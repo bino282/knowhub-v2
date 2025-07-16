@@ -25,8 +25,6 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        console.log("Credentials:", credentials);
-
         const user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
@@ -41,8 +39,6 @@ export const authOptions: NextAuthOptions = {
           credentials.password,
           user.password
         );
-
-        console.log("Is password valid:", isPasswordValid);
 
         if (!isPasswordValid) {
           return null;
@@ -81,12 +77,10 @@ export const authOptions: NextAuthOptions = {
             create: {
               email: profile.email,
               name: profile.name,
-              apiKey: data.data?.apiKey,
-              ragflowUserId: data.data?.ragflowUserId,
+              apiKey: data.data,
             },
             update: {
-              apiKey: data.data?.apiKey,
-              ragflowUserId: data.data?.ragflowUserId,
+              apiKey: data.data,
             },
           });
         }

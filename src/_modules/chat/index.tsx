@@ -362,7 +362,6 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
           const fragment = payload?.data?.answer;
           if (typeof fragment === "string") {
             assistant.content = fragment;
-            console.log("value done", fragment);
           }
 
           // Extract reference if present

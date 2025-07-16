@@ -201,19 +201,8 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
-  const getTotalDocuments = (): number => {
-    const datasetMap = new Map(
-      datasets.map((ds) => [ds.id, ds.document_count])
-    );
-
-    const uniqueDatasetIds = new Set(bots.map((bot) => bot.dataSetId));
-
-    const totalChunkCount = Array.from(uniqueDatasetIds).reduce((sum, id) => {
-      const chunkCount = datasetMap.get(id) || 0;
-      return sum + chunkCount;
-    }, 0);
-    return totalChunkCount;
-  };
+  const getTotalDocuments = (): number =>
+    datasets.reduce((sum, d) => sum + (d.document_count || 0), 0);
 
   const getTotalMessages = (): number => {
     return Object.values(messagesByBot).reduce(

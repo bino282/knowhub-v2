@@ -11,7 +11,6 @@ export async function registerUser(
     const existingUser = await prisma.user.findFirst({
       where: { email },
     });
-
     if (existingUser) {
       return { message: "", error: "User already exists", success: false };
     }
@@ -25,8 +24,7 @@ export async function registerUser(
           name,
           email,
           password: hashedPassword,
-          apiKey: res.data?.apiKey,
-          ragflowUserId: res.data?.ragflowUserId,
+          apiKey: res.data,
         },
       });
     }

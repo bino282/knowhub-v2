@@ -102,5 +102,26 @@
     "emailAddress": "メールアドレス",
     "password": "パスワード",
     "confirmPassword": "パスワード確認"
+  },
+  "team": {
+    "teamManagement": "チーム管理",
+    "teamMember": "チームメンバー",
+    "teamInvites": "チーム招待",
+    "inviteUser": "ユーザーを招待",
+    "noTeamMemberNotFound": "チームメンバーが見つかりません",
+    "noTeamInvitesNotFound": "チーム招待が見つかりません",
+    "name": "名前",
+    "email": "メールアドレス",
+    "status": "ステータス",
+    "action": "アクション",
+    "updatedAt": "更新日",
+    "leaveTeam": "退会",
+    "acceptInvite": "受諾",
+    "reject": "拒否",
+    "invite": "招待",
+    "addTeamMember": "チームメンバーを追加",
+    "inviteTeamMember": "チームメンバーを招待",
+    "deleteMember": "チームメンバーを削除",
+    "deleteMemberConfirm": "本当にチームメンバーを削除しますか？この操作は元に戻せません。"
   }
 }
