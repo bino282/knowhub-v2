@@ -24,7 +24,7 @@ export async function registerUser(
           name,
           email,
           password: hashedPassword,
-          apiKey: res.data,
+          apiKey: res.data?.apiKey,
         },
       });
     }
