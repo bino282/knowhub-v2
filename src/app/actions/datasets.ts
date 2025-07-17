@@ -30,7 +30,7 @@ export async function createDataset(name: string, description?: string) {
       true,
       { email: user.email!, nickname: user.name! }
     );
-
+    console.log("response", response);
     if (response.code !== 0) {
       throw new Error("Failed to create dataset");
     }

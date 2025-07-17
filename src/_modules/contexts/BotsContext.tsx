@@ -179,7 +179,6 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
     const res = await createDataset(name, description);
     if (res.success) {
       setDatasets((prev) => [...prev, res.data as Dataset]);
-      toast.success("Dataset created successfully");
       router.refresh();
       return { success: true, message: "Dataset created successfully" };
     } else {
