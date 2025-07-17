@@ -419,14 +419,14 @@ const TestChatbot: React.FC<{ dictionary: DataTypeFromLocaleFunction }> = ({
             <Plus size={16} className="mr-1" />
             {dictionary.chatbots.newChat}
           </Button>
-          <button
+          {/* <button
             onClick={() => setShowSettings(true)}
             className={`p-2 rounded-md ${
               theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
             } transition-colors`}
           >
             <Settings size={20} />
-          </button>
+          </button> */}
           <button
             className={`p-2 rounded-md ${
               theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"

@@ -181,10 +181,7 @@ export function MarkdownWithReferences({
     typeof references === "object" && references !== null
       ? references
       : JSON.parse(references || "{}");
-  console.log("ref", ref);
-  console.log("content", content);
   const transformed = content.replace(/\[ID:\s*(\d+)\]/g, (_, index) => {
-    console.log("index", index);
     return `<span data-ref-index="${index}"></span>`;
   });
 

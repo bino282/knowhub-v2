@@ -42,6 +42,11 @@ export default function PageBotDetail({ dictionary, id }: Props) {
     React.useState<number>(0.7);
   const [topN, setTopN] = React.useState<number>(5);
   const [emptyResponse, setEmptyResponse] = React.useState<string>("");
+  const [model, setModel] = React.useState<string>("");
+  const [temperature, setTemperature] = React.useState<number>(0.7);
+  const [topP, setTopP] = React.useState<number>(0.7);
+  const [frequencyPenalty, setFrequencyPenalty] = React.useState<number>(0.7);
+  const [presencePenalty, setPresencePenalty] = React.useState<number>(0.7);
   React.useEffect(() => {
     if (bots.length === 0) return;
     const createdById = bots.find((bot) => bot.id === params.id)?.dataset
@@ -59,6 +64,11 @@ export default function PageBotDetail({ dictionary, id }: Props) {
         setTopN(response.data.chatInfo[0].prompt.top_n);
         setEmptyResponse(response.data.chatInfo[0].prompt.empty_response);
         setIsLoading(false);
+        setModel(response.data.chatInfo[0].llm.model_name);
+        setTemperature(response.data.chatInfo[0].llm.temperature);
+        setTopP(response.data.chatInfo[0].llm.top_p);
+        setFrequencyPenalty(response.data.chatInfo[0].llm.frequency_penalty);
+        setPresencePenalty(response.data.chatInfo[0].llm.presence_penalty);
       }
     };
     fetchBotDetail();
@@ -205,6 +215,16 @@ export default function PageBotDetail({ dictionary, id }: Props) {
               setSimilarityThreshold={setSimilarityThreshold}
               setTopN={setTopN}
               setEmptyResponse={setEmptyResponse}
+              model={model}
+              setModel={setModel}
+              temperature={temperature}
+              setTemperature={setTemperature}
+              topP={topP}
+              setTopP={setTopP}
+              frequencyPenalty={frequencyPenalty}
+              setFrequencyPenalty={setFrequencyPenalty}
+              presencePenalty={presencePenalty}
+              setPresencePenalty={setPresencePenalty}
             />
           )}
         </TabsContent>

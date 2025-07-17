@@ -294,6 +294,13 @@ export async function settingPrompt(
     top_n: number;
     empty_response: string;
   },
+  llm: {
+    model_name: string;
+    temperature: number;
+    top_p: number;
+    presence_penalty: number;
+    frequency_penalty: number;
+  },
   createdById: string | undefined
 ) {
   const session = await getServerSession(authOptions);
@@ -316,10 +323,12 @@ export async function settingPrompt(
     user.apiKey,
     {
       prompt: prompt,
+      llm: llm,
     },
     true,
     { email: user.email!, nickname: user.name! }
   );
+  console.log("res", res);
   if (res.code !== 0) {
     return { success: false, error: "Failed to update bot prompt" };
   }

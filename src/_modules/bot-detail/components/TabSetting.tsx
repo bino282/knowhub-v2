@@ -6,8 +6,15 @@ import { useTheme } from "@/_modules/contexts/ThemeContext";
 import { activeBot, settingPrompt, updateChatBot } from "@/app/actions/bots";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DataTypeFromLocaleFunction } from "@/types";
+import { DataTypeFromLocaleFunction, OPENAI_MODELS } from "@/types";
 import { Database } from "@/types/database.type";
 import { CheckCircle, CircleOff, Play, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -26,6 +33,16 @@ interface Props {
   setSimilarityThreshold: (similarityThreshold: number) => void;
   setTopN: (topN: number) => void;
   setEmptyResponse: (emptyResponse: string) => void;
+  model: string;
+  setModel: (model: string) => void;
+  temperature: number;
+  setTemperature: (temperature: number) => void;
+  topP: number;
+  setTopP: (topP: number) => void;
+  frequencyPenalty: number;
+  setFrequencyPenalty: (frequencyPenalty: number) => void;
+  presencePenalty: number;
+  setPresencePenalty: (presencePenalty: number) => void;
 }
 type FormValues = {
   name: string;
@@ -43,6 +60,16 @@ export default function TabSetting({
   setSimilarityThreshold,
   setTopN,
   setEmptyResponse,
+  model,
+  setModel,
+  temperature,
+  setTemperature,
+  topP,
+  setTopP,
+  frequencyPenalty,
+  setFrequencyPenalty,
+  presencePenalty,
+  setPresencePenalty,
 }: Props) {
   const { theme } = useTheme();
   const { datasets, setBots } = useBots();
@@ -124,6 +151,14 @@ export default function TabSetting({
           top_n: topN,
           empty_response: emptyResponse,
         },
+        {
+          model_name: model,
+          temperature: temperature,
+          top_p: topP,
+          frequency_penalty: frequencyPenalty,
+          presence_penalty: presencePenalty,
+        },
+
         createdById
       );
       if (!res.success) {
@@ -229,6 +264,7 @@ export default function TabSetting({
             {dictionary.chatbots.similarityThreshold}
           </p>
           <CustomSlider
+            className="w-xl"
             value={[similarityThreshold]}
             onChange={(value) => setSimilarityThreshold(value[0])}
             min={0}
@@ -239,6 +275,7 @@ export default function TabSetting({
         <div className="mt-6">
           <p className="font-medium text-sm mb-3">Top N</p>
           <CustomSlider
+            className="w-xl"
             value={[topN]}
             onChange={(value) => setTopN(value[0])}
             min={0}
@@ -262,21 +299,75 @@ export default function TabSetting({
             placeholder="Enter your empty response here..."
           />
         </div>
-
-        <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            className={`flex items-center px-4 py-2 rounded-md ${
-              theme === "dark"
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-blue-600 hover:bg-blue-700"
-            } text-white transition-colors`}
-            onClick={handleSettingPrompt}
-          >
-            {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
-            {dictionary.common.saveChanges}
-          </button>
+        <h3 className="font-semibold mb-4 mt-6">Setting model</h3>
+        <Select value={model} onValueChange={setModel}>
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Chọn mô hình OpenAI" />
+          </SelectTrigger>
+          <SelectContent>
+            {OPENAI_MODELS.map((model) => (
+              <SelectItem key={model.value} value={model.value}>
+                {model.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Temperature</p>
+          <CustomSlider
+            className="w-xl"
+            value={[temperature]}
+            onChange={(value) => setTemperature(value[0])}
+            min={0}
+            max={1}
+            step={0.01}
+          />
         </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Top P</p>
+          <CustomSlider
+            className="w-xl"
+            value={[topP]}
+            onChange={(value) => setTopP(value[0])}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Frequency Penalty</p>
+          <CustomSlider
+            className="w-xl"
+            value={[frequencyPenalty]}
+            onChange={(value) => setFrequencyPenalty(value[0])}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        </div>
+        <div className="mt-6">
+          <p className="font-medium text-sm mb-3">Presence Penalty</p>
+          <CustomSlider
+            className="w-xl"
+            value={[presencePenalty]}
+            onChange={(value) => setPresencePenalty(value[0])}
+            min={0}
+            max={1}
+            step={0.01}
+          />
+        </div>
+        <button
+          type="submit"
+          className={`flex items-center px-4 py-2 rounded-md mt-6 ${
+            theme === "dark"
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white transition-colors`}
+          onClick={handleSettingPrompt}
+        >
+          {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
+          {dictionary.common.saveChanges}
+        </button>
       </div>
 
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
