@@ -10,9 +10,13 @@ const nextConfig: NextConfig = {
       "chatntq.ntq.ai",
     ],
   },
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // hoặc "500mb" nếu bạn thực sự cần
+    },
+  },
   experimental: {
     serverActions: {
-      // Set your desired size limit (e.g., 2MB, 4MB, etc.)
       bodySizeLimit: "500mb",
     },
   },

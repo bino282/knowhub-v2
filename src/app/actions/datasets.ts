@@ -26,7 +26,9 @@ export async function createDataset(name: string, description?: string) {
       {
         name,
         description,
-      }
+      },
+      true,
+      { email: user.email!, nickname: user.name! }
     );
 
     if (response.code !== 0) {
@@ -61,7 +63,10 @@ export async function getAllDatasets() {
     const response = await apiRequest<ApiResponse>(
       "GET",
       "api/v1/datasets",
-      user.apiKey
+      user.apiKey,
+      undefined,
+      true,
+      { email: user.email!, nickname: user.name! }
     );
 
     if (response.code !== 0) {
@@ -95,7 +100,9 @@ export async function deleteDataset(datasetId: string, datasetName: string) {
       user.apiKey,
       {
         ids: [datasetId],
-      }
+      },
+      true,
+      { email: user.email!, nickname: user.name! }
     );
 
     if (response.code !== 0) {
@@ -149,7 +156,9 @@ export async function updateDataset(
         name: name,
         description: description,
         permission: permission,
-      }
+      },
+      true,
+      { email: user.email!, nickname: user.name! }
     );
     if (response.code !== 0) {
       return {
@@ -173,6 +182,12 @@ export async function getDatasets() {
     return { success: false, message: "User not authenticated" };
   }
   const userId = session.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user || !user.apiKey) {
+    return { success: false, message: "User not found or API key missing" };
+  }
   // Tìm các admin đã mời user vào team
   const teamInvites = await prisma.inviteTeam.findMany({
     where: {
@@ -207,7 +222,10 @@ export async function getDatasets() {
         const res = await apiRequest<ApiResponse>(
           "GET",
           "api/v1/datasets",
-          apiKey
+          apiKey,
+          undefined,
+          true,
+          { email: user.email!, nickname: user.name! }
         );
 
         if (res.code !== 0) {
