@@ -1,8 +1,13 @@
+import { registerRagflowUser } from "@/app/actions/register";
+import { prisma } from "./prisma";
+
 export async function apiRequest<T>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
   apiKey: string,
   data?: unknown,
+  retry = true,
+  userInfo?: { email: string; nickname: string },
   customHeaders?: HeadersInit
 ): Promise<T> {
   const API_URL = process.env.NEXT_PUBLIC_URL_RAGFLOW;
@@ -55,13 +60,35 @@ export async function apiRequest<T>(
     }),
     next: { revalidate: 0 },
   });
+  const json = response.status === 204 ? null : await response.json();
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`${method} ${url} → ${response.status}: ${text}`);
+  if (json?.code === 109 && retry && userInfo) {
+    const newApiKey = await registerRagflowUser(
+      userInfo.email,
+      userInfo.nickname
+    );
+    if (newApiKey.data && newApiKey.data.apiKey) {
+      await prisma.user.update({
+        where: { email: userInfo.email },
+        data: { apiKey: newApiKey.data.apiKey },
+      });
+      return await apiRequest<T>(
+        method,
+        url,
+        newApiKey.data.apiKey,
+        data,
+        false,
+        userInfo,
+        customHeaders
+      );
+    }
   }
 
-  return response.status === 204
-    ? (null as unknown as T)
-    : await response.json();
+  if (!response.ok) {
+    throw new Error(
+      `${method} ${url} → ${response.status}: ${JSON.stringify(json)}`
+    );
+  }
+
+  return json;
 }

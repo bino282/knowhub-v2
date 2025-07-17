@@ -29,7 +29,9 @@ export async function createFileDataset(
       "POST",
       `api/v1/datasets/${datasetId}/documents`,
       user.apiKey,
-      formData
+      formData,
+      true,
+      { email: user.email!, nickname: user.name! }
     );
     if (result.code !== 0) {
       console.error("Failed to create file dataset:");
@@ -163,7 +165,9 @@ export async function getAllFileDatasets({
       "GET",
       `api/v1/datasets/${datasetId}/documents`,
       user.apiKey,
-      { desc: "desc" }
+      { desc: "desc" },
+      true,
+      { email: user.email!, nickname: user.name! }
     );
 
     if (response.code !== 0) {
@@ -245,7 +249,9 @@ export async function parseFileDocument(
     user.apiKey,
     {
       document_ids: documentIds,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     console.error("Failed to parse file document");
@@ -276,7 +282,9 @@ export async function parseFileDocumentWithDataset(
     user.apiKey,
     {
       document_ids: documentIds,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     console.error("Failed to parse file document");
@@ -313,7 +321,9 @@ export async function stopParseFileDocument(
     user.apiKey,
     {
       document_ids: documentIds,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     console.error("Failed to stop parse file document");
@@ -344,7 +354,9 @@ export async function deteleFileDataset(
       user.apiKey,
       {
         ids: documentIds,
-      }
+      },
+      true,
+      { email: user.email!, nickname: user.name! }
     );
     if (response.code !== 0) {
       console.error("Failed to delete file dataset:");
@@ -425,7 +437,9 @@ export async function updateFileDataset(
       "PUT",
       `api/v1/datasets/${datasetId}/documents/${documentId}`,
       user.apiKey,
-      data
+      data,
+      true,
+      { email: user.email!, nickname: user.name! }
     );
     if (response.code !== 0) {
       console.error("Failed to update file dataset:");

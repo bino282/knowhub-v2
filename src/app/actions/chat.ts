@@ -37,7 +37,9 @@ export async function createSessionId(
     user.apiKey,
     {
       name: name,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");
@@ -154,7 +156,9 @@ export async function createSessionIdWithBotID(
     user.apiKey,
     {
       name: nameSession,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     throw new Error("Failed to create chat for bot");

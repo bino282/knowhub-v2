@@ -57,7 +57,9 @@ Here is question:`,
         top_n: 10,
         empty_response: "",
       },
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
 
   if (res.code !== 0) {
@@ -172,7 +174,10 @@ export async function getBotById(id: string, createdById: string | undefined) {
     const res = await apiRequest<ApiResponse>(
       "GET",
       `api/v1/chats?id=${bot.chatId}`,
-      user.apiKey
+      user.apiKey,
+      undefined,
+      true,
+      { email: user.email!, nickname: user.name! }
     );
     const chatInfo = res.data;
     const data = {
@@ -243,7 +248,9 @@ export async function deleteChatBot(
     userApiKey.apiKey,
     {
       ids: [bot?.chatId],
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     return { success: false, error: "Failed to delete chat" };
@@ -309,7 +316,9 @@ export async function settingPrompt(
     user.apiKey,
     {
       prompt: prompt,
-    }
+    },
+    true,
+    { email: user.email!, nickname: user.name! }
   );
   if (res.code !== 0) {
     return { success: false, error: "Failed to update bot prompt" };
