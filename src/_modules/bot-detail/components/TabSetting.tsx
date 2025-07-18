@@ -240,121 +240,121 @@ export default function TabSetting({
         </form>
       </div>
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
-        <h3 className="font-semibold mb-4">
-          {dictionary.chatbots.settingsPrompt}
-        </h3>
-        <div>
-          <p className="text-sm font-semibold mb-1.5">
-            {dictionary.chatbots.prompt}
-          </p>
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className={`w-full rounded-md ${
-              theme === "dark"
-                ? "bg-gray-700 border-gray-600"
-                : "bg-white border-gray-300"
-            } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
-            rows={12}
-            placeholder="Enter your prompt here..."
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">
-            {dictionary.chatbots.similarityThreshold}
-          </p>
-          <CustomSlider
-            className="w-xl"
-            value={[similarityThreshold]}
-            onChange={(value) => setSimilarityThreshold(value[0])}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Top N</p>
-          <CustomSlider
-            className="w-xl"
-            value={[topN]}
-            onChange={(value) => setTopN(value[0])}
-            min={0}
-            max={30}
-            step={1}
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">
-            {dictionary.chatbots.emptyResponse}
-          </p>
-          <Textarea
-            value={emptyResponse}
-            onChange={(e) => setEmptyResponse(e.target.value)}
-            className={`w-full rounded-md ${
-              theme === "dark"
-                ? "bg-gray-700 border-gray-600"
-                : "bg-white border-gray-300"
-            } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
-            rows={4}
-            placeholder="Enter your empty response here..."
-          />
-        </div>
-        <h3 className="font-semibold mb-4 mt-6">Setting model</h3>
-        <Select value={model} onValueChange={setModel}>
-          <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder="Chọn mô hình OpenAI" />
-          </SelectTrigger>
-          <SelectContent>
-            {OPENAI_MODELS.map((model) => (
-              <SelectItem key={model.value} value={model.value}>
-                {model.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Temperature</p>
-          <CustomSlider
-            className="w-xl"
-            value={[temperature]}
-            onChange={(value) => setTemperature(value[0])}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Top P</p>
-          <CustomSlider
-            className="w-xl"
-            value={[topP]}
-            onChange={(value) => setTopP(value[0])}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Frequency Penalty</p>
-          <CustomSlider
-            className="w-xl"
-            value={[frequencyPenalty]}
-            onChange={(value) => setFrequencyPenalty(value[0])}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-        </div>
-        <div className="mt-6">
-          <p className="font-medium text-sm mb-3">Presence Penalty</p>
-          <CustomSlider
-            className="w-xl"
-            value={[presencePenalty]}
-            onChange={(value) => setPresencePenalty(value[0])}
-            min={0}
-            max={1}
-            step={0.01}
-          />
+        <div className="flex gap-20">
+          <div className="w-full">
+            <h3 className="font-semibold mb-4">
+              {dictionary.chatbots.settingsPrompt}
+            </h3>
+            <div>
+              <p className="text-sm font-semibold mb-1.5">
+                {dictionary.chatbots.prompt}
+              </p>
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className={`w-full rounded-md ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600"
+                    : "bg-white border-gray-300"
+                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+                rows={12}
+                placeholder="Enter your prompt here..."
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">
+                {dictionary.chatbots.similarityThreshold}
+              </p>
+              <CustomSlider
+                value={[similarityThreshold]}
+                onChange={(value) => setSimilarityThreshold(value[0])}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">Top N</p>
+              <CustomSlider
+                value={[topN]}
+                onChange={(value) => setTopN(value[0])}
+                min={0}
+                max={30}
+                step={1}
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">
+                {dictionary.chatbots.emptyResponse}
+              </p>
+              <Textarea
+                value={emptyResponse}
+                onChange={(e) => setEmptyResponse(e.target.value)}
+                className={`w-full rounded-md ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600"
+                    : "bg-white border-gray-300"
+                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+                rows={4}
+                placeholder="Enter your empty response here..."
+              />
+            </div>
+          </div>
+          <div className="w-full">
+            <h3 className="font-semibold mb-4">Setting model</h3>
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger className="w-[300px]">
+                <SelectValue placeholder="Chọn mô hình OpenAI" />
+              </SelectTrigger>
+              <SelectContent>
+                {OPENAI_MODELS.map((model) => (
+                  <SelectItem key={model.value} value={model.value}>
+                    {model.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">Temperature</p>
+              <CustomSlider
+                value={[temperature]}
+                onChange={(value) => setTemperature(value[0])}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">Top P</p>
+              <CustomSlider
+                value={[topP]}
+                onChange={(value) => setTopP(value[0])}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">Frequency Penalty</p>
+              <CustomSlider
+                value={[frequencyPenalty]}
+                onChange={(value) => setFrequencyPenalty(value[0])}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">Presence Penalty</p>
+              <CustomSlider
+                value={[presencePenalty]}
+                onChange={(value) => setPresencePenalty(value[0])}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </div>
+          </div>
         </div>
         <button
           type="submit"

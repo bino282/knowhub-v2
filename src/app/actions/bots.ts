@@ -32,9 +32,21 @@ export async function createNewBot(data: any) {
   if (!user || !user.apiKey) {
     return { success: false, message: "User not found or API key missing" };
   }
+  const existingBot = await prisma.bot.findFirst({
+    where: {
+      name: data.name,
+    },
+  });
+
+  if (existingBot) {
+    return {
+      success: false,
+      message: "Bot name already exists",
+    };
+  }
   const dataSetId = data.data_set_id;
   if (!dataSetId) {
-    return { success: false, error: "Data set ID is required" };
+    return { success: false, message: "Data set ID is required" };
   }
   const res = await apiRequest<ApiResponse>(
     "POST",
@@ -63,7 +75,7 @@ Here is question:`,
   );
 
   if (res.code !== 0) {
-    throw new Error("Failed to create chat for bot");
+    return { success: false, message: "Failed to create chat for bot" };
   }
   const chatId = res.data.id;
   const validated = BotSchema.parse({

@@ -163,7 +163,7 @@ export const BotsProvider: React.FC<{ children: React.ReactNode }> = ({
       setSelectedBot(bot);
       toast.success("Bot created successfully");
     } else {
-      toast.error(res.error || "Failed to create bot:");
+      toast.error(res.message || "Failed to create bot:");
     }
   };
 
