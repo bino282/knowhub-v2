@@ -263,6 +263,22 @@ export default function TabSetting({
             </div>
             <div className="mt-6">
               <p className="font-medium text-sm mb-3">
+                {dictionary.chatbots.emptyResponse}
+              </p>
+              <Textarea
+                value={emptyResponse}
+                onChange={(e) => setEmptyResponse(e.target.value)}
+                className={`w-full rounded-md ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600"
+                    : "bg-white border-gray-300"
+                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+                rows={4}
+                placeholder="Enter your empty response here..."
+              />
+            </div>
+            <div className="mt-6">
+              <p className="font-medium text-sm mb-3">
                 {dictionary.chatbots.similarityThreshold}
               </p>
               <CustomSlider
@@ -283,37 +299,24 @@ export default function TabSetting({
                 step={1}
               />
             </div>
-            <div className="mt-6">
-              <p className="font-medium text-sm mb-3">
-                {dictionary.chatbots.emptyResponse}
-              </p>
-              <Textarea
-                value={emptyResponse}
-                onChange={(e) => setEmptyResponse(e.target.value)}
-                className={`w-full rounded-md ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600"
-                    : "bg-white border-gray-300"
-                } border px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
-                rows={4}
-                placeholder="Enter your empty response here..."
-              />
-            </div>
           </div>
           <div className="w-full">
             <h3 className="font-semibold mb-4">Setting model</h3>
-            <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Chọn mô hình OpenAI" />
-              </SelectTrigger>
-              <SelectContent>
-                {OPENAI_MODELS.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <p className="font-medium text-sm mb-2">Model</p>
+              <Select value={model} onValueChange={setModel}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn mô hình OpenAI" />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPENAI_MODELS.map((model) => (
+                    <SelectItem key={model.value} value={model.value}>
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="mt-6">
               <p className="font-medium text-sm mb-3">Temperature</p>
               <CustomSlider
@@ -356,18 +359,20 @@ export default function TabSetting({
             </div>
           </div>
         </div>
-        <button
-          type="submit"
-          className={`flex items-center px-4 py-2 rounded-md mt-6 ${
-            theme === "dark"
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-blue-600 hover:bg-blue-700"
-          } text-white transition-colors`}
-          onClick={handleSettingPrompt}
-        >
-          {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
-          {dictionary.common.saveChanges}
-        </button>
+        <div className="w-full flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700  mt-6">
+          <button
+            type="submit"
+            className={`flex items-center px-4 py-2 rounded-md ${
+              theme === "dark"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white transition-colors`}
+            onClick={handleSettingPrompt}
+          >
+            {isSavePrompt ? <Loading /> : <Play size={16} className="mr-2" />}
+            {dictionary.common.saveChanges}
+          </button>
+        </div>
       </div>
 
       <div className={`${baseCardClasses} rounded-lg border p-6`}>
