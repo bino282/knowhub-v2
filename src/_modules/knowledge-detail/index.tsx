@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import dayjs from "dayjs";
 import {
   ListIcon,
   File as FilePdf,
@@ -44,7 +45,7 @@ import { getVariant } from "@/lib/get-variant";
 import { bytesToMB } from "@/lib/formatFile";
 import { useSession } from "next-auth/react";
 import { DeleteFileModal } from "../components/ModalDeleteFile";
-import { formatGmtDate } from "@/lib/format-date";
+import { formatDateTime, formatDSN, formatGmtDate } from "@/lib/format-date";
 import { DataTypeFromLocaleFunction } from "@/types";
 import ModalUpdateKnowledge from "./components/ModalUpdateKnowledge";
 
@@ -546,7 +547,11 @@ export default function KnowledgeDetailPage({
 
                   <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 flex justify-between">
                     <span> {bytesToMB(document.size)}</span>
-                    <span>{formatGmtDate(document.update_date)}</span>
+                    <span>
+                      {dayjs(document.create_time).format(
+                        "DD/MM/YYYY HH:mm:ss"
+                      )}
+                    </span>
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center w-full overflow-hidden">

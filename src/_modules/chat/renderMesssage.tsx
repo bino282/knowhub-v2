@@ -181,7 +181,7 @@ export function MarkdownWithReferences({
     typeof references === "object" && references !== null
       ? references
       : JSON.parse(references || "{}");
-  const transformed = content.replace(/##(\d+)\$\$/g, (_, index) => {
+  const transformed = content.replace(/\[ID:\s*(\d+)\]/g, (_, index) => {
     return `<span data-ref-index="${index}"></span>`;
   });
 
@@ -206,7 +206,7 @@ export function MarkdownWithReferences({
           const index = Number(indexAttr);
           const chunk = ref.chunks?.[index];
           if (!chunk) return null;
-          const urlImage = "https://chatntq.ntq.ai/v1/document/image/";
+          const urlImage = "https://chatdocs.ntq.ai/v1/document/image/";
 
           return (
             <span className=" text-white font-semibold rounded inline-flex items-center">

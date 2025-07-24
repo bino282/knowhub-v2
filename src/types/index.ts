@@ -81,6 +81,23 @@ export const tagStyles: Record<string, TagStyle> = {
     text: "#175CD3",
   },
 };
+export const OPENAI_MODELS = [
+  { label: "gpt-3.5-turbo", value: "gpt-3.5-turbo@OpenAI" },
+  { label: "gpt-3.5-turbo-16k-0613", value: "gpt-3.5-turbo-16k-0613@OpenAI" },
+  { label: "gpt-4", value: "gpt-4@OpenAI" },
+  { label: "gpt-4-32k", value: "gpt-4-32k@OpenAI" },
+  { label: "gpt-4-turbo", value: "gpt-4-turbo@OpenAI" },
+  { label: "gpt-4.1", value: "gpt-4.1@OpenAI" },
+  { label: "gpt-4.1-mini", value: "gpt-4.1-mini@OpenAI" },
+  { label: "gpt-4.1-nano", value: "gpt-4.1-nano@OpenAI" },
+  { label: "gpt-4.5-preview", value: "gpt-4.5-preview@OpenAI" },
+  { label: "gpt-4o", value: "gpt-4o@OpenAI" },
+  { label: "gpt-4o-mini", value: "gpt-4o-mini@OpenAI" },
+  { label: "o3", value: "o3@OpenAI" },
+  { label: "o4-mini", value: "o4-mini@OpenAI" },
+  { label: "o4-mini-high", value: "o4-mini-high@OpenAI" },
+] as const;
+
 export type ApiResponse = {
   code: number;
   data: any;

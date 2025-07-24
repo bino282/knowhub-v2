@@ -45,6 +45,7 @@ export async function createFileDataset(
         type: type,
         datasetId: data[0].dataset_id,
         userId: session.user.id,
+        createdAt: new Date(),
       },
     });
     await parseFileDocumentWithDataset(

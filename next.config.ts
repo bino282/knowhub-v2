@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
       "minio.ntq.ai",
       "i.pravatar.cc",
       "lh3.googleusercontent.com",
-      "chatntq.ntq.ai",
+      "chatdocs.ntq.ai",
     ],
   },
   api: {

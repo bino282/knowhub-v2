@@ -29,3 +29,19 @@ export function formatDateTime(dateInput: Date | string): string {
 
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }
+export function formatDSN(data: string) {
+  const date = new Date(data);
+
+  // Hàm pad để luôn có 2 chữ số
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  // Trích xuất giờ, phút, giây
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  const time = `${hours}:${minutes}:${seconds}`;
+  return `${date.getDate()}/${
+    date.getMonth() + 1
+  }/${date.getFullYear()} ${time}`;
+}
